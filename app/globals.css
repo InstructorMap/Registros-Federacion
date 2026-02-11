@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { @apply antialiased; }
+  body { @apply bg-white text-slate-800; }
+  ::selection { @apply bg-navy-800/20 text-navy-900; }
+}
+
+@layer components {
+  .credential-badge { @apply px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider; }
+  .nav-link { @apply flex items-center space-x-2 px-3 py-2 text-sm font-medium transition-all duration-200 border-b-2; }
+  .input-elegant { @apply w-full px-6 py-4 bg-white border-2 border-slate-200 rounded-2xl focus:border-navy-800 focus:ring-4 focus:ring-navy-800/10 placeholder:text-slate-400 text-slate-800 outline-none transition-all; }
+}
