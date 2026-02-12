@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REMAEP 2026 | Registro Nacional Oficial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #000b1a; /* Navy Profundo */
+            color: white;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        /* Fondo de Circuitos Animados */
+        .circuit-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+            background-image: 
+                linear-gradient(to right, rgba(0, 229, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 229, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .glow-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #00e5ff, transparent);
+            height: 2px;
+            width: 100%;
+            top: -10%;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-10%); }
+            100% { transform: translateY(110vh); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #00e5ff;
+            transform: translateY(-5px);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="circuit-bg">
+        <div class="glow-line"></div>
+    </div>
+
+    <div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        
+        <header class="mb-12 animate-fade-in">
+            <div class="w-24 h-24 md:w-32 md:h-32 mx-auto bg-white/10 rounded-full border border-cyan-400/30 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(0,229,255,0.2)]">
+                <i data-lucide="shield" class="w-12 h-12 md:w-16 md:h-16 text-cyan-400"></i>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tighter mb-2 text-glow">
+                REMAEP <span class="text-cyan-400">2026</span>
+            </h1>
+            <p class="text-slate-400 text-xs md:text-sm uppercase tracking-[0.3em] font-bold">
+                Registro Nacional de Matrícula Profesional [cite: 5, 103]
+            </p>
+        </header>
+
+        <section class="w-full max-w-2xl mb-16">
+            <form id="searchForm" class="flex flex-col md:flex-row gap-3 p-2 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-xl shadow-2xl">
+                <div class="relative flex-1 flex items-center px-4">
+                    <i data-lucide="search" class="text-slate-500 mr-3"></i>
+                    <input 
+                        type="text" 
+                        id="dniInput"
+                        placeholder="Ingrese DNI para validar..." 
+                        required
+                        class="w-full bg-transparent py-4 text-white placeholder:text-slate-500 outline-none"
+                    >
+                </div>
+                <button type="submit" class="bg-cyan-500 hover:bg-cyan-400 text-navy-900 font-extrabold px-10 py-4 rounded-2xl transition-all uppercase text-sm">
+                    Validar Matrícula
+                </button>
+            </form>
+            <p class="text-slate-500 text-[10px] mt-4 uppercase tracking-widest">
+                Trazabilidad garantizada mediante tecnología Blockchain [cite: 107, 141]
+            </p>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+            <a href="homologar.html" class="glass-card p-8 rounded-3xl text-left">
+                <i data-lucide="file-check" class="text-cyan-400 mb-4 w-10 h-10"></i>
+                <h3 class="text-xl font-bold mb-2">Homologación</h3>
+                <p class="text-slate-400 text-sm">Obtén tu credencial oficial válida en todo el país[cite: 13, 157].</p>
+            </a>
+
+            <a href="billetera.html" class="glass-card p-8 rounded-3xl text-left">
+                <i data-lucide="wallet" class="text-emerald-400 mb-4 w-10 h-10"></i>
+                <h3 class="text-xl font-bold mb-2">Billetera Educativa</h3>
+                <p class="text-slate-400 text-sm">Acceso digital a tus diplomas y carnet con QR[cite: 20, 131, 132].</p>
+            </a>
+
+            <a href="nosotros.html" class="glass-card p-8 rounded-3xl text-left">
+                <i data-lucide="globe" class="text-blue-400 mb-4 w-10 h-10"></i>
+                <h3 class="text-xl font-bold mb-2">Institucional</h3>
+                <p class="text-slate-400 text-sm">Aval de la Asociación Argentina para la Salud (AAPS)[cite: 79, 144].</p>
+            </a>
+        </div>
+
+        <footer class="mt-20 py-8 border-t border-white/5 w-full max-w-5xl">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-[10px] uppercase tracking-widest font-bold">
+                <p>© 2026 REMAEP • MARCA REGISTRADA INPI </p>
+                <div class="flex gap-6">
+                    <span>Inversión Inicial: $50.000 [cite: 152]</span>
+                    <span>Renovación: $30.000 [cite: 153]</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Inicializar Iconos
+        lucide.createIcons();
+
+        // Lógica de Redirección del Validador
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const dni = document.getElementById('dniInput').value;
+            if (dni) {
+                // Redirige a la subpágina del validador que crearemos
+                window.location.href = `validador.html?dni=${dni}`;
+            }
+        });
+    </script>
+</body>
+</html>
