@@ -75,7 +75,7 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* Sistema activo 24/7 - VERSIÓN CON VIDA */}
+          {/* Sistema activo 24/7 - CON VIDA */}
           <div className="hidden lg:flex items-center">
             <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-200">
               <span className="relative flex h-2 w-2">
@@ -116,7 +116,7 @@ export default function Navbar() {
               )
             })}
             
-            {/* Mobile status indicator */}
+            {/* Indicador mobile con vida */}
             <div className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-500 border-t border-slate-100 mt-2 pt-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
