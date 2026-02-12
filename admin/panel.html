@@ -12,7 +12,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* ===== MISMOS ESTILOS DEL PANEL ANTERIOR + BOTONES FUNCIONALES ===== */
+        /* ===== ESTILOS CRÍTICOS ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -38,30 +38,10 @@
             pointer-events: none;
         }
 
-        .glow-line {
-            position: absolute;
-            background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.5), transparent);
-            height: 3px;
-            width: 70%;
-            left: 15%;
-            top: -5%;
-            border-radius: 100%;
-            filter: blur(3px);
-            animation: scan 14s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
-
-        @keyframes scan {
-            0% { transform: translateY(-10vh) scaleX(0.7); opacity: 0; }
-            10% { opacity: 0.8; }
-            90% { opacity: 0.8; }
-            100% { transform: translateY(120vh) scaleX(1.3); opacity: 0; }
-        }
-
         .sidebar {
             background: rgba(0, 12, 25, 0.85);
             backdrop-filter: blur(16px) saturate(180%);
             border-right: 1px solid rgba(0, 229, 255, 0.15);
-            box-shadow: 5px 0 30px -10px rgba(0,0,0,0.7);
             position: relative;
             z-index: 20;
         }
@@ -73,73 +53,89 @@
             transition: all 0.3s ease;
         }
 
-        .glass-panel:hover {
-            border-color: rgba(0, 229, 255, 0.3);
-            box-shadow: 0 15px 35px -15px rgba(0, 229, 255, 0.2);
-        }
-
-        .active-link {
-            background: linear-gradient(90deg, rgba(0, 229, 255, 0.15), transparent);
-            border-left: 4px solid #00e5ff;
-            color: white;
-            font-weight: 600;
-        }
-
-        /* ===== BOTONES FUNCIONALES ===== */
+        /* ===== BOTÓN DE GUARDADO - SIEMPRE VISIBLE ===== */
         .btn-save {
             background: linear-gradient(135deg, #00e5ff, #0066ff);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
         }
 
         .btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 229, 255, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 229, 255, 0.5);
         }
 
         .btn-save:active {
             transform: translateY(1px);
         }
 
-        .btn-save::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -20%;
-            width: 140%;
-            height: 200%;
-            background: rgba(255,255,255,0.2);
-            transform: rotate(45deg) translateX(-100%);
-            transition: transform 0.6s;
+        /* ===== BOTÓN FLOTANTE DE GUARDADO ===== */
+        .save-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            background: linear-gradient(135deg, #00e5ff, #0066ff);
+            border-radius: 50px;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 40px rgba(0, 229, 255, 0.4);
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            animation: pulse-save 2s infinite;
+            cursor: pointer;
         }
 
-        .btn-save:hover::after {
-            transform: rotate(45deg) translateX(100%);
+        @keyframes pulse-save {
+            0% { box-shadow: 0 10px 40px rgba(0, 229, 255, 0.4); }
+            50% { box-shadow: 0 10px 60px rgba(0, 229, 255, 0.8); }
+            100% { box-shadow: 0 10px 40px rgba(0, 229, 255, 0.4); }
         }
 
-        .btn-logout {
+        /* ===== SELECTOR DE FOTO - FUNCIONAL ===== */
+        .photo-upload-area {
+            position: relative;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .btn-logout:hover {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: rgba(239, 68, 68, 0.3);
+        .photo-upload-area:hover {
+            transform: scale(1.05);
+            border-color: #00e5ff !important;
         }
 
-        .nav-link {
-            transition: all 0.2s ease;
+        .photo-upload-area:hover .upload-overlay {
+            opacity: 1;
         }
 
-        .nav-link:hover {
-            background: rgba(255,255,255,0.05);
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
             color: white;
+            font-size: 12px;
+            font-weight: bold;
+            backdrop-filter: blur(2px);
         }
 
-        .nav-link:hover i {
-            color: #00e5ff;
-        }
-
+        /* ===== CAMPOS EDITABLES ===== */
         .editable-field {
             cursor: pointer;
             transition: all 0.2s ease;
@@ -149,14 +145,40 @@
         }
 
         .editable-field:hover {
-            background: rgba(0, 229, 255, 0.1);
-            box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.3);
+            background: rgba(0, 229, 255, 0.15);
+            box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.5);
         }
 
         .editable-field:focus {
-            background: rgba(0, 20, 40, 0.9);
-            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.5);
+            background: rgba(0, 40, 80, 0.9);
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.7);
             outline: none;
+        }
+
+        /* ===== TOAST NOTIFICATION ===== */
+        .toast-notification {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            background: rgba(0, 229, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid #00e5ff;
+            border-radius: 12px;
+            padding: 16px 24px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10000;
+            transform: translateX(500px);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 0 30px rgba(0,229,255,0.2);
+        }
+
+        .toast-notification.show {
+            transform: translateX(0);
         }
 
         .dot-active {
@@ -173,278 +195,278 @@
             50% { opacity: 0.5; transform: scale(1.2); }
             100% { opacity: 1; transform: scale(1); }
         }
-
-        .toast-notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 229, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid #00e5ff;
-            border-radius: 12px;
-            padding: 12px 20px;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 9999;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-        }
-
-        .toast-notification.show {
-            transform: translateX(0);
-        }
     </style>
 </head>
 <body class="relative">
 
     <!-- Fondo -->
-    <div class="circuit-bg" aria-hidden="true">
-        <div class="glow-line"></div>
-    </div>
+    <div class="circuit-bg" aria-hidden="true"></div>
     <div class="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,150,255,0.08),transparent_70%)] pointer-events-none z-0"></div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="toast-notification flex items-center gap-2">
-        <i data-lucide="check-circle" class="w-4 h-4 text-cyan-400"></i>
-        <span id="toast-message">Cambios guardados correctamente</span>
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div id="toast" class="toast-notification">
+        <i data-lucide="check-circle" class="w-5 h-5 text-cyan-400"></i>
+        <span id="toast-message">✅ Datos guardados correctamente</span>
     </div>
 
-    <!-- ESTRUCTURA PRINCIPAL -->
+    <!-- ===== BOTÓN FLOTANTE DE GUARDADO - SIEMPRE VISIBLE ===== -->
+    <button id="btn-save-float" class="save-float">
+        <i data-lucide="save" class="w-5 h-5"></i>
+        <span>GUARDAR CAMBIOS</span>
+        <span class="absolute -top-2 -right-2 w-4 h-4 bg-cyan-400 rounded-full animate-ping"></span>
+    </button>
+
+    <!-- ===== ESTRUCTURA PRINCIPAL ===== -->
     <div class="relative z-20 flex h-screen w-full overflow-hidden">
 
-        <!-- SIDEBAR - CON BOTONES FUNCIONALES -->
+        <!-- SIDEBAR -->
         <aside class="sidebar w-64 md:flex flex-col hidden flex-shrink-0 h-full overflow-y-auto">
             <div class="p-6 border-b border-white/10 flex items-center gap-3">
-                <div class="relative">
-                    <div class="absolute inset-0 bg-cyan-500/20 blur-md rounded-full"></div>
-                    <div class="relative w-10 h-10 bg-gradient-to-br from-cyan-400/30 to-blue-600/30 rounded-full flex items-center justify-center border border-cyan-400/50">
-                        <i data-lucide="shield" class="w-5 h-5 text-cyan-300"></i>
-                    </div>
+                <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center">
+                    <i data-lucide="shield" class="w-5 h-5 text-white"></i>
                 </div>
-                <span class="font-extrabold tracking-tighter text-lg bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">REMAEP ADMIN</span>
+                <span class="font-extrabold tracking-tighter text-lg text-white">REMAEP ADMIN</span>
             </div>
             
-            <!-- NAVEGACIÓN - TODOS LOS BOTONES FUNCIONAN -->
             <nav class="flex-1 p-4 space-y-1.5 mt-2">
-                <!-- Botón Dashboard - ACTIVO -->
-                <a href="#" id="nav-dashboard" class="nav-link flex items-center gap-3 p-3 rounded-xl active-link transition-all group">
+                <a href="#" id="nav-dashboard" class="flex items-center gap-3 p-3 rounded-xl bg-cyan-500/10 border-l-4 border-cyan-400 text-white font-medium">
                     <i data-lucide="layout-dashboard" size="18" class="text-cyan-400"></i>
-                    <span class="font-medium">Dashboard</span>
+                    Dashboard
                 </a>
-                
-                <!-- Botón Homologaciones - CON FUNCIÓN -->
-                <a href="#" id="nav-homologaciones" class="nav-link flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all group">
+                <a href="#" id="nav-homologaciones" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
                     <i data-lucide="file-text" size="18"></i>
-                    <span>Homologaciones</span>
+                    Homologaciones
                 </a>
-                
-                <!-- Botón Matriculados - CON FUNCIÓN -->
-                <a href="#" id="nav-matriculados" class="nav-link flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all group">
+                <a href="#" id="nav-matriculados" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
                     <i data-lucide="users" size="18"></i>
-                    <span>Matriculados</span>
+                    Matriculados
                 </a>
                 
                 <div class="pt-8 pb-2 px-3 text-[9px] uppercase tracking-[0.25em] text-cyan-400/60 font-bold">
-                    Identidad SaaS
+                    CONFIGURACIÓN SAAS
                 </div>
                 
-                <!-- Botón Branding - CON FUNCIÓN (SCROLL) -->
-                <a href="#" id="nav-branding" class="nav-link flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all group">
+                <a href="#" id="nav-branding" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
                     <i data-lucide="palette" size="18"></i>
-                    <span>Branding y Logos</span>
+                    Branding
                 </a>
-                
-                <!-- Botón Configuración - CON FUNCIÓN -->
-                <a href="#" id="nav-config" class="nav-link flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all group">
-                    <i data-lucide="settings" size="18"></i>
-                    <span>Configuración</span>
-                </a>
-                
-                <!-- Botón Precios - CON FUNCIÓN -->
-                <a href="#" id="nav-precios" class="nav-link flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all group">
+                <a href="#" id="nav-precios" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
                     <i data-lucide="dollar-sign" size="18"></i>
-                    <span>Precios y Planes</span>
+                    Precios
                 </a>
-                
-                <!-- Botón Contacto - CON FUNCIÓN -->
-                <a href="#" id="nav-contacto" class="nav-link flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all group">
+                <a href="#" id="nav-contacto" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
                     <i data-lucide="contact" size="18"></i>
-                    <span>Contacto</span>
+                    Contacto
                 </a>
                 
-                <!-- Botón Volver al Index - NUEVO! -->
                 <div class="pt-6 mt-4 border-t border-white/10"></div>
-                <a href="index.html" id="nav-index" class="nav-link flex items-center gap-3 p-3 rounded-xl hover:bg-cyan-500/10 text-slate-300 transition-all group">
-                    <i data-lucide="home" size="18" class="group-hover:text-cyan-400"></i>
-                    <span>Ver sitio público</span>
-                    <i data-lucide="external-link" size="14" class="ml-auto opacity-50"></i>
+                <a href="index.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-cyan-500/10 text-slate-300 transition-all">
+                    <i data-lucide="home" size="18"></i>
+                    Ver sitio público
                 </a>
             </nav>
 
-            <!-- PERFIL Y CERRAR SESIÓN - BOTÓN FUNCIONAL -->
-            <div class="p-6 border-t border-white/10 mt-auto">
-                <div class="flex items-center gap-3 mb-5">
-                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                        AD
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-bold">Administrador</p>
-                        <p class="text-[10px] text-slate-400">Super Admin</p>
-                    </div>
-                </div>
-                
-                <!-- BOTÓN CERRAR SESIÓN - FUNCIONAL -->
-                <button id="btn-logout" class="btn-logout flex items-center gap-3 text-red-400 hover:text-red-300 text-sm font-bold transition-all w-full p-3 rounded-lg border border-transparent hover:border-red-500/30">
+            <div class="p-6 border-t border-white/10">
+                <button id="btn-logout" class="flex items-center gap-3 text-red-400 hover:text-red-300 text-sm font-bold transition-all w-full p-3 rounded-lg hover:bg-red-500/10">
                     <i data-lucide="log-out" size="18"></i>
-                    <span>Cerrar Sesión</span>
+                    Cerrar Sesión
                 </button>
             </div>
         </aside>
 
         <!-- CONTENIDO PRINCIPAL -->
-        <main class="flex-1 overflow-y-auto p-6 md:p-8 lg:p-10 relative h-full">
+        <main class="flex-1 overflow-y-auto p-6 md:p-8 relative h-full">
             
-            <!-- HEADER CON BOTONES DE ACCIÓN -->
+            <!-- HEADER CON BOTÓN DE GUARDADO EXPLÍCITO -->
             <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10 relative z-10">
                 <div>
                     <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">
-                        Gestión de <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400">Identidad</span>
+                        Panel de <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400">Administración</span>
                     </h1>
                     <p class="text-slate-400 text-xs uppercase tracking-[0.25em] mt-2 font-semibold">
-                        Control Central de Registros Federativos
+                        Sistema de Gestión SaaS · Edición en vivo
                     </p>
                 </div>
                 <div class="flex gap-3 items-center">
-                    <!-- INDICADOR DE ESTADO -->
                     <div class="bg-white/5 px-4 py-2.5 rounded-xl border border-white/10 flex items-center gap-2">
                         <span class="dot-active"></span>
-                        <span class="text-slate-400 text-xs uppercase tracking-wider">Estado:</span>
+                        <span class="text-slate-400 text-xs">Estado:</span>
                         <span class="text-emerald-400 font-bold text-sm">Online</span>
                     </div>
                     
-                    <!-- BOTÓN GUARDAR - FUNCIONAL -->
-                    <button id="btn-save-all" class="btn-save text-white px-6 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg">
+                    <!-- BOTÓN GUARDAR EN HEADER - SIEMPRE VISIBLE -->
+                    <button id="btn-save-header" class="btn-save text-white px-6 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider flex items-center gap-2">
                         <i data-lucide="save" class="w-4 h-4"></i>
-                        <span>Guardar Todo</span>
+                        <span>GUARDAR</span>
                     </button>
                 </div>
             </header>
 
-            <!-- GRID DE CONFIGURACIÓN -->
+            <!-- ===== SECCIÓN DE FOTO Y CARNET - CORREGIDO ===== -->
             <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10 mb-10">
                 
-                <!-- PANEL BRANDING -->
-                <div class="glass-panel p-7 rounded-3xl" id="panel-branding">
+                <!-- PANEL DE FOTO Y BRANDING -->
+                <div class="glass-panel p-7 rounded-3xl">
                     <div class="flex justify-between items-start mb-7">
                         <h3 class="text-xl font-bold flex items-center gap-2">
-                            <i data-lucide="image" class="text-cyan-400 w-6 h-6"></i>
-                            <span>Logos e Iconos del Registro</span>
+                            <i data-lucide="camera" class="text-cyan-400 w-6 h-6"></i>
+                            <span>Foto del Profesional</span>
                         </h3>
-                        <span class="px-3 py-1.5 bg-cyan-500/10 text-cyan-400 text-[10px] font-bold rounded-full border border-cyan-500/30">EDITABLE</span>
+                        <span class="px-3 py-1.5 bg-cyan-500/10 text-cyan-400 text-[10px] font-bold rounded-full border border-cyan-500/30">
+                            CLICK PARA SUBIR
+                        </span>
                     </div>
                     
-                    <div class="space-y-7">
-                        <!-- Logo principal -->
-                        <div>
-                            <label class="block text-xs uppercase tracking-widest text-slate-400 font-bold mb-3">Logo Principal</label>
-                            <div class="grid grid-cols-4 gap-4 items-center">
-                                <div class="col-span-3 border-2 border-dashed border-white/10 hover:border-cyan-400/50 rounded-2xl p-6 text-center transition-all cursor-pointer group bg-white/5">
-                                    <i data-lucide="upload-cloud" class="mx-auto text-slate-500 mb-2 w-8 h-8 group-hover:text-cyan-400"></i>
-                                    <p class="text-[11px] text-slate-400">Arrastra el logo institucional aquí</p>
-                                </div>
-                                <div class="col-span-1 aspect-square bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl border border-cyan-400/50 flex items-center justify-center p-3">
-                                    <i data-lucide="shield" class="w-10 h-10 text-cyan-400/80"></i>
+                    <!-- SELECTOR DE FOTO - TOTALMENTE FUNCIONAL -->
+                    <div class="flex flex-col items-center gap-6">
+                        <!-- Preview de la foto -->
+                        <div class="relative">
+                            <div id="photo-preview-container" class="w-40 h-40 rounded-2xl border-3 border-cyan-400 shadow-[0_0_30px_rgba(0,229,255,0.3)] overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                                <img id="photo-preview" src="" alt="Foto del profesional" class="w-full h-full object-cover hidden">
+                                <div id="photo-placeholder" class="flex flex-col items-center justify-center text-slate-400">
+                                    <i data-lucide="user" class="w-12 h-12 mb-2"></i>
+                                    <span class="text-xs">Sin foto</span>
                                 </div>
                             </div>
+                            
+                            <!-- Botón de subida - OCULTO pero activado por el área -->
+                            <input type="file" id="photo-upload" accept="image/*" class="hidden">
+                            <label for="photo-upload" class="photo-upload-area absolute inset-0 cursor-pointer">
+                                <div class="upload-overlay rounded-2xl">
+                                    <i data-lucide="camera" class="w-6 h-6 mr-2"></i>
+                                    <span>SUBIR FOTO</span>
+                                </div>
+                            </label>
                         </div>
                         
-                        <!-- Contacto EDITABLE -->
-                        <div class="pt-4 border-t border-white/10">
-                            <h4 class="text-sm font-bold mb-4 flex items-center gap-2">
-                                <i data-lucide="contact" class="w-4 h-4 text-cyan-400"></i>
-                                <span>Información de Contacto</span>
-                            </h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-[9px] uppercase text-slate-500 mb-1">Dirección</p>
-                                    <p class="text-sm font-medium editable-field" data-field="contact.address" data-default="Av. Corrientes 1234, CABA" contenteditable="true">Av. Corrientes 1234, CABA</p>
-                                </div>
-                                <div>
-                                    <p class="text-[9px] uppercase text-slate-500 mb-1">Teléfono</p>
-                                    <p class="text-sm font-medium editable-field" data-field="contact.phone" data-default="+54 11 4321-5678" contenteditable="true">+54 11 4321-5678</p>
-                                </div>
-                                <div>
-                                    <p class="text-[9px] uppercase text-slate-500 mb-1">Email</p>
-                                    <p class="text-sm font-medium editable-field" data-field="contact.email" data-default="admin@remaep.gob.ar" contenteditable="true">admin@remaep.gob.ar</p>
-                                </div>
-                                <div>
-                                    <p class="text-[9px] uppercase text-slate-500 mb-1">Sitio Web</p>
-                                    <p class="text-sm font-medium editable-field" data-field="contact.website" data-default="www.remaep.gob.ar" contenteditable="true">www.remaep.gob.ar</p>
-                                </div>
+                        <p class="text-xs text-slate-400 text-center">
+                            Formatos: JPG, PNG, WEBP · Máx 5MB<br>
+                            <span id="photo-filename" class="text-cyan-400/70 text-[10px] mt-1 block">Ningún archivo seleccionado</span>
+                        </p>
+                    </div>
+                    
+                    <!-- LOGO INSTITUCIONAL -->
+                    <div class="mt-8 pt-6 border-t border-white/10">
+                        <h4 class="text-sm font-bold mb-4 flex items-center gap-2">
+                            <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i>
+                            <span>Logo Institucional</span>
+                        </h4>
+                        <div class="grid grid-cols-4 gap-4 items-center">
+                            <div class="col-span-3 border-2 border-dashed border-white/10 hover:border-cyan-400/50 rounded-2xl p-6 text-center transition-all cursor-pointer bg-white/5">
+                                <i data-lucide="upload-cloud" class="mx-auto text-slate-500 mb-2 w-8 h-8"></i>
+                                <p class="text-[11px] text-slate-400">Arrastra o haz click para subir</p>
+                            </div>
+                            <div class="col-span-1 aspect-square bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center p-3">
+                                <i data-lucide="shield" class="w-10 h-10 text-white"></i>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- PANEL PRECIOS Y CARNET -->
-                <div class="glass-panel p-7 rounded-3xl" id="panel-precios">
+                <!-- PANEL DE CARNET Y PRECIOS -->
+                <div class="glass-panel p-7 rounded-3xl">
                     <div class="flex justify-between items-start mb-6">
                         <h3 class="text-xl font-bold flex items-center gap-2">
                             <i data-lucide="credit-card" class="text-cyan-400 w-6 h-6"></i>
-                            <span>Previsualización y Precios</span>
+                            <span>Carnet Digital 2026</span>
                         </h3>
                     </div>
                     
+                    <!-- CARNET CON FOTO DINÁMICA -->
+                    <div class="bg-gradient-to-br from-slate-100 to-white text-navy-900 p-5 rounded-2xl shadow-2xl aspect-[1.586/1] relative overflow-hidden border-2 border-white/30">
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-3 items-center">
+                                <div class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-700 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg">
+                                    R
+                                </div>
+                                <div>
+                                    <p class="text-xs font-black">REMAEP</p>
+                                    <p class="text-[7px] font-bold opacity-60 uppercase">REGISTRO NACIONAL</p>
+                                </div>
+                            </div>
+                            <div class="text-[8px] font-bold bg-navy-900 text-white px-3 py-1 rounded-full">
+                                CARNET 2026
+                            </div>
+                        </div>
+                        
+                        <div class="mt-5 flex gap-5">
+                            <!-- FOTO EN CARNET - SE ACTUALIZA AUTOMÁTICAMENTE -->
+                            <div id="carnet-photo" class="w-20 h-20 bg-gradient-to-br from-slate-300 to-slate-400 rounded-xl border-2 border-navy-900 shadow-inner flex items-center justify-center overflow-hidden">
+                                <img id="carnet-photo-img" src="" alt="Foto" class="w-full h-full object-cover hidden">
+                                <i id="carnet-photo-icon" data-lucide="user" class="w-8 h-8 text-navy-900/50"></i>
+                            </div>
+                            <div class="space-y-1 flex-1">
+                                <p id="card-nombre" class="text-sm font-black uppercase tracking-tight editable-field" contenteditable="true">
+                                    PABLO HORACIO VERDICCHIO
+                                </p>
+                                <p class="text-[9px] font-bold">
+                                    <span class="opacity-50">DNI:</span> 
+                                    <span id="card-dni" class="editable-field" contenteditable="true">23.525.976</span>
+                                </p>
+                                <p class="text-[9px] font-bold">
+                                    <span class="opacity-50">MATRÍCULA:</span> 
+                                    <span id="card-matricula" class="editable-field" contenteditable="true">824374</span>
+                                </p>
+                                <p class="text-[9px] font-bold text-red-600">
+                                    <span class="opacity-50 text-red-400/70">VENCE:</span> 
+                                    <span id="card-vencimiento" class="editable-field" contenteditable="true">31/12/2026</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-3 right-3 w-8 h-8 bg-white border border-slate-200 p-1 rounded-lg flex items-center justify-center">
+                            <i data-lucide="qr-code" class="w-full h-full text-navy-900"></i>
+                        </div>
+                    </div>
+                    
                     <!-- PRECIOS EDITABLES -->
-                    <div class="mb-6">
+                    <div class="mt-7 pt-5 border-t border-white/10">
                         <h4 class="text-sm font-bold mb-4 flex items-center gap-2">
                             <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-400"></i>
-                            <span>Inversión y Renovación</span>
+                            <span>Precios (Editable)</span>
                         </h4>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-white/5 p-4 rounded-xl">
                                 <p class="text-[9px] uppercase text-slate-500 mb-1">Inversión Inicial</p>
                                 <div class="flex items-baseline gap-1">
-                                    <span class="text-2xl font-black text-cyan-400 editable-field" data-field="pricing.initial.amount" contenteditable="true">$50.000</span>
-                                    <span class="text-[9px] text-slate-500 editable-field" data-field="pricing.initial.period" contenteditable="true">/año</span>
+                                    <span id="precio-inicial" class="text-2xl font-black text-cyan-400 editable-field" contenteditable="true">$50.000</span>
+                                    <span id="precio-inicial-periodo" class="text-[9px] text-slate-500 editable-field" contenteditable="true">/año</span>
                                 </div>
-                                <p class="text-[9px] text-slate-400 mt-1 editable-field" data-field="pricing.initial.desc" contenteditable="true">Matriculación + Carnet digital</p>
+                                <p id="precio-inicial-desc" class="text-[9px] text-slate-400 mt-1 editable-field" contenteditable="true">Matriculación + Carnet digital</p>
                             </div>
                             <div class="bg-white/5 p-4 rounded-xl">
                                 <p class="text-[9px] uppercase text-slate-500 mb-1">Renovación Anual</p>
                                 <div class="flex items-baseline gap-1">
-                                    <span class="text-2xl font-black text-cyan-400 editable-field" data-field="pricing.renewal.amount" contenteditable="true">$30.000</span>
-                                    <span class="text-[9px] text-slate-500 editable-field" data-field="pricing.renewal.period" contenteditable="true">/año</span>
+                                    <span id="precio-renovacion" class="text-2xl font-black text-cyan-400 editable-field" contenteditable="true">$30.000</span>
+                                    <span id="precio-renovacion-periodo" class="text-[9px] text-slate-500 editable-field" contenteditable="true">/año</span>
                                 </div>
-                                <p class="text-[9px] text-slate-400 mt-1 editable-field" data-field="pricing.renewal.desc" contenteditable="true">Actualización de credencial</p>
+                                <p id="precio-renovacion-desc" class="text-[9px] text-slate-400 mt-1 editable-field" contenteditable="true">Actualización de credencial</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- TABLA DE HOMOLOGACIONES - CON BOTONES FUNCIONALES -->
+            <!-- TABLA DE HOMOLOGACIONES -->
             <section class="glass-panel rounded-3xl overflow-hidden relative z-10">
                 <div class="p-6 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div class="flex items-center gap-3">
                         <h3 class="font-bold text-lg">Pendientes de Homologación</h3>
-                        <span class="px-3 py-1.5 bg-amber-500/15 text-amber-400 text-[10px] font-bold rounded-full border border-amber-500/30">4 SOLICITUDES</span>
+                        <span class="px-3 py-1.5 bg-amber-500/15 text-amber-400 text-[10px] font-bold rounded-full border border-amber-500/30">
+                            4 SOLICITUDES
+                        </span>
                     </div>
                     <div class="flex gap-2">
-                        <!-- BOTONES FUNCIONALES -->
                         <button id="btn-filtrar" class="text-xs bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg flex items-center gap-1 transition">
                             <i data-lucide="filter" class="w-3 h-3"></i>
-                            <span>Filtrar</span>
+                            Filtrar
                         </button>
                         <button id="btn-nuevo" class="text-xs bg-cyan-500 hover:bg-cyan-400 px-4 py-2 rounded-lg flex items-center gap-1 transition text-navy-900 font-bold">
                             <i data-lucide="plus" class="w-3 h-3"></i>
-                            <span>Nuevo</span>
+                            Nuevo
                         </button>
                     </div>
                 </div>
                 
-                <!-- TABLA -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead class="bg-white/5 text-slate-400 font-bold uppercase text-[9px] tracking-[0.2em]">
@@ -456,7 +478,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5">
-                            <tr class="hover:bg-white/5 transition-colors group">
+                            <tr class="hover:bg-white/5 transition-colors">
                                 <td class="px-6 py-5">
                                     <p class="font-bold text-base editable-field" contenteditable="true">Belgrano, Marcelo</p>
                                     <p class="text-xs text-slate-400 italic editable-field" contenteditable="true">Paramédico Deportivo</p>
@@ -466,16 +488,14 @@
                                     <span class="text-[9px] ml-2 text-slate-500 uppercase editable-field" contenteditable="true">(Pagado)</span>
                                 </td>
                                 <td class="px-6 py-5">
-                                    <div class="flex flex-wrap gap-2">
+                                    <div class="flex gap-2">
                                         <span class="text-[9px] bg-white/10 px-2 py-1.5 rounded-md border border-white/10 editable-field" contenteditable="true">DNI.PDF</span>
                                         <span class="text-[9px] bg-white/10 px-2 py-1.5 rounded-md border border-white/10 editable-field" contenteditable="true">TITULO.JPG</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-5">
-                                    <!-- BOTÓN APROBAR FUNCIONAL -->
-                                    <button class="btn-approve bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold px-5 py-2 rounded-lg text-xs transition-all shadow-lg flex items-center gap-1">
-                                        <i data-lucide="check" class="w-3 h-3"></i>
-                                        <span>Aprobar</span>
+                                    <button class="btn-approve bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold px-5 py-2 rounded-lg text-xs transition-all shadow-lg">
+                                        Aprobar
                                     </button>
                                 </td>
                             </tr>
@@ -484,199 +504,295 @@
                 </div>
             </section>
             
-            <!-- BOTÓN DE NAVEGACIÓN A INDEX - EXPLÍCITO -->
-            <div class="mt-8 flex justify-end">
-                <a href="index.html" class="group px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all flex items-center gap-3">
-                    <i data-lucide="eye" class="w-4 h-4 text-cyan-400"></i>
-                    <span class="text-sm font-medium">Ver cambios en el sitio público</span>
-                    <i data-lucide="arrow-right" class="w-4 h-4 text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
-                </a>
+            <!-- BARRA DE ESTADO DE GUARDADO -->
+            <div class="mt-8 p-4 bg-white/5 rounded-xl border border-white/10 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="database" class="w-4 h-4 text-cyan-400"></i>
+                    <span class="text-xs text-slate-400">Estado de sincronización:</span>
+                    <span id="sync-status" class="text-xs font-bold text-emerald-400">✓ Todos los cambios guardados</span>
+                </div>
+                <div class="text-[10px] text-slate-500">
+                    Último guardado: <span id="last-saved">hace unos segundos</span>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- SISTEMA DE BOTONES FUNCIONALES Y SINCRONIZACIÓN -->
+    <!-- ===== SISTEMA COMPLETO - CON PERSISTENCIA REAL ===== -->
     <script>
         (function() {
             "use strict";
 
             // ================================================
-            // TODOS LOS BOTONES SON FUNCIONALES
+            // SISTEMA DE PERSISTENCIA - GUARDADO REAL
             // ================================================
 
-            // Inicializar Lucide
+            // 1. Inicializar Lucide
             lucide.createIcons();
 
-            // 1. TOAST NOTIFICATION
+            // 2. TOAST NOTIFICATION
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toast-message');
+            const syncStatus = document.getElementById('sync-status');
+            const lastSaved = document.getElementById('last-saved');
 
-            function showToast(message, type = 'success') {
-                toastMessage.textContent = message;
+            function showToast(message, isSuccess = true) {
+                toastMessage.innerHTML = isSuccess ? '✅ ' + message : '❌ ' + message;
                 toast.classList.add('show');
                 setTimeout(() => {
                     toast.classList.remove('show');
                 }, 3000);
             }
 
-            // 2. BOTÓN GUARDAR TODO - FUNCIONAL
-            const btnSaveAll = document.getElementById('btn-save-all');
-            if (btnSaveAll) {
-                btnSaveAll.addEventListener('click', function() {
-                    // Recopilar todos los campos editables
-                    const changes = [];
-                    document.querySelectorAll('.editable-field[contenteditable="true"]').forEach(el => {
-                        const field = el.dataset.field;
-                        const value = el.innerText.trim();
-                        if (field) {
-                            changes.push({ field, value });
-                            
-                            // SIMULAR ACTUALIZACIÓN EN SUPABASE
-                            // Enviar a otras pestañas (index)
-                            localStorage.setItem('remaep-config-update', JSON.stringify({
-                                field: field,
-                                value: value,
-                                timestamp: Date.now()
-                            }));
-                        }
-                    });
-                    
-                    showToast('✓ Cambios guardados y sincronizados con el sitio público');
-                    console.log('Cambios guardados:', changes);
-                });
+            // ================================================
+            // SISTEMA DE FOTO - COMPLETAMENTE FUNCIONAL
+            // ================================================
+            
+            const photoUpload = document.getElementById('photo-upload');
+            const photoPreview = document.getElementById('photo-preview');
+            const photoPlaceholder = document.getElementById('photo-placeholder');
+            const carnetPhotoImg = document.getElementById('carnet-photo-img');
+            const carnetPhotoIcon = document.getElementById('carnet-photo-icon');
+            const photoFilename = document.getElementById('photo-filename');
+
+            // Cargar foto guardada al iniciar
+            const savedPhoto = localStorage.getItem('remaep_foto_profesional');
+            if (savedPhoto) {
+                photoPreview.src = savedPhoto;
+                photoPreview.classList.remove('hidden');
+                photoPlaceholder.classList.add('hidden');
+                carnetPhotoImg.src = savedPhoto;
+                carnetPhotoImg.classList.remove('hidden');
+                carnetPhotoIcon.classList.add('hidden');
+                photoFilename.textContent = 'Foto cargada: ' + (localStorage.getItem('remaep_foto_nombre') || 'foto.jpg');
             }
 
-            // 3. BOTÓN CERRAR SESIÓN - FUNCIONAL
-            const btnLogout = document.getElementById('btn-logout');
-            if (btnLogout) {
-                btnLogout.addEventListener('click', function() {
-                    // Confirmación
-                    if (confirm('¿Cerrar sesión de administrador?')) {
-                        showToast('Sesión cerrada correctamente');
-                        // Redirigir al index después de 1 segundo
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 1000);
+            // Evento de cambio de foto
+            photoUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validar tipo
+                    if (!file.type.startsWith('image/')) {
+                        showToast('Solo se permiten imágenes', false);
+                        return;
                     }
-                });
-            }
+                    
+                    // Validar tamaño (5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        showToast('La imagen no puede superar 5MB', false);
+                        return;
+                    }
 
-            // 4. BOTONES DE NAVEGACIÓN - FUNCIONALES
-            // Dashboard
-            document.getElementById('nav-dashboard')?.addEventListener('click', function(e) {
-                e.preventDefault();
-                showToast('Dashboard - Vista principal');
-                // Aquí iría la lógica de cambio de vista
-            });
-
-            // Homologaciones
-            document.getElementById('nav-homologaciones')?.addEventListener('click', function(e) {
-                e.preventDefault();
-                showToast('Navegando a Homologaciones');
-                // Scroll a la tabla
-                document.querySelector('.glass-panel.rounded-3xl')?.scrollIntoView({ 
-                    behavior: 'smooth' 
-                });
-            });
-
-            // Branding
-            document.getElementById('nav-branding')?.addEventListener('click', function(e) {
-                e.preventDefault();
-                showToast('Editando Branding y Logos');
-                document.getElementById('panel-branding')?.scrollIntoView({ 
-                    behavior: 'smooth' 
-                });
-            });
-
-            // Precios
-            document.getElementById('nav-precios')?.addEventListener('click', function(e) {
-                e.preventDefault();
-                showToast('Configuración de Precios');
-                document.getElementById('panel-precios')?.scrollIntoView({ 
-                    behavior: 'smooth' 
-                });
-            });
-
-            // Contacto
-            document.getElementById('nav-contacto')?.addEventListener('click', function(e) {
-                e.preventDefault();
-                showToast('Editando Información de Contacto');
-                // Scroll a la sección de contacto dentro del panel
-                const contactSection = document.querySelector('.border-t.border-white\\/10 h4');
-                if (contactSection) {
-                    contactSection.scrollIntoView({ behavior: 'smooth' });
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const imageData = event.target.result;
+                        
+                        // Guardar en localStorage
+                        localStorage.setItem('remaep_foto_profesional', imageData);
+                        localStorage.setItem('remaep_foto_nombre', file.name);
+                        
+                        // Actualizar preview
+                        photoPreview.src = imageData;
+                        photoPreview.classList.remove('hidden');
+                        photoPlaceholder.classList.add('hidden');
+                        
+                        // Actualizar carnet
+                        carnetPhotoImg.src = imageData;
+                        carnetPhotoImg.classList.remove('hidden');
+                        carnetPhotoIcon.classList.add('hidden');
+                        
+                        // Mostrar nombre
+                        photoFilename.textContent = '📸 ' + file.name;
+                        
+                        showToast('Foto subida correctamente');
+                        updateSyncStatus('Foto actualizada', true);
+                    };
+                    reader.readAsDataURL(file);
                 }
             });
 
-            // 5. BOTONES DE LA TABLA
-            // Botón Filtrar
-            document.getElementById('btn-filtrar')?.addEventListener('click', function() {
-                showToast('Filtrar solicitudes - Próximamente');
+            // ================================================
+            // SISTEMA DE GUARDADO - MÚLTIPLES BOTONES
+            // ================================================
+
+            // Función principal de guardado
+            function guardarTodosLosCambios() {
+                const cambios = [];
+                
+                // 1. Guardar campos editables del carnet
+                const campos = {
+                    'card_nombre': document.getElementById('card-nombre')?.innerText || '',
+                    'card_dni': document.getElementById('card-dni')?.innerText || '',
+                    'card_matricula': document.getElementById('card-matricula')?.innerText || '',
+                    'card_vencimiento': document.getElementById('card-vencimiento')?.innerText || '',
+                    'precio_inicial': document.getElementById('precio-inicial')?.innerText || '',
+                    'precio_inicial_periodo': document.getElementById('precio-inicial-periodo')?.innerText || '',
+                    'precio_inicial_desc': document.getElementById('precio-inicial-desc')?.innerText || '',
+                    'precio_renovacion': document.getElementById('precio-renovacion')?.innerText || '',
+                    'precio_renovacion_periodo': document.getElementById('precio-renovacion-periodo')?.innerText || '',
+                    'precio_renovacion_desc': document.getElementById('precio-renovacion-desc')?.innerText || ''
+                };
+
+                // Guardar cada campo
+                Object.entries(campos).forEach(([key, value]) => {
+                    localStorage.setItem(`remaep_${key}`, value);
+                    cambios.push({ campo: key, valor: value });
+                });
+
+                // 2. Guardar todos los campos editable-field
+                document.querySelectorAll('.editable-field[contenteditable="true"]').forEach(el => {
+                    const id = el.id;
+                    if (id) {
+                        localStorage.setItem(`remaep_${id}`, el.innerText.trim());
+                    }
+                });
+
+                // 3. Sincronizar con Index (localStorage event)
+                localStorage.setItem('remaep_last_update', JSON.stringify({
+                    timestamp: Date.now(),
+                    cambios: cambios,
+                    foto: localStorage.getItem('remaep_foto_profesional') || null
+                }));
+
+                // 4. Actualizar UI
+                const ahora = new Date();
+                const hora = ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                lastSaved.textContent = hora;
+                syncStatus.innerHTML = '✓ Todos los cambios guardados';
+                syncStatus.className = 'text-xs font-bold text-emerald-400';
+                
+                showToast('Datos guardados correctamente');
+                
+                // Disparar evento para otras pestañas
+                window.dispatchEvent(new CustomEvent('remaep-datos-actualizados', {
+                    detail: { timestamp: Date.now() }
+                }));
+                
+                return cambios;
+            }
+
+            // 3. BOTONES DE GUARDADO
+            const btnSaveHeader = document.getElementById('btn-save-header');
+            const btnSaveFloat = document.getElementById('btn-save-float');
+
+            btnSaveHeader.addEventListener('click', function() {
+                guardarTodosLosCambios();
             });
 
-            // Botón Nuevo
-            document.getElementById('btn-nuevo')?.addEventListener('click', function() {
+            btnSaveFloat.addEventListener('click', function() {
+                guardarTodosLosCambios();
+                // Animación extra
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => this.style.transform = 'scale(1)', 200);
+            });
+
+            // 4. AUTO-SAVE (opcional, cada 30 segundos)
+            setInterval(() => {
+                guardarTodosLosCambios();
+            }, 30000);
+
+            // 5. Cargar datos guardados al iniciar
+            function cargarDatosGuardados() {
+                // Cargar nombre
+                const nombre = localStorage.getItem('remaep_card_nombre');
+                if (nombre) document.getElementById('card-nombre').innerText = nombre;
+                
+                // Cargar DNI
+                const dni = localStorage.getItem('remaep_card_dni');
+                if (dni) document.getElementById('card-dni').innerText = dni;
+                
+                // Cargar matrícula
+                const matricula = localStorage.getItem('remaep_card_matricula');
+                if (matricula) document.getElementById('card-matricula').innerText = matricula;
+                
+                // Cargar vencimiento
+                const vencimiento = localStorage.getItem('remaep_card_vencimiento');
+                if (vencimiento) document.getElementById('card-vencimiento').innerText = vencimiento;
+                
+                // Cargar precios
+                const precioInicial = localStorage.getItem('remaep_precio_inicial');
+                if (precioInicial) document.getElementById('precio-inicial').innerText = precioInicial;
+                
+                const precioRenovacion = localStorage.getItem('remaep_precio_renovacion');
+                if (precioRenovacion) document.getElementById('precio-renovacion').innerText = precioRenovacion;
+                
+                // Actualizar última sincronización
+                const lastUpdate = localStorage.getItem('remaep_last_update');
+                if (lastUpdate) {
+                    try {
+                        const data = JSON.parse(lastUpdate);
+                        const fecha = new Date(data.timestamp);
+                        lastSaved.textContent = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                    } catch (e) {}
+                }
+            }
+
+            cargarDatosGuardados();
+
+            // 6. BOTONES DE NAVEGACIÓN
+            document.getElementById('nav-dashboard')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                showToast('Dashboard - Vista principal');
+            });
+
+            document.getElementById('nav-homologaciones')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector('.glass-panel.rounded-3xl')?.scrollIntoView({ behavior: 'smooth' });
+                showToast('Navegando a Homologaciones');
+            });
+
+            document.getElementById('nav-branding')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector('.glass-panel')?.scrollIntoView({ behavior: 'smooth' });
+                showToast('Editando Branding');
+            });
+
+            // 7. BOTÓN LOGOUT
+            document.getElementById('btn-logout')?.addEventListener('click', () => {
+                if (confirm('¿Cerrar sesión?')) {
+                    showToast('Sesión cerrada');
+                    setTimeout(() => window.location.href = 'index.html', 1000);
+                }
+            });
+
+            // 8. BOTONES DE TABLA
+            document.getElementById('btn-filtrar')?.addEventListener('click', () => {
+                showToast('Filtro de homologaciones');
+            });
+
+            document.getElementById('btn-nuevo')?.addEventListener('click', () => {
                 showToast('Crear nueva homologación');
             });
 
-            // Botones Aprobar
             document.querySelectorAll('.btn-approve').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
+                btn.addEventListener('click', function() {
                     const row = this.closest('tr');
-                    const nombre = row?.querySelector('.font-bold.text-base')?.innerText || 'Profesional';
+                    const nombre = row?.querySelector('.font-bold')?.innerText || 'Profesional';
                     showToast(`✅ Homologación aprobada: ${nombre}`);
-                    
-                    // Cambiar visualmente el botón
                     this.innerHTML = '<i data-lucide="check-circle" class="w-3 h-3"></i> Aprobado';
-                    this.classList.remove('from-cyan-500', 'to-blue-500');
-                    this.classList.add('from-emerald-500', 'to-teal-500', 'opacity-75');
                     this.disabled = true;
-                    
+                    this.classList.add('opacity-50');
                     lucide.createIcons();
                 });
             });
 
-            // 6. AUTO-SAVE EN CAMPOS EDITABLES
+            // 9. ACTUALIZAR ESTADO DE SINCRONIZACIÓN
+            function updateSyncStatus(message, isSaved = true) {
+                if (syncStatus) {
+                    syncStatus.innerHTML = isSaved ? '✓ ' + message : '⚠️ ' + message;
+                    syncStatus.className = isSaved ? 'text-xs font-bold text-emerald-400' : 'text-xs font-bold text-amber-400';
+                }
+            }
+
+            // Detectar cambios no guardados
             document.querySelectorAll('.editable-field[contenteditable="true"]').forEach(el => {
-                el.addEventListener('blur', function() {
-                    const field = this.dataset.field;
-                    const value = this.innerText.trim();
-                    
-                    if (field) {
-                        // Guardar automáticamente
-                        localStorage.setItem('remaep-config-update', JSON.stringify({
-                            field: field,
-                            value: value,
-                            timestamp: Date.now()
-                        }));
-                        
-                        // Pequeño indicador visual
-                        this.style.backgroundColor = 'rgba(0, 229, 255, 0.1)';
-                        setTimeout(() => {
-                            this.style.backgroundColor = '';
-                        }, 500);
-                    }
+                el.addEventListener('input', () => {
+                    syncStatus.innerHTML = '⚠️ Hay cambios sin guardar';
+                    syncStatus.className = 'text-xs font-bold text-amber-400';
                 });
             });
 
-            // 7. SIMULAR CARGA DESDE SUPABASE (demo)
-            // Escuchar cambios desde otras pestañas
-            window.addEventListener('storage', function(e) {
-                if (e.key === 'remaep-config-update') {
-                    try {
-                        const update = JSON.parse(e.newValue);
-                        // Actualizar campos locales si existen
-                        document.querySelectorAll(`.editable-field[data-field="${update.field}"]`).forEach(el => {
-                            if (el.innerText !== update.value) {
-                                el.innerText = update.value;
-                            }
-                        });
-                    } catch (e) {}
-                }
-            });
-
-            // 8. SOPORTE REDUCED MOTION
+            // 10. SOPORTE REDUCED MOTION
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 document.documentElement.style.setProperty('animation', 'none');
             }
