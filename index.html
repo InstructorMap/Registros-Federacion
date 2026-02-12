@@ -2,22 +2,34 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REMAEP 2026 | Registro Nacional Oficial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>REMAEP 2026 · Registro Nacional de Matrícula Profesional</title>
+    <meta name="description" content="Plataforma oficial de validación y homologación de matrículas profesionales. Trazabilidad blockchain y billetera educativa digital.">
+    <meta name="author" content="REMAEP - Red Nacional de Matrículas">
+    <meta name="theme-color" content="#000b1a">
+    
+    <!-- Recursos críticos optimizados -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <!-- Estilos críticos inline para FOUT reducido -->
     <style>
+        /* Reset y configuración base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #000b1a; /* Navy Profundo */
+            font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at 20% 30%, #001a2c, #000a14);
             color: white;
             overflow-x: hidden;
-            margin: 0;
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Fondo de Circuitos Animados */
+        /* Fondo de circuitos tecnológicos – versión optimizada y con animación sutil */
         .circuit-bg {
             position: fixed;
             top: 0;
@@ -25,130 +37,302 @@
             width: 100%;
             height: 100%;
             z-index: 0;
-            opacity: 0.15;
+            opacity: 0.2;
             background-image: 
-                linear-gradient(to right, rgba(0, 229, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 229, 255, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
+                linear-gradient(to right, rgba(0, 229, 255, 0.12) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 229, 255, 0.12) 1px, transparent 1px),
+                radial-gradient(circle at 40% 50%, rgba(0, 200, 255, 0.08) 0%, transparent 30%),
+                radial-gradient(circle at 80% 20%, rgba(0, 150, 255, 0.06) 0%, transparent 35%);
+            background-size: 55px 55px, 55px 55px, 100% 100%, 100% 100%;
+            pointer-events: none;
+            animation: pulse-grid 10s infinite alternate ease-in-out;
         }
 
+        @keyframes pulse-grid {
+            0% { opacity: 0.18; background-size: 55px 55px, 55px 55px, 100% 100%, 100% 100%; }
+            100% { opacity: 0.25; background-size: 58px 58px, 58px 58px, 100% 100%, 100% 100%; }
+        }
+
+        /* Línea de escaneo premium */
         .glow-line {
             position: absolute;
-            background: linear-gradient(90deg, transparent, #00e5ff, transparent);
-            height: 2px;
-            width: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.6), transparent);
+            height: 3px;
+            width: 80%;
+            left: 10%;
             top: -10%;
-            animation: scan 8s linear infinite;
+            border-radius: 100%;
+            filter: blur(2px);
+            animation: scan 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            box-shadow: 0 0 20px #00e5ff;
         }
 
         @keyframes scan {
-            0% { transform: translateY(-10%); }
-            100% { transform: translateY(110vh); }
+            0% { transform: translateY(-10vh) scaleX(0.8); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(120vh) scaleX(1.2); opacity: 0; }
         }
 
+        /* Tarjetas vidrio esmerilado con micro-perfiles */
         .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+            background: rgba(10, 25, 45, 0.65);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px -10px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,229,255,0.05) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.6s;
+            pointer-events: none;
         }
 
         .glass-card:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(20, 45, 70, 0.75);
             border-color: #00e5ff;
-            transform: translateY(-5px);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 20px 35px -10px rgba(0, 229, 255, 0.3);
         }
 
-        .text-glow {
-            text-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+        .glass-card:hover::after {
+            opacity: 1;
         }
+
+        /* Efecto de glow en textos principales */
+        .text-glow {
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+        }
+
+        .text-glow-strong {
+            text-shadow: 0 0 30px rgba(0, 229, 255, 0.8);
+        }
+
+        /* Animaciones de entrada */
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fade-in-up 0.9s ease-out forwards;
+        }
+
+        /* Mejora de input campo con brillo */
+        .input-glow:focus-within {
+            box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.5), 0 0 30px rgba(0, 229, 255, 0.2);
+            border-color: #00e5ff;
+        }
+
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000e1a; }
+        ::-webkit-scrollbar-thumb { background: #00a6b2; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00e5ff; }
     </style>
 </head>
-<body>
+<body class="antialiased relative">
 
-    <div class="circuit-bg">
+    <!-- Fondo dinámico con capas -->
+    <div class="circuit-bg" aria-hidden="true">
         <div class="glow-line"></div>
     </div>
 
-    <div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        
-        <header class="mb-12 animate-fade-in">
-            <div class="w-24 h-24 md:w-32 md:h-32 mx-auto bg-white/10 rounded-full border border-cyan-400/30 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(0,229,255,0.2)]">
-                <i data-lucide="shield" class="w-12 h-12 md:w-16 md:h-16 text-cyan-400"></i>
+    <!-- Overlay radial para profundidad -->
+    <div class="fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,50,80,0.2),transparent_70%)] pointer-events-none z-0" aria-hidden="true"></div>
+
+    <!-- Contenido principal con jerarquía semántica mejorada -->
+    <main class="relative z-20 min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-12 md:py-16 max-w-7xl mx-auto">
+
+        <!-- Cabecera con identidad visual reforzada -->
+        <header class="text-center mb-10 md:mb-14 animate-fade-in w-full">
+            <div class="relative inline-flex mb-6">
+                <div class="absolute inset-0 bg-cyan-500/20 blur-3xl rounded-full"></div>
+                <div class="relative w-28 h-28 md:w-36 md:h-36 bg-gradient-to-br from-cyan-400/20 to-blue-600/20 rounded-full border-2 border-cyan-400/40 flex items-center justify-center shadow-[0_0_50px_rgba(0,229,255,0.3)] backdrop-blur-sm">
+                    <i data-lucide="shield" class="w-14 h-14 md:w-16 md:h-16 text-cyan-300 drop-shadow-[0_0_12px_rgba(0,229,255,0.8)]" stroke-width="1.8"></i>
+                </div>
             </div>
-            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tighter mb-2 text-glow">
-                REMAEP <span class="text-cyan-400">2026</span>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-2 text-white drop-shadow-lg">
+                REMAEP <span class="text-cyan-300 text-glow-strong">2026</span>
             </h1>
-            <p class="text-slate-400 text-xs md:text-sm uppercase tracking-[0.3em] font-bold">
-                Registro Nacional de Matrícula Profesional [cite: 5, 103]
+            <p class="text-slate-400 text-xs md:text-sm uppercase tracking-[0.35em] font-semibold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-slate-300">
+                Registro Nacional de Matrícula Profesional · [cite: 5, 103]
             </p>
+            <!-- Sello de trazabilidad -->
+            <div class="flex justify-center mt-4 gap-2 text-[10px] uppercase text-cyan-400/70 tracking-widest">
+                <span class="px-3 py-1 border border-cyan-400/30 rounded-full bg-cyan-950/30">Blockchain</span>
+                <span class="px-3 py-1 border border-cyan-400/30 rounded-full bg-cyan-950/30">Trazabilidad</span>
+                <span class="px-3 py-1 border border-cyan-400/30 rounded-full bg-cyan-950/30">INPI</span>
+            </div>
         </header>
 
-        <section class="w-full max-w-2xl mb-16">
-            <form id="searchForm" class="flex flex-col md:flex-row gap-3 p-2 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-xl shadow-2xl">
-                <div class="relative flex-1 flex items-center px-4">
-                    <i data-lucide="search" class="text-slate-500 mr-3"></i>
+        <!-- Bloque de búsqueda: núcleo funcional -->
+        <section class="w-full max-w-3xl mb-16 md:mb-20 px-2 animate-fade-in" style="animation-delay: 0.15s;">
+            <form id="searchForm" class="group relative flex flex-col sm:flex-row gap-4 p-2 sm:p-1.5 bg-white/5 backdrop-blur-xl rounded-2xl sm:rounded-full border border-white/10 shadow-2xl input-glow transition-all">
+                <div class="relative flex-1 flex items-center px-5 py-2 sm:py-0">
+                    <i data-lucide="search" class="text-cyan-400/70 mr-3 w-5 h-5 flex-shrink-0" stroke-width="2"></i>
+                    <label for="dniInput" class="sr-only">Documento Nacional de Identidad</label>
                     <input 
                         type="text" 
                         id="dniInput"
-                        placeholder="Ingrese DNI para validar..." 
+                        placeholder="Ingrese DNI para validar matrícula..." 
                         required
-                        class="w-full bg-transparent py-4 text-white placeholder:text-slate-500 outline-none"
+                        aria-label="DNI para validación"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        class="w-full bg-transparent py-4 sm:py-5 text-white placeholder:text-slate-500/80 outline-none text-base font-medium"
                     >
                 </div>
-                <button type="submit" class="bg-cyan-500 hover:bg-cyan-400 text-navy-900 font-extrabold px-10 py-4 rounded-2xl transition-all uppercase text-sm">
-                    Validar Matrícula
+                <button type="submit" class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-extrabold px-10 py-4 rounded-2xl sm:rounded-full transition-all uppercase text-sm tracking-wider shadow-lg hover:shadow-cyan-500/30 flex items-center justify-center gap-2 group">
+                    <span>Validar Matrícula</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </form>
-            <p class="text-slate-500 text-[10px] mt-4 uppercase tracking-widest">
+            <p class="text-slate-600 text-[11px] mt-5 uppercase tracking-[0.25em] font-bold text-center flex items-center justify-center gap-2">
+                <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
                 Trazabilidad garantizada mediante tecnología Blockchain [cite: 107, 141]
+                <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
             </p>
         </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
-            <a href="homologar.html" class="glass-card p-8 rounded-3xl text-left">
-                <i data-lucide="file-check" class="text-cyan-400 mb-4 w-10 h-10"></i>
-                <h3 class="text-xl font-bold mb-2">Homologación</h3>
-                <p class="text-slate-400 text-sm">Obtén tu credencial oficial válida en todo el país[cite: 13, 157].</p>
+        <!-- Servicios principales – cards con accesibilidad táctil mejorada -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-7 w-full max-w-6xl animate-fade-in" style="animation-delay: 0.3s;">
+            <a href="homologar.html" class="glass-card p-7 rounded-3xl text-left focus-visible:ring-2 focus-visible:ring-cyan-400 outline-none" aria-label="Homologación de títulos">
+                <div class="flex items-start gap-4">
+                    <div class="p-3 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-2xl">
+                        <i data-lucide="file-check" class="text-cyan-300 w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-1 text-white">Homologación</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">Obtén tu credencial oficial válida en todo el país [cite: 13, 157].</p>
+                    </div>
+                </div>
+                <span class="absolute bottom-4 right-5 text-cyan-400/60 text-xs">→</span>
             </a>
 
-            <a href="billetera.html" class="glass-card p-8 rounded-3xl text-left">
-                <i data-lucide="wallet" class="text-emerald-400 mb-4 w-10 h-10"></i>
-                <h3 class="text-xl font-bold mb-2">Billetera Educativa</h3>
-                <p class="text-slate-400 text-sm">Acceso digital a tus diplomas y carnet con QR[cite: 20, 131, 132].</p>
+            <a href="billetera.html" class="glass-card p-7 rounded-3xl text-left focus-visible:ring-2 focus-visible:ring-emerald-400 outline-none">
+                <div class="flex items-start gap-4">
+                    <div class="p-3 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-2xl">
+                        <i data-lucide="wallet" class="text-emerald-300 w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-1 text-white">Billetera Educativa</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">Acceso digital a diplomas y carnet con QR [cite: 20, 131, 132].</p>
+                    </div>
+                </div>
+                <span class="absolute bottom-4 right-5 text-emerald-400/60 text-xs">→</span>
             </a>
 
-            <a href="nosotros.html" class="glass-card p-8 rounded-3xl text-left">
-                <i data-lucide="globe" class="text-blue-400 mb-4 w-10 h-10"></i>
-                <h3 class="text-xl font-bold mb-2">Institucional</h3>
-                <p class="text-slate-400 text-sm">Aval de la Asociación Argentina para la Salud (AAPS)[cite: 79, 144].</p>
+            <a href="nosotros.html" class="glass-card p-7 rounded-3xl text-left focus-visible:ring-2 focus-visible:ring-blue-400 outline-none">
+                <div class="flex items-start gap-4">
+                    <div class="p-3 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-2xl">
+                        <i data-lucide="globe" class="text-blue-300 w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-1 text-white">Institucional</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">Aval de la Asociación Argentina para la Salud (AAPS) [cite: 79, 144].</p>
+                    </div>
+                </div>
+                <span class="absolute bottom-4 right-5 text-blue-400/60 text-xs">→</span>
             </a>
         </div>
 
-        <footer class="mt-20 py-8 border-t border-white/5 w-full max-w-5xl">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-[10px] uppercase tracking-widest font-bold">
-                <p>© 2026 REMAEP • MARCA REGISTRADA INPI </p>
-                <div class="flex gap-6">
-                    <span>Inversión Inicial: $50.000 [cite: 152]</span>
-                    <span>Renovación: $30.000 [cite: 153]</span>
-                </div>
+        <!-- Footer con información de inversión y renovación -->
+        <footer class="mt-20 md:mt-24 pt-8 border-t border-white/10 w-full max-w-6xl text-slate-400 text-[11px] uppercase tracking-wider flex flex-col md:flex-row justify-between items-center gap-5 font-semibold">
+            <div class="flex flex-wrap justify-center gap-6">
+                <span class="flex items-center gap-2"><i data-lucide="badge-check" class="w-4 h-4 text-cyan-400"></i> Marca Registrada INPI</span>
+                <span class="flex items-center gap-2"><i data-lucide="coins" class="w-4 h-4 text-amber-400"></i> Inversión Inicial: $50.000 [cite: 152]</span>
+                <span class="flex items-center gap-2"><i data-lucide="refresh-cw" class="w-4 h-4 text-sky-400"></i> Renovación: $30.000 [cite: 153]</span>
+            </div>
+            <div class="text-slate-500">
+                © 2026 REMAEP – Todos los derechos reservados
             </div>
         </footer>
-    </div>
+    </main>
 
+    <!-- Script optimizado con validación y mejor UX -->
     <script>
-        // Inicializar Iconos
-        lucide.createIcons();
+        (function() {
+            "use strict";
 
-        // Lógica de Redirección del Validador
-        document.getElementById('searchForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const dni = document.getElementById('dniInput').value;
-            if (dni) {
-                // Redirige a la subpágina del validador que crearemos
-                window.location.href = `validador.html?dni=${dni}`;
+            // Inicializar iconos Lucide con configuración optimizada
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons({
+                    attrs: {
+                        'stroke-width': 1.7,
+                        'aria-hidden': 'true'
+                    }
+                });
             }
-        });
+
+            // Manejo del formulario de búsqueda
+            const searchForm = document.getElementById('searchForm');
+            const dniInput = document.getElementById('dniInput');
+
+            if (searchForm && dniInput) {
+                // Restringir solo números para DNI (UX mejorada)
+                dniInput.addEventListener('keypress', function(e) {
+                    const char = String.fromCharCode(e.which);
+                    if (!/[0-9]/.test(char)) {
+                        e.preventDefault();
+                    }
+                });
+
+                // Evitar pegado de texto no numérico
+                dniInput.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                    const numbers = pasted.replace(/\D/g, '');
+                    this.value = numbers;
+                });
+
+                // Submit redirigiendo a validador con DNI limpio
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const dni = dniInput.value.trim().replace(/\D/g, '');
+                    
+                    if (dni.length === 0) {
+                        // Feedback visual amigable
+                        dniInput.classList.add('border', 'border-red-500', 'placeholder-red-400');
+                        dniInput.placeholder = 'Ingrese un DNI válido';
+                        setTimeout(() => {
+                            dniInput.classList.remove('border', 'border-red-500', 'placeholder-red-400');
+                            dniInput.placeholder = 'Ingrese DNI para validar matrícula...';
+                        }, 2500);
+                        return;
+                    }
+                    
+                    if (dni.length < 7 || dni.length > 8) {
+                        alert('El DNI debe tener entre 7 y 8 dígitos');
+                        return;
+                    }
+                    
+                    window.location.href = `validador.html?dni=${dni}`;
+                });
+            }
+
+            // Soporte para reducirmotion (accesibilidad)
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.documentElement.style.setProperty('animation', 'none');
+                document.documentElement.style.setProperty('transition', 'none');
+            }
+        })();
     </script>
+
+    <!-- Micro optimización: precarga de página validador -->
+    <link rel="prefetch" href="validador.html" as="document">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </body>
 </html>
