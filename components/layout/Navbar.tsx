@@ -21,7 +21,9 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="relative w-10 h-10 bg-navy-800 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-navy-800/20">
+            <div className="relative w-10 h-10 bg-navy-800 rounded-xl flex items-center justify-center 
+                         transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg 
+                         group-hover:shadow-navy-800/20">
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div className="flex flex-col">
@@ -45,7 +47,8 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   className={`
-                    nav-link relative
+                    flex items-center space-x-2 px-3 py-2 text-sm font-medium
+                    transition-all duration-200 border-b-2
                     ${isActive 
                       ? 'border-navy-800 text-navy-800' 
                       : 'border-transparent text-slate-600 hover:text-navy-800 hover:border-navy-400'
@@ -54,9 +57,6 @@ export default function Navbar() {
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
-                  {isActive && (
-                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-navy-800 rounded-full" />
-                  )}
                 </Link>
               )
             })}
@@ -65,7 +65,8 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-600 hover:text-navy-800 hover:bg-slate-100 transition-colors"
+            className="md:hidden p-2 rounded-lg text-slate-600 hover:text-navy-800 
+                     hover:bg-slate-100 transition-colors"
           >
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -74,10 +75,14 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* Trust Badge */}
-          <div className="hidden lg:flex items-center space-x-3">
-            <span className="text-xs text-slate-500 font-medium px-3 py-1.5 bg-slate-50 rounded-full border border-slate-200">
-              Alta Distinción
+          {/* Sistema activo 24/7 - VERSIÓN CON VIDA */}
+          <div className="hidden lg:flex items-center">
+            <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-200">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              Sistema activo 24/7
             </span>
           </div>
         </div>
@@ -110,6 +115,15 @@ export default function Navbar() {
                 </Link>
               )
             })}
+            
+            {/* Mobile status indicator */}
+            <div className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-500 border-t border-slate-100 mt-2 pt-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>Sistema activo 24/7</span>
+            </div>
           </div>
         </nav>
       )}
