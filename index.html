@@ -4,300 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>REMAEP 2026 · Registro Nacional de Matrícula Profesional</title>
-    <meta name="description" content="Plataforma oficial de validación y homologación de matrículas profesionales. Trazabilidad blockchain y billetera educativa digital.">
+    <meta name="description" content="Plataforma oficial de validación y homologación de matrículas profesionales.">
     <meta name="theme-color" content="#000b1a">
     
-    <!-- Recursos críticos -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
+        /* ESTILOS CORE */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
             background: radial-gradient(circle at 20% 30%, #001a2c, #000a14);
             color: white;
             overflow-x: hidden;
             min-height: 100vh;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
         }
 
+        /* FONDO ANIMADO */
         .circuit-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            opacity: 0.18;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.18;
             background-image: 
                 linear-gradient(to right, rgba(0, 229, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 229, 255, 0.1) 1px, transparent 1px),
-                radial-gradient(circle at 40% 50%, rgba(0, 200, 255, 0.08) 0%, transparent 30%),
-                radial-gradient(circle at 80% 20%, rgba(0, 150, 255, 0.06) 0%, transparent 35%);
-            background-size: 55px 55px, 55px 55px, 100% 100%, 100% 100%;
+                linear-gradient(to bottom, rgba(0, 229, 255, 0.1) 1px, transparent 1px);
+            background-size: 55px 55px;
             pointer-events: none;
-            animation: pulse-grid 10s infinite alternate ease-in-out;
         }
 
-        @keyframes pulse-grid {
-            0% { opacity: 0.16; background-size: 55px 55px, 55px 55px, 100% 100%, 100% 100%; }
-            100% { opacity: 0.22; background-size: 58px 58px, 58px 58px, 100% 100%, 100% 100%; }
-        }
-
-        .glow-line {
-            position: absolute;
-            background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.6), transparent);
-            height: 3px;
-            width: 80%;
-            left: 10%;
-            top: -10%;
-            border-radius: 100%;
-            filter: blur(2px);
-            animation: scan 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-            box-shadow: 0 0 20px #00e5ff;
-        }
-
-        @keyframes scan {
-            0% { transform: translateY(-10vh) scaleX(0.8); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(120vh) scaleX(1.2); opacity: 0; }
-        }
-
+        /* CARD EFFECT */
         .glass-card {
             background: rgba(10, 25, 45, 0.65);
-            backdrop-filter: blur(12px) saturate(180%);
-            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(0, 229, 255, 0.15);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 25px -10px rgba(0,0,0,0.5);
-            position: relative;
-            overflow: hidden;
         }
-
         .glass-card:hover {
-            background: rgba(20, 45, 70, 0.75);
             border-color: #00e5ff;
             transform: translateY(-6px) scale(1.02);
             box-shadow: 0 20px 35px -10px rgba(0, 229, 255, 0.3);
         }
 
-        .text-glow {
-            text-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+        /* LOGO INSTITUCIONAL */
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
         }
 
-        .text-glow-strong {
-            text-shadow: 0 0 30px rgba(0, 229, 255, 0.8);
-        }
-
-        @keyframes fade-in-up {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-in {
-            animation: fade-in-up 0.9s ease-out forwards;
-        }
-
-        .input-glow:focus-within {
-            box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.5), 0 0 30px rgba(0, 229, 255, 0.2);
-            border-color: #00e5ff;
-        }
-
-        /* BOTONES FUNCIONALES */
+        /* BOTONES */
         .btn-primary {
             background: linear-gradient(135deg, #00e5ff, #0066ff);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 229, 255, 0.4); }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 229, 255, 0.4);
-        }
-
-        .btn-primary:active {
-            transform: translateY(1px);
-        }
-
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -20%;
-            width: 140%;
-            height: 200%;
-            background: rgba(255,255,255,0.2);
-            transform: rotate(45deg) translateX(-100%);
-            transition: transform 0.6s;
-        }
-
-        .btn-primary:hover::after {
-            transform: rotate(45deg) translateX(100%);
-        }
-
-        /* Tooltip de navegación */
-        .nav-tooltip {
-            position: relative;
-        }
-
-        .nav-tooltip:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: #00e5ff;
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            white-space: nowrap;
-            border: 1px solid #00e5ff;
-            z-index: 50;
-        }
+        /* ANIMACIONES */
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in-up 0.9s ease-out forwards; }
     </style>
 </head>
 <body class="antialiased relative">
 
-    <!-- Fondo dinámico -->
-    <div class="circuit-bg" aria-hidden="true">
-        <div class="glow-line"></div>
-    </div>
+    <div class="circuit-bg" aria-hidden="true"></div>
     <div class="fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,50,80,0.2),transparent_70%)] pointer-events-none z-0"></div>
 
-    <!-- CONTENIDO PRINCIPAL INDEX - SINCRONIZADO CON PANEL -->
-    <main class="relative z-20 min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-12 md:py-16 max-w-7xl mx-auto">
+    <main class="relative z-20 min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-12 max-w-7xl mx-auto">
 
-        <!-- HEADER DINÁMICO - EDITABLE DESDE PANEL -->
-        <header class="text-center mb-10 md:mb-14 animate-fade-in w-full">
+        <header class="text-center mb-14 animate-fade-in w-full">
             <div class="relative inline-flex mb-6">
                 <div class="absolute inset-0 bg-cyan-500/20 blur-3xl rounded-full"></div>
-                <div class="relative w-28 h-28 md:w-36 md:h-36 bg-gradient-to-br from-cyan-400/20 to-blue-600/20 rounded-full border-2 border-cyan-400/40 flex items-center justify-center shadow-[0_0_50px_rgba(0,229,255,0.3)] backdrop-blur-sm">
-                    <i data-lucide="shield" class="w-14 h-14 md:w-16 md:h-16 text-cyan-300 drop-shadow-[0_0_12px_rgba(0,229,255,0.8)]" stroke-width="1.8"></i>
+                <div id="dynamic-logo-container" class="relative w-32 h-32 bg-gradient-to-br from-cyan-400/20 to-blue-600/20 rounded-full border-2 border-cyan-400/40 flex items-center justify-center shadow-[0_0_50px_rgba(0,229,255,0.3)] backdrop-blur-sm overflow-hidden logo-container">
+                    <i data-lucide="shield" class="w-16 h-16 text-cyan-300 drop-shadow-[0_0_12px_rgba(0,229,255,0.8)]"></i>
                 </div>
             </div>
             <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-2 text-white drop-shadow-lg">
-                REMAEP <span id="index-year" class="text-cyan-300 text-glow-strong">2026</span>
+                REMAEP <span class="text-cyan-300">2026</span>
             </h1>
-            <p id="index-subtitle" class="text-slate-400 text-xs md:text-sm uppercase tracking-[0.35em] font-semibold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-slate-300">
-                Registro Nacional de Matrícula Profesional · [cite: 5, 103]
+            <p class="text-slate-400 text-xs md:text-sm uppercase tracking-[0.35em] font-semibold">
+                Registro Nacional de Matrícula Profesional
             </p>
-            <!-- Sellos dinámicos -->
-            <div id="index-badges" class="flex justify-center mt-4 gap-2 text-[10px] uppercase text-cyan-400/70 tracking-widest">
-                <span class="px-3 py-1 border border-cyan-400/30 rounded-full bg-cyan-950/30">Blockchain</span>
-                <span class="px-3 py-1 border border-cyan-400/30 rounded-full bg-cyan-950/30">Trazabilidad</span>
-                <span class="px-3 py-1 border border-cyan-400/30 rounded-full bg-cyan-950/30">INPI</span>
-            </div>
         </header>
 
-        <!-- BÚSQUEDA - FUNCIONAL CON VALIDADOR -->
-        <section class="w-full max-w-3xl mb-16 md:mb-20 px-2 animate-fade-in">
-            <form id="searchForm" class="group relative flex flex-col sm:flex-row gap-4 p-2 sm:p-1.5 bg-white/5 backdrop-blur-xl rounded-2xl sm:rounded-full border border-white/10 shadow-2xl input-glow transition-all">
-                <div class="relative flex-1 flex items-center px-5 py-2 sm:py-0">
-                    <i data-lucide="search" class="text-cyan-400/70 mr-3 w-5 h-5 flex-shrink-0"></i>
-                    <label for="dniInput" class="sr-only">Documento Nacional de Identidad</label>
-                    <input 
-                        type="text" 
-                        id="dniInput"
-                        placeholder="Ingrese DNI para validar matrícula..." 
-                        required
-                        aria-label="DNI para validación"
-                        inputmode="numeric"
-                        pattern="[0-9]*"
-                        class="w-full bg-transparent py-4 sm:py-5 text-white placeholder:text-slate-500/80 outline-none text-base font-medium"
-                    >
+        <section class="w-full max-w-3xl mb-20 px-2 animate-fade-in">
+            <form id="searchForm" class="flex flex-col sm:flex-row gap-4 p-2 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
+                <div class="relative flex-1 flex items-center px-5">
+                    <i data-lucide="search" class="text-cyan-400/70 mr-3 w-5 h-5"></i>
+                    <input type="text" id="dniInput" placeholder="Ingrese DNI para validar matrícula..." class="w-full bg-transparent py-4 text-white outline-none font-medium">
                 </div>
-                <button type="submit" id="btn-validar" class="btn-primary text-white font-extrabold px-10 py-4 rounded-2xl sm:rounded-full transition-all uppercase text-sm tracking-wider shadow-lg flex items-center justify-center gap-2 group">
-                    <span id="btn-validar-text">Validar Matrícula</span>
-                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                <button type="submit" class="btn-primary text-white font-extrabold px-10 py-4 rounded-xl uppercase text-sm tracking-wider flex items-center justify-center gap-2">
+                    Validar
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </button>
             </form>
-            <p id="search-footer" class="text-slate-600 text-[11px] mt-5 uppercase tracking-[0.25em] font-bold text-center flex items-center justify-center gap-2">
-                <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
-                Trazabilidad garantizada mediante tecnología Blockchain [cite: 107, 141]
-                <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
-            </p>
         </section>
 
-        <!-- CARDS DE SERVICIOS - CON BOTONES FUNCIONALES Y REDIRECCIÓN -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-7 w-full max-w-6xl animate-fade-in">
-            <!-- Card Homologación -->
-            <a href="homologar.html" id="card-homologacion" class="glass-card p-7 rounded-3xl text-left focus-visible:ring-2 focus-visible:ring-cyan-400 outline-none nav-tooltip" data-tooltip="Iniciar trámite de homologación">
+            <a href="homologar.html" class="glass-card p-7 rounded-3xl text-left relative group">
                 <div class="flex items-start gap-4">
-                    <div class="p-3 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-2xl">
-                        <i data-lucide="file-check" class="text-cyan-300 w-8 h-8"></i>
-                    </div>
+                    <div class="p-3 bg-cyan-400/20 rounded-2xl"><i data-lucide="file-check" class="text-cyan-300 w-8 h-8"></i></div>
                     <div>
-                        <h3 id="card-homologacion-title" class="text-xl font-bold mb-1 text-white">Homologación</h3>
-                        <p id="card-homologacion-desc" class="text-slate-300 text-sm leading-relaxed">Obtén tu credencial oficial válida en todo el país [cite: 13, 157].</p>
+                        <h3 class="text-xl font-bold mb-1 text-white">Homologación</h3>
+                        <p class="text-slate-300 text-sm">Obtén tu credencial oficial válida en todo el país.</p>
                     </div>
                 </div>
-                <span class="absolute bottom-4 right-5 text-cyan-400/60 text-xs group-hover:translate-x-1 transition-transform">→</span>
             </a>
 
-            <!-- Card Billetera Educativa -->
-            <a href="billetera.html" id="card-billetera" class="glass-card p-7 rounded-3xl text-left focus-visible:ring-2 focus-visible:ring-emerald-400 outline-none nav-tooltip" data-tooltip="Acceder a mi billetera digital">
+            <a href="billetera.html" class="glass-card p-7 rounded-3xl text-left relative group">
                 <div class="flex items-start gap-4">
-                    <div class="p-3 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-2xl">
-                        <i data-lucide="wallet" class="text-emerald-300 w-8 h-8"></i>
-                    </div>
+                    <div class="p-3 bg-emerald-400/20 rounded-2xl"><i data-lucide="wallet" class="text-emerald-300 w-8 h-8"></i></div>
                     <div>
-                        <h3 id="card-billetera-title" class="text-xl font-bold mb-1 text-white">Billetera Educativa</h3>
-                        <p id="card-billetera-desc" class="text-slate-300 text-sm leading-relaxed">Acceso digital a diplomas y carnet con QR [cite: 20, 131, 132].</p>
+                        <h3 class="text-xl font-bold mb-1 text-white">Billetera Educativa</h3>
+                        <p class="text-slate-300 text-sm">Acceso digital a diplomas y carnet con QR.</p>
                     </div>
                 </div>
-                <span class="absolute bottom-4 right-5 text-emerald-400/60 text-xs group-hover:translate-x-1 transition-transform">→</span>
             </a>
 
-            <!-- Card Institucional -->
-            <a href="nosotros.html" id="card-institucional" class="glass-card p-7 rounded-3xl text-left focus-visible:ring-2 focus-visible:ring-blue-400 outline-none nav-tooltip" data-tooltip="Información institucional">
+            <a href="nosotros.html" class="glass-card p-7 rounded-3xl text-left relative group">
                 <div class="flex items-start gap-4">
-                    <div class="p-3 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-2xl">
-                        <i data-lucide="globe" class="text-blue-300 w-8 h-8"></i>
-                    </div>
+                    <div class="p-3 bg-blue-400/20 rounded-2xl"><i data-lucide="globe" class="text-blue-300 w-8 h-8"></i></div>
                     <div>
-                        <h3 id="card-institucional-title" class="text-xl font-bold mb-1 text-white">Institucional</h3>
-                        <p id="card-institucional-desc" class="text-slate-300 text-sm leading-relaxed">Aval de la Asociación Argentina para la Salud (AAPS) [cite: 79, 144].</p>
+                        <h3 class="text-xl font-bold mb-1 text-white">Institucional</h3>
+                        <p class="text-slate-300 text-sm">Aval de la Asociación Argentina para la Salud (AAPS).</p>
                     </div>
                 </div>
-                <span class="absolute bottom-4 right-5 text-blue-400/60 text-xs group-hover:translate-x-1 transition-transform">→</span>
             </a>
         </div>
 
-        <!-- BOTÓN DE ACCESO AL PANEL ADMIN - FUNCIONAL -->
         <div class="mt-12 flex justify-center">
-            <a href="panel.html" id="btn-admin-access" class="group relative px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl backdrop-blur-sm transition-all flex items-center gap-3 nav-tooltip" data-tooltip="Acceso exclusivo administradores">
+            <a href="panel.html" class="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-3 text-sm font-bold uppercase hover:bg-white/10 transition-all">
                 <i data-lucide="shield" class="w-5 h-5 text-cyan-400"></i>
-                <span class="text-sm font-bold uppercase tracking-wider">Panel de Administración</span>
-                <i data-lucide="arrow-right" class="w-4 h-4 text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
-                <div class="absolute -top-2 -right-2 w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></div>
+                Panel de Administración
             </a>
         </div>
 
-        <!-- FOOTER - EDITABLE DESDE PANEL -->
-        <footer class="mt-20 md:mt-24 pt-8 border-t border-white/10 w-full max-w-6xl">
+        <footer class="mt-20 pt-8 border-t border-white/10 w-full max-w-6xl text-center md:text-left">
             <div class="flex flex-col md:flex-row justify-between items-center gap-5 text-slate-500 text-[11px] uppercase tracking-wider font-semibold">
                 <div class="flex flex-wrap justify-center gap-6">
-                    <span id="footer-copyright" class="flex items-center gap-2">
-                        <i data-lucide="badge-check" class="w-4 h-4 text-cyan-400"></i> 
-                        © 2026 REMAEP · Marca Registrada INPI
-                    </span>
-                    <span id="footer-inversion" class="flex items-center gap-2">
+                    <span class="flex items-center gap-2">© 2026 REMAEP</span>
+                    <span class="flex items-center gap-2">
                         <i data-lucide="coins" class="w-4 h-4 text-amber-400"></i> 
-                        Inversión Inicial: <span id="pricing-initial">$50.000</span> [cite: 152]
+                        Inversión: <span id="pricing-initial" class="text-slate-300">$50.000</span>
                     </span>
-                    <span id="footer-renovacion" class="flex items-center gap-2">
+                    <span class="flex items-center gap-2">
                         <i data-lucide="refresh-cw" class="w-4 h-4 text-sky-400"></i> 
-                        Renovación: <span id="pricing-renewal">$30.000</span> [cite: 153]
+                        Renovación: <span id="pricing-renewal" class="text-slate-300">$30.000</span>
                     </span>
                 </div>
-                <div id="footer-contact" class="text-slate-500 flex items-center gap-3">
+                <div class="flex items-center gap-3">
                     <i data-lucide="mail" class="w-3 h-3"></i>
                     <span id="contact-email">admin@remaep.gob.ar</span>
                 </div>
@@ -305,191 +160,66 @@
         </footer>
     </main>
 
-    <!-- SISTEMA DE SINCRONIZACIÓN CON PANEL + SUPABASE -->
     <script>
         (function() {
             "use strict";
 
-            // ================================================
-            // SISTEMA DE SINCRONIZACIÓN INDEX ↔ PANEL
-            // RECIBE ACTUALIZACIONES DESDE EL ADMIN
-            // ================================================
-
-            // 1. Inicializar Lucide
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons({
-                    attrs: { 'stroke-width': 1.7, 'aria-hidden': 'true' }
-                });
-            }
-
-            // 2. Estado inicial (se sobreescribirá desde Supabase)
-            window.INDEX_CONFIG = {
-                pricing: {
-                    initial: '$50.000',
-                    renewal: '$30.000'
-                },
-                contact: {
-                    email: 'admin@remaep.gob.ar',
-                    phone: '+54 11 4321-5678',
-                    address: 'Av. Corrientes 1234, CABA'
-                },
-                branding: {
-                    year: '2026',
-                    subtitle: 'Registro Nacional de Matrícula Profesional · [cite: 5, 103]'
-                },
-                cards: {
-                    homologacion: {
-                        title: 'Homologación',
-                        desc: 'Obtén tu credencial oficial válida en todo el país [cite: 13, 157].'
-                    },
-                    billetera: {
-                        title: 'Billetera Educativa',
-                        desc: 'Acceso digital a diplomas y carnet con QR [cite: 20, 131, 132].'
-                    },
-                    institucional: {
-                        title: 'Institucional',
-                        desc: 'Aval de la Asociación Argentina para la Salud (AAPS) [cite: 79, 144].'
-                    }
-                }
+            // 1. Mapa de Mapeo (ID Local -> Clave LocalStorage del Panel)
+            // Esto conecta el ID del Index con el ID que guarda el Panel
+            const DATA_MAP = {
+                'pricing-initial': 'remaep_precio-inicial',
+                'pricing-renewal': 'remaep_precio-renovacion',
+                'contact-email': 'remaep_contact-email' // Si el panel tuviera este campo
             };
 
-            // 3. Función para actualizar UI desde configuración
-            function updateIndexFromConfig() {
-                // Precios
-                const pricingInitial = document.getElementById('pricing-initial');
-                const pricingRenewal = document.getElementById('pricing-renewal');
-                if (pricingInitial) pricingInitial.textContent = window.INDEX_CONFIG.pricing.initial;
-                if (pricingRenewal) pricingRenewal.textContent = window.INDEX_CONFIG.pricing.renewal;
+            // 2. Función Maestra de Sincronización
+            function syncData() {
+                // A. Sincronizar Textos
+                for (const [domId, storageKey] of Object.entries(DATA_MAP)) {
+                    const value = localStorage.getItem(storageKey);
+                    const el = document.getElementById(domId);
+                    if (value && el) {
+                        el.textContent = value;
+                        // Efecto visual de actualización
+                        el.style.color = '#00e5ff';
+                        setTimeout(() => el.style.color = '', 500);
+                    }
+                }
+
+                // B. Sincronizar Logo Institucional
+                const logoData = localStorage.getItem('remaep_logo_institutional');
+                const logoContainer = document.getElementById('dynamic-logo-container');
                 
-                // Contacto
-                const contactEmail = document.getElementById('contact-email');
-                if (contactEmail) contactEmail.textContent = window.INDEX_CONFIG.contact.email;
-                
-                // Branding
-                const indexYear = document.getElementById('index-year');
-                const indexSubtitle = document.getElementById('index-subtitle');
-                if (indexYear) indexYear.textContent = window.INDEX_CONFIG.branding.year;
-                if (indexSubtitle) indexSubtitle.textContent = window.INDEX_CONFIG.branding.subtitle;
-                
-                // Cards
-                const cardHomTitle = document.getElementById('card-homologacion-title');
-                const cardHomDesc = document.getElementById('card-homologacion-desc');
-                const cardBillTitle = document.getElementById('card-billetera-title');
-                const cardBillDesc = document.getElementById('card-billetera-desc');
-                const cardInstTitle = document.getElementById('card-institucional-title');
-                const cardInstDesc = document.getElementById('card-institucional-desc');
-                
-                if (cardHomTitle) cardHomTitle.textContent = window.INDEX_CONFIG.cards.homologacion.title;
-                if (cardHomDesc) cardHomDesc.textContent = window.INDEX_CONFIG.cards.homologacion.desc;
-                if (cardBillTitle) cardBillTitle.textContent = window.INDEX_CONFIG.cards.billetera.title;
-                if (cardBillDesc) cardBillDesc.textContent = window.INDEX_CONFIG.cards.billetera.desc;
-                if (cardInstTitle) cardInstTitle.textContent = window.INDEX_CONFIG.cards.institucional.title;
-                if (cardInstDesc) cardInstDesc.textContent = window.INDEX_CONFIG.cards.institucional.desc;
+                if (logoData && logoContainer) {
+                    // Si hay logo guardado, reemplazamos el icono por la imagen
+                    logoContainer.innerHTML = `<img src="${logoData}" alt="Logo Institucional" class="w-full h-full object-cover">`;
+                }
             }
 
-            // 4. Escuchar cambios desde el Panel (si están en la misma sesión)
+            // 3. Inicializar
+            lucide.createIcons();
+            syncData();
+
+            // 4. Escuchar cambios en tiempo real (Sincronización entre pestañas)
             window.addEventListener('storage', function(e) {
-                if (e.key === 'remaep-config-update') {
-                    try {
-                        const update = JSON.parse(e.newValue);
-                        if (update.field && update.value) {
-                            // Actualizar configuración local
-                            const keys = update.field.split('.');
-                            let target = window.INDEX_CONFIG;
-                            for (let i = 0; i < keys.length - 1; i++) {
-                                if (!target[keys[i]]) target[keys[i]] = {};
-                                target = target[keys[i]];
-                            }
-                            target[keys[keys.length - 1]] = update.value;
-                            
-                            // Reflejar en UI
-                            updateIndexFromConfig();
-                            
-                            // Actualizar iconos
-                            lucide.createIcons();
-                        }
-                    } catch (e) {}
+                // Si la clave modificada empieza con remaep_, actualizamos
+                if (e.key && e.key.startsWith('remaep_')) {
+                    syncData();
                 }
             });
+            
+            // 5. Escuchar evento personalizado (si están en la misma ventana/iframe)
+            window.addEventListener('remaep-datos-actualizados', syncData);
 
-            // 5. VALIDADOR DE DNI - FUNCIONAL
-            const searchForm = document.getElementById('searchForm');
-            const dniInput = document.getElementById('dniInput');
-            const btnValidar = document.getElementById('btn-validar');
-
-            if (searchForm && dniInput) {
-                // Solo números
-                dniInput.addEventListener('keypress', function(e) {
-                    if (!/[0-9]/.test(String.fromCharCode(e.which))) {
-                        e.preventDefault();
-                    }
-                });
-
-                // Paste sanitizado
-                dniInput.addEventListener('paste', function(e) {
-                    e.preventDefault();
-                    const pasted = (e.clipboardData || window.clipboardData).getData('text');
-                    this.value = pasted.replace(/\D/g, '');
-                });
-
-                // Submit - REDIRECCIÓN FUNCIONAL
-                searchForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const dni = dniInput.value.trim().replace(/\D/g, '');
-                    
-                    if (dni.length === 0) {
-                        dniInput.classList.add('border', 'border-red-500');
-                        dniInput.placeholder = 'Ingrese un DNI válido';
-                        setTimeout(() => {
-                            dniInput.classList.remove('border', 'border-red-500');
-                            dniInput.placeholder = 'Ingrese DNI para validar matrícula...';
-                        }, 2000);
-                        return;
-                    }
-                    
-                    if (dni.length < 7 || dni.length > 8) {
-                        alert('El DNI debe tener entre 7 y 8 dígitos');
-                        return;
-                    }
-                    
-                    // REDIRECCIÓN ACTIVA
-                    window.location.href = `validador.html?dni=${dni}`;
-                });
-            }
-
-            // 6. BOTÓN DE ACCESO AL PANEL - FUNCIONAL
-            const btnAdmin = document.getElementById('btn-admin-access');
-            if (btnAdmin) {
-                btnAdmin.addEventListener('click', function(e) {
-                    // Permitir navegación normal
-                    // (el href ya está configurado)
-                });
-            }
-
-            // 7. ANIMACIONES Y EFECTOS
-            // Tooltips personalizados
-            document.querySelectorAll('.nav-tooltip').forEach(el => {
-                el.addEventListener('mouseenter', function() {
-                    const tooltip = this.getAttribute('data-tooltip');
-                    if (tooltip) {
-                        // El CSS maneja el pseudo-elemento
-                    }
-                });
+            // 6. Lógica de búsqueda (Mantiene funcionalidad)
+            document.getElementById('searchForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const dni = document.getElementById('dniInput').value.replace(/\D/g, '');
+                if(dni.length > 6) window.location.href = `validador.html?dni=${dni}`;
+                else alert('Por favor ingrese un DNI válido');
             });
 
-            // 8. Cargar configuración inicial (simulado - conectará a Supabase)
-            updateIndexFromConfig();
-
-            // 9. Soporte para prefers-reduced-motion
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.documentElement.style.setProperty('animation', 'none');
-            }
         })();
     </script>
-
-    <!-- Precargas -->
-    <link rel="prefetch" href="panel.html" as="document">
-    <link rel="prefetch" href="validador.html" as="document">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </body>
 </html>
