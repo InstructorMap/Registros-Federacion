@@ -5,16 +5,13 @@ import Link from 'next/link'
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section - Con más vida y personalidad */}
+      {/* Hero Section */}
       <section className="relative min-h-[600px] flex items-center overflow-hidden">
-        {/* Fondo con textura sutil */}
         <div className="absolute inset-0 bg-gradient-to-br from-white via-slate-50/50 to-white" />
         
-        {/* Elementos decorativos orgánicos */}
         <div className="absolute top-20 left-10 w-64 h-64 bg-navy-800/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-slate-800/5 rounded-full blur-3xl" />
         
-        {/* Patrón de líneas sutiles */}
         <div className="absolute inset-0 opacity-[0.15]">
           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-navy-800/20 to-transparent" />
           <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-navy-800/20 to-transparent" />
@@ -35,7 +32,7 @@ export default function HomePage() {
               </span>
             </div>
 
-            {/* Título con más carácter */}
+            {/* Título */}
             <h1 className="font-montserrat font-black text-4xl md:text-5xl lg:text-6xl max-w-5xl leading-tight">
               <span className="text-navy-800">Salvaguardando la Veracidad</span>
               <br />
@@ -45,7 +42,7 @@ export default function HomePage() {
               </span>
             </h1>
 
-            {/* Subtítulo con más personalidad */}
+            {/* Subtítulo */}
             <p className="mt-8 text-xl text-slate-600 max-w-2xl font-roboto leading-relaxed">
               Registro Nacional de Auxiliares de la Salud · 
               <span className="font-medium text-navy-800"> Alta Distinción Institucional</span>
@@ -110,7 +107,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Sección de valores - Más orgánica */}
+      {/* Sección de valores */}
       <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
