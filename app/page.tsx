@@ -1,4 +1,4 @@
-import { Shield, Award, CheckCircle, FileCheck } from 'lucide-react'
+import { Shield, Award, CheckCircle, FileCheck, Search, ArrowRight, Fingerprint } from 'lucide-react'
 import RegistrySearch from '@/components/search/RegistrySearch'
 import Link from 'next/link'
 
