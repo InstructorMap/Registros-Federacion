@@ -2,14 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  html { @apply antialiased; }
-  body { @apply bg-white text-slate-800; }
-  ::selection { @apply bg-navy-800/20 text-navy-900; }
+:root {
+  --foreground-rgb: 15, 23, 42;
+  --background-start-rgb: 248, 250, 252;
+  --background-end-rgb: 241, 245, 249;
 }
 
-@layer components {
-  .credential-badge { @apply px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider; }
-  .nav-link { @apply flex items-center space-x-2 px-3 py-2 text-sm font-medium transition-all duration-200 border-b-2; }
-  .input-elegant { @apply w-full px-6 py-4 bg-white border-2 border-slate-200 rounded-2xl focus:border-navy-800 focus:ring-4 focus:ring-navy-800/10 placeholder:text-slate-400 text-slate-800 outline-none transition-all; }
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* Efecto de cristal para las tarjetas */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Animación suave al cargar */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
 }
