@@ -2,801 +2,204 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>Panel de Control · REMAEP 2026 | Administración SaaS</title>
-    <meta name="description" content="Panel de administración del Registro Nacional de Matrícula Profesional.">
-    <meta name="theme-color" content="#000b1a">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control · REMAEP 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
-        /* ===== ESTILOS CRÍTICOS ===== */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; background: #000b1a; color: white; }
+        .editable-field:focus { outline: 2px solid #00e5ff; background: rgba(0,229,255,0.1); border-radius: 4px; }
         
-        body {
-            font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
-            background: radial-gradient(circle at 80% 20%, #001a2c, #000a14);
-            color: white;
-            overflow: hidden;
-            height: 100vh;
+        /* Estilos del área de carga */
+        .upload-zone { transition: all 0.3s ease; }
+        .upload-zone:hover { border-color: #00e5ff; background: rgba(0,229,255,0.05); }
+        
+        .toast {
+            position: fixed; bottom: 20px; right: 20px;
+            background: rgba(0,229,255,0.9); color: #000;
+            padding: 12px 24px; border-radius: 8px; font-weight: bold;
+            transform: translateY(100px); transition: transform 0.3s;
         }
-
-        .circuit-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            opacity: 0.15;
-            background-image: 
-                linear-gradient(to right, rgba(0, 229, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 229, 255, 0.1) 1px, transparent 1px);
-            background-size: 60px 60px, 60px 60px;
-            pointer-events: none;
-        }
-
-        .sidebar {
-            background: rgba(0, 12, 25, 0.85);
-            backdrop-filter: blur(16px) saturate(180%);
-            border-right: 1px solid rgba(0, 229, 255, 0.15);
-            position: relative;
-            z-index: 20;
-        }
-
-        .glass-panel {
-            background: rgba(10, 25, 45, 0.65);
-            backdrop-filter: blur(12px) saturate(180%);
-            border: 1px solid rgba(0, 229, 255, 0.12);
-            transition: all 0.3s ease;
-        }
-
-        /* ===== BOTÓN DE GUARDADO - SIEMPRE VISIBLE ===== */
-        .btn-save {
-            background: linear-gradient(135deg, #00e5ff, #0066ff);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
-        }
-
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 229, 255, 0.5);
-        }
-
-        .btn-save:active {
-            transform: translateY(1px);
-        }
-
-        /* ===== BOTÓN FLOTANTE DE GUARDADO ===== */
-        .save-float {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 9999;
-            background: linear-gradient(135deg, #00e5ff, #0066ff);
-            border-radius: 50px;
-            padding: 16px 32px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-            font-size: 14px;
-            letter-spacing: 2px;
-            box-shadow: 0 10px 40px rgba(0, 229, 255, 0.4);
-            border: 1px solid rgba(255,255,255,0.3);
-            backdrop-filter: blur(10px);
-            animation: pulse-save 2s infinite;
-            cursor: pointer;
-        }
-
-        @keyframes pulse-save {
-            0% { box-shadow: 0 10px 40px rgba(0, 229, 255, 0.4); }
-            50% { box-shadow: 0 10px 60px rgba(0, 229, 255, 0.8); }
-            100% { box-shadow: 0 10px 40px rgba(0, 229, 255, 0.4); }
-        }
-
-        /* ===== SELECTOR DE FOTO - FUNCIONAL ===== */
-        .photo-upload-area {
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .photo-upload-area:hover {
-            transform: scale(1.05);
-            border-color: #00e5ff !important;
-        }
-
-        .photo-upload-area:hover .upload-overlay {
-            opacity: 1;
-        }
-
-        .upload-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            backdrop-filter: blur(2px);
-        }
-
-        /* ===== CAMPOS EDITABLES ===== */
-        .editable-field {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-radius: 4px;
-            padding: 2px 6px;
-            margin: -2px -6px;
-        }
-
-        .editable-field:hover {
-            background: rgba(0, 229, 255, 0.15);
-            box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.5);
-        }
-
-        .editable-field:focus {
-            background: rgba(0, 40, 80, 0.9);
-            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.7);
-            outline: none;
-        }
-
-        /* ===== TOAST NOTIFICATION ===== */
-        .toast-notification {
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            background: rgba(0, 229, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid #00e5ff;
-            border-radius: 12px;
-            padding: 16px 24px;
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-            z-index: 10000;
-            transform: translateX(500px);
-            transition: transform 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 0 30px rgba(0,229,255,0.2);
-        }
-
-        .toast-notification.show {
-            transform: translateX(0);
-        }
-
-        .dot-active {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 12px #10b981;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
-        }
+        .toast.show { transform: translateY(0); }
     </style>
 </head>
-<body class="relative">
+<body class="bg-slate-900 h-screen flex overflow-hidden">
 
-    <!-- Fondo -->
-    <div class="circuit-bg" aria-hidden="true"></div>
-    <div class="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,150,255,0.08),transparent_70%)] pointer-events-none z-0"></div>
+    <aside class="w-64 bg-slate-950 border-r border-slate-800 p-6 hidden md:block">
+        <div class="flex items-center gap-3 mb-10">
+            <i data-lucide="shield" class="text-cyan-400"></i>
+            <span class="font-bold text-lg">REMAEP ADMIN</span>
+        </div>
+        <nav class="space-y-4 text-sm text-slate-400">
+            <a href="#" class="block text-cyan-400 font-bold">Dashboard</a>
+            <a href="index.html" class="block hover:text-white">Ver Sitio Público</a>
+        </nav>
+    </aside>
 
-    <!-- ===== TOAST NOTIFICATION ===== -->
-    <div id="toast" class="toast-notification">
-        <i data-lucide="check-circle" class="w-5 h-5 text-cyan-400"></i>
-        <span id="toast-message">✅ Datos guardados correctamente</span>
-    </div>
+    <main class="flex-1 overflow-y-auto p-8 relative">
+        
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-bold">Configuración SaaS</h1>
+            <button onclick="guardarCambios()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold px-6 py-2 rounded-lg flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(0,229,255,0.3)]">
+                <i data-lucide="save" class="w-4 h-4"></i> GUARDAR CAMBIOS
+            </button>
+        </header>
 
-    <!-- ===== BOTÓN FLOTANTE DE GUARDADO - SIEMPRE VISIBLE ===== -->
-    <button id="btn-save-float" class="save-float">
-        <i data-lucide="save" class="w-5 h-5"></i>
-        <span>GUARDAR CAMBIOS</span>
-        <span class="absolute -top-2 -right-2 w-4 h-4 bg-cyan-400 rounded-full animate-ping"></span>
-    </button>
-
-    <!-- ===== ESTRUCTURA PRINCIPAL ===== -->
-    <div class="relative z-20 flex h-screen w-full overflow-hidden">
-
-        <!-- SIDEBAR -->
-        <aside class="sidebar w-64 md:flex flex-col hidden flex-shrink-0 h-full overflow-y-auto">
-            <div class="p-6 border-b border-white/10 flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center">
-                    <i data-lucide="shield" class="w-5 h-5 text-white"></i>
-                </div>
-                <span class="font-extrabold tracking-tighter text-lg text-white">REMAEP ADMIN</span>
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            <nav class="flex-1 p-4 space-y-1.5 mt-2">
-                <a href="#" id="nav-dashboard" class="flex items-center gap-3 p-3 rounded-xl bg-cyan-500/10 border-l-4 border-cyan-400 text-white font-medium">
-                    <i data-lucide="layout-dashboard" size="18" class="text-cyan-400"></i>
-                    Dashboard
-                </a>
-                <a href="#" id="nav-homologaciones" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
-                    <i data-lucide="file-text" size="18"></i>
-                    Homologaciones
-                </a>
-                <a href="#" id="nav-matriculados" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
-                    <i data-lucide="users" size="18"></i>
-                    Matriculados
-                </a>
-                
-                <div class="pt-8 pb-2 px-3 text-[9px] uppercase tracking-[0.25em] text-cyan-400/60 font-bold">
-                    CONFIGURACIÓN SAAS
-                </div>
-                
-                <a href="#" id="nav-branding" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
-                    <i data-lucide="palette" size="18"></i>
-                    Branding
-                </a>
-                <a href="#" id="nav-precios" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
-                    <i data-lucide="dollar-sign" size="18"></i>
-                    Precios
-                </a>
-                <a href="#" id="nav-contacto" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-all">
-                    <i data-lucide="contact" size="18"></i>
-                    Contacto
-                </a>
-                
-                <div class="pt-6 mt-4 border-t border-white/10"></div>
-                <a href="index.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-cyan-500/10 text-slate-300 transition-all">
-                    <i data-lucide="home" size="18"></i>
-                    Ver sitio público
-                </a>
-            </nav>
-
-            <div class="p-6 border-t border-white/10">
-                <button id="btn-logout" class="flex items-center gap-3 text-red-400 hover:text-red-300 text-sm font-bold transition-all w-full p-3 rounded-lg hover:bg-red-500/10">
-                    <i data-lucide="log-out" size="18"></i>
-                    Cerrar Sesión
-                </button>
-            </div>
-        </aside>
-
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="flex-1 overflow-y-auto p-6 md:p-8 relative h-full">
-            
-            <!-- HEADER CON BOTÓN DE GUARDADO EXPLÍCITO -->
-            <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10 relative z-10">
-                <div>
-                    <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">
-                        Panel de <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400">Administración</span>
-                    </h1>
-                    <p class="text-slate-400 text-xs uppercase tracking-[0.25em] mt-2 font-semibold">
-                        Sistema de Gestión SaaS · Edición en vivo
-                    </p>
-                </div>
-                <div class="flex gap-3 items-center">
-                    <div class="bg-white/5 px-4 py-2.5 rounded-xl border border-white/10 flex items-center gap-2">
-                        <span class="dot-active"></span>
-                        <span class="text-slate-400 text-xs">Estado:</span>
-                        <span class="text-emerald-400 font-bold text-sm">Online</span>
+            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i data-lucide="dollar-sign" class="text-cyan-400"></i> Precios del Sitio
+                </h3>
+                <div class="space-y-4">
+                    <div class="bg-slate-900 p-4 rounded-xl">
+                        <label class="text-xs text-slate-500 uppercase">Inversión Inicial</label>
+                        <div id="precio-inicial" class="text-2xl font-bold text-cyan-400 editable-field" contenteditable="true">$50.000</div>
                     </div>
-                    
-                    <!-- BOTÓN GUARDAR EN HEADER - SIEMPRE VISIBLE -->
-                    <button id="btn-save-header" class="btn-save text-white px-6 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                        <i data-lucide="save" class="w-4 h-4"></i>
-                        <span>GUARDAR</span>
-                    </button>
-                </div>
-            </header>
-
-            <!-- ===== SECCIÓN DE FOTO Y CARNET - CORREGIDO ===== -->
-            <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10 mb-10">
-                
-                <!-- PANEL DE FOTO Y BRANDING -->
-                <div class="glass-panel p-7 rounded-3xl">
-                    <div class="flex justify-between items-start mb-7">
-                        <h3 class="text-xl font-bold flex items-center gap-2">
-                            <i data-lucide="camera" class="text-cyan-400 w-6 h-6"></i>
-                            <span>Foto del Profesional</span>
-                        </h3>
-                        <span class="px-3 py-1.5 bg-cyan-500/10 text-cyan-400 text-[10px] font-bold rounded-full border border-cyan-500/30">
-                            CLICK PARA SUBIR
-                        </span>
+                    <div class="bg-slate-900 p-4 rounded-xl">
+                        <label class="text-xs text-slate-500 uppercase">Renovación Anual</label>
+                        <div id="precio-renovacion" class="text-2xl font-bold text-emerald-400 editable-field" contenteditable="true">$30.000</div>
                     </div>
-                    
-                    <!-- SELECTOR DE FOTO - TOTALMENTE FUNCIONAL -->
-                    <div class="flex flex-col items-center gap-6">
-                        <!-- Preview de la foto -->
-                        <div class="relative">
-                            <div id="photo-preview-container" class="w-40 h-40 rounded-2xl border-3 border-cyan-400 shadow-[0_0_30px_rgba(0,229,255,0.3)] overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-                                <img id="photo-preview" src="" alt="Foto del profesional" class="w-full h-full object-cover hidden">
-                                <div id="photo-placeholder" class="flex flex-col items-center justify-center text-slate-400">
-                                    <i data-lucide="user" class="w-12 h-12 mb-2"></i>
-                                    <span class="text-xs">Sin foto</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Botón de subida - OCULTO pero activado por el área -->
-                            <input type="file" id="photo-upload" accept="image/*" class="hidden">
-                            <label for="photo-upload" class="photo-upload-area absolute inset-0 cursor-pointer">
-                                <div class="upload-overlay rounded-2xl">
-                                    <i data-lucide="camera" class="w-6 h-6 mr-2"></i>
-                                    <span>SUBIR FOTO</span>
-                                </div>
-                            </label>
-                        </div>
-                        
-                        <p class="text-xs text-slate-400 text-center">
-                            Formatos: JPG, PNG, WEBP · Máx 5MB<br>
-                            <span id="photo-filename" class="text-cyan-400/70 text-[10px] mt-1 block">Ningún archivo seleccionado</span>
-                        </p>
-                    </div>
-                    
-                    <!-- LOGO INSTITUCIONAL -->
-                    <div class="mt-8 pt-6 border-t border-white/10">
-                        <h4 class="text-sm font-bold mb-4 flex items-center gap-2">
-                            <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i>
-                            <span>Logo Institucional</span>
-                        </h4>
-                        <div class="grid grid-cols-4 gap-4 items-center">
-                            <div class="col-span-3 border-2 border-dashed border-white/10 hover:border-cyan-400/50 rounded-2xl p-6 text-center transition-all cursor-pointer bg-white/5">
-                                <i data-lucide="upload-cloud" class="mx-auto text-slate-500 mb-2 w-8 h-8"></i>
-                                <p class="text-[11px] text-slate-400">Arrastra o haz click para subir</p>
-                            </div>
-                            <div class="col-span-1 aspect-square bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center p-3">
-                                <i data-lucide="shield" class="w-10 h-10 text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- PANEL DE CARNET Y PRECIOS -->
-                <div class="glass-panel p-7 rounded-3xl">
-                    <div class="flex justify-between items-start mb-6">
-                        <h3 class="text-xl font-bold flex items-center gap-2">
-                            <i data-lucide="credit-card" class="text-cyan-400 w-6 h-6"></i>
-                            <span>Carnet Digital 2026</span>
-                        </h3>
-                    </div>
-                    
-                    <!-- CARNET CON FOTO DINÁMICA -->
-                    <div class="bg-gradient-to-br from-slate-100 to-white text-navy-900 p-5 rounded-2xl shadow-2xl aspect-[1.586/1] relative overflow-hidden border-2 border-white/30">
-                        <div class="flex justify-between items-start">
-                            <div class="flex gap-3 items-center">
-                                <div class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-700 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg">
-                                    R
-                                </div>
-                                <div>
-                                    <p class="text-xs font-black">REMAEP</p>
-                                    <p class="text-[7px] font-bold opacity-60 uppercase">REGISTRO NACIONAL</p>
-                                </div>
-                            </div>
-                            <div class="text-[8px] font-bold bg-navy-900 text-white px-3 py-1 rounded-full">
-                                CARNET 2026
-                            </div>
-                        </div>
-                        
-                        <div class="mt-5 flex gap-5">
-                            <!-- FOTO EN CARNET - SE ACTUALIZA AUTOMÁTICAMENTE -->
-                            <div id="carnet-photo" class="w-20 h-20 bg-gradient-to-br from-slate-300 to-slate-400 rounded-xl border-2 border-navy-900 shadow-inner flex items-center justify-center overflow-hidden">
-                                <img id="carnet-photo-img" src="" alt="Foto" class="w-full h-full object-cover hidden">
-                                <i id="carnet-photo-icon" data-lucide="user" class="w-8 h-8 text-navy-900/50"></i>
-                            </div>
-                            <div class="space-y-1 flex-1">
-                                <p id="card-nombre" class="text-sm font-black uppercase tracking-tight editable-field" contenteditable="true">
-                                    PABLO HORACIO VERDICCHIO
-                                </p>
-                                <p class="text-[9px] font-bold">
-                                    <span class="opacity-50">DNI:</span> 
-                                    <span id="card-dni" class="editable-field" contenteditable="true">23.525.976</span>
-                                </p>
-                                <p class="text-[9px] font-bold">
-                                    <span class="opacity-50">MATRÍCULA:</span> 
-                                    <span id="card-matricula" class="editable-field" contenteditable="true">824374</span>
-                                </p>
-                                <p class="text-[9px] font-bold text-red-600">
-                                    <span class="opacity-50 text-red-400/70">VENCE:</span> 
-                                    <span id="card-vencimiento" class="editable-field" contenteditable="true">31/12/2026</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="absolute bottom-3 right-3 w-8 h-8 bg-white border border-slate-200 p-1 rounded-lg flex items-center justify-center">
-                            <i data-lucide="qr-code" class="w-full h-full text-navy-900"></i>
-                        </div>
-                    </div>
-                    
-                    <!-- PRECIOS EDITABLES -->
-                    <div class="mt-7 pt-5 border-t border-white/10">
-                        <h4 class="text-sm font-bold mb-4 flex items-center gap-2">
-                            <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-400"></i>
-                            <span>Precios (Editable)</span>
-                        </h4>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-white/5 p-4 rounded-xl">
-                                <p class="text-[9px] uppercase text-slate-500 mb-1">Inversión Inicial</p>
-                                <div class="flex items-baseline gap-1">
-                                    <span id="precio-inicial" class="text-2xl font-black text-cyan-400 editable-field" contenteditable="true">$50.000</span>
-                                    <span id="precio-inicial-periodo" class="text-[9px] text-slate-500 editable-field" contenteditable="true">/año</span>
-                                </div>
-                                <p id="precio-inicial-desc" class="text-[9px] text-slate-400 mt-1 editable-field" contenteditable="true">Matriculación + Carnet digital</p>
-                            </div>
-                            <div class="bg-white/5 p-4 rounded-xl">
-                                <p class="text-[9px] uppercase text-slate-500 mb-1">Renovación Anual</p>
-                                <div class="flex items-baseline gap-1">
-                                    <span id="precio-renovacion" class="text-2xl font-black text-cyan-400 editable-field" contenteditable="true">$30.000</span>
-                                    <span id="precio-renovacion-periodo" class="text-[9px] text-slate-500 editable-field" contenteditable="true">/año</span>
-                                </div>
-                                <p id="precio-renovacion-desc" class="text-[9px] text-slate-400 mt-1 editable-field" contenteditable="true">Actualización de credencial</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TABLA DE HOMOLOGACIONES -->
-            <section class="glass-panel rounded-3xl overflow-hidden relative z-10">
-                <div class="p-6 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div class="flex items-center gap-3">
-                        <h3 class="font-bold text-lg">Pendientes de Homologación</h3>
-                        <span class="px-3 py-1.5 bg-amber-500/15 text-amber-400 text-[10px] font-bold rounded-full border border-amber-500/30">
-                            4 SOLICITUDES
-                        </span>
-                    </div>
-                    <div class="flex gap-2">
-                        <button id="btn-filtrar" class="text-xs bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg flex items-center gap-1 transition">
-                            <i data-lucide="filter" class="w-3 h-3"></i>
-                            Filtrar
-                        </button>
-                        <button id="btn-nuevo" class="text-xs bg-cyan-500 hover:bg-cyan-400 px-4 py-2 rounded-lg flex items-center gap-1 transition text-navy-900 font-bold">
-                            <i data-lucide="plus" class="w-3 h-3"></i>
-                            Nuevo
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-white/5 text-slate-400 font-bold uppercase text-[9px] tracking-[0.2em]">
-                            <tr>
-                                <th class="px-6 py-5">Profesional</th>
-                                <th class="px-6 py-5">Inversión</th>
-                                <th class="px-6 py-5">Documentación</th>
-                                <th class="px-6 py-5">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5">
-                            <tr class="hover:bg-white/5 transition-colors">
-                                <td class="px-6 py-5">
-                                    <p class="font-bold text-base editable-field" contenteditable="true">Belgrano, Marcelo</p>
-                                    <p class="text-xs text-slate-400 italic editable-field" contenteditable="true">Paramédico Deportivo</p>
-                                </td>
-                                <td class="px-6 py-5">
-                                    <span class="font-mono text-emerald-400 font-bold editable-field" contenteditable="true">$50.000</span>
-                                    <span class="text-[9px] ml-2 text-slate-500 uppercase editable-field" contenteditable="true">(Pagado)</span>
-                                </td>
-                                <td class="px-6 py-5">
-                                    <div class="flex gap-2">
-                                        <span class="text-[9px] bg-white/10 px-2 py-1.5 rounded-md border border-white/10 editable-field" contenteditable="true">DNI.PDF</span>
-                                        <span class="text-[9px] bg-white/10 px-2 py-1.5 rounded-md border border-white/10 editable-field" contenteditable="true">TITULO.JPG</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-5">
-                                    <button class="btn-approve bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold px-5 py-2 rounded-lg text-xs transition-all shadow-lg">
-                                        Aprobar
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-            
-            <!-- BARRA DE ESTADO DE GUARDADO -->
-            <div class="mt-8 p-4 bg-white/5 rounded-xl border border-white/10 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="database" class="w-4 h-4 text-cyan-400"></i>
-                    <span class="text-xs text-slate-400">Estado de sincronización:</span>
-                    <span id="sync-status" class="text-xs font-bold text-emerald-400">✓ Todos los cambios guardados</span>
-                </div>
-                <div class="text-[10px] text-slate-500">
-                    Último guardado: <span id="last-saved">hace unos segundos</span>
                 </div>
             </div>
-        </main>
-    </div>
 
-    <!-- ===== SISTEMA COMPLETO - CON PERSISTENCIA REAL ===== -->
+            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i data-lucide="image" class="text-cyan-400"></i> Logo Institucional
+                </h3>
+                
+                <input type="file" id="logo-input" accept="image/*" class="hidden">
+                
+                <div id="logo-dropzone" class="upload-zone border-2 border-dashed border-slate-600 rounded-xl p-6 text-center cursor-pointer h-48 flex flex-col items-center justify-center relative overflow-hidden group">
+                    
+                    <div id="logo-placeholder" class="pointer-events-none">
+                        <i data-lucide="upload-cloud" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+                        <p class="text-xs text-slate-400">Click para subir logo</p>
+                    </div>
+
+                    <img id="logo-preview" class="absolute inset-0 w-full h-full object-contain bg-slate-900 hidden p-4" />
+                    
+                    <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span class="text-xs font-bold text-white">Cambiar Logo</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-2 text-center">Se actualizará automáticamente en el Index</p>
+            </div>
+
+            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 col-span-1 lg:col-span-2">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i data-lucide="credit-card" class="text-cyan-400"></i> Carnet Demo
+                </h3>
+                <div class="bg-white text-slate-900 p-4 rounded-xl max-w-md mx-auto">
+                    <div class="flex gap-4">
+                        <div class="w-20 h-20 bg-slate-300 rounded-lg overflow-hidden">
+                             <img id="profesional-foto" class="w-full h-full object-cover hidden">
+                             <div id="profesional-placeholder" class="w-full h-full flex items-center justify-center text-slate-500 text-xs">Sin Foto</div>
+                        </div>
+                        <div>
+                            <div id="card-nombre" class="font-black uppercase text-lg editable-field" contenteditable="true">PABLO VERDICCHIO</div>
+                            <div class="text-xs font-bold text-slate-600 mt-1">MATRÍCULA: <span id="card-matricula" class="text-red-600 editable-field" contenteditable="true">824374</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="toast" class="toast">✅ Cambios Guardados</div>
+
     <script>
-        (function() {
-            "use strict";
+        // === LÓGICA DE PANEL "NIVEL DIOS" ===
+        
+        const logoInput = document.getElementById('logo-input');
+        const logoDropzone = document.getElementById('logo-dropzone');
+        const logoPreview = document.getElementById('logo-preview');
+        const logoPlaceholder = document.getElementById('logo-placeholder');
+        const toast = document.getElementById('toast');
 
-            // ================================================
-            // SISTEMA DE PERSISTENCIA - GUARDADO REAL
-            // ================================================
-
-            // 1. Inicializar Lucide
+        // 1. INICIALIZAR DATOS AL CARGAR
+        document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            cargarDatos();
+        });
 
-            // 2. TOAST NOTIFICATION
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toast-message');
-            const syncStatus = document.getElementById('sync-status');
-            const lastSaved = document.getElementById('last-saved');
+        function cargarDatos() {
+            // Cargar Textos
+            const editableIds = ['precio-inicial', 'precio-renovacion', 'card-nombre', 'card-matricula'];
+            editableIds.forEach(id => {
+                const val = localStorage.getItem('remaep_' + id);
+                if(val) document.getElementById(id).textContent = val;
+            });
 
-            function showToast(message, isSuccess = true) {
-                toastMessage.innerHTML = isSuccess ? '✅ ' + message : '❌ ' + message;
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
+            // Cargar Logo Institucional
+            const savedLogo = localStorage.getItem('remaep_logo_institutional');
+            if (savedLogo) {
+                mostrarPreviewLogo(savedLogo);
+            }
+        }
+
+        // 2. MANEJO DE LOGO (Lógica que faltaba)
+        logoDropzone.addEventListener('click', () => logoInput.click());
+
+        logoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validación básica
+            if (file.size > 2 * 1024 * 1024) { // 2MB
+                alert('El logo es muy pesado. Máximo 2MB.');
+                return;
             }
 
-            // ================================================
-            // SISTEMA DE FOTO - COMPLETAMENTE FUNCIONAL
-            // ================================================
-            
-            const photoUpload = document.getElementById('photo-upload');
-            const photoPreview = document.getElementById('photo-preview');
-            const photoPlaceholder = document.getElementById('photo-placeholder');
-            const carnetPhotoImg = document.getElementById('carnet-photo-img');
-            const carnetPhotoIcon = document.getElementById('carnet-photo-icon');
-            const photoFilename = document.getElementById('photo-filename');
-
-            // Cargar foto guardada al iniciar
-            const savedPhoto = localStorage.getItem('remaep_foto_profesional');
-            if (savedPhoto) {
-                photoPreview.src = savedPhoto;
-                photoPreview.classList.remove('hidden');
-                photoPlaceholder.classList.add('hidden');
-                carnetPhotoImg.src = savedPhoto;
-                carnetPhotoImg.classList.remove('hidden');
-                carnetPhotoIcon.classList.add('hidden');
-                photoFilename.textContent = 'Foto cargada: ' + (localStorage.getItem('remaep_foto_nombre') || 'foto.jpg');
-            }
-
-            // Evento de cambio de foto
-            photoUpload.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    // Validar tipo
-                    if (!file.type.startsWith('image/')) {
-                        showToast('Solo se permiten imágenes', false);
-                        return;
-                    }
-                    
-                    // Validar tamaño (5MB)
-                    if (file.size > 5 * 1024 * 1024) {
-                        showToast('La imagen no puede superar 5MB', false);
-                        return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const imageData = event.target.result;
-                        
-                        // Guardar en localStorage
-                        localStorage.setItem('remaep_foto_profesional', imageData);
-                        localStorage.setItem('remaep_foto_nombre', file.name);
-                        
-                        // Actualizar preview
-                        photoPreview.src = imageData;
-                        photoPreview.classList.remove('hidden');
-                        photoPlaceholder.classList.add('hidden');
-                        
-                        // Actualizar carnet
-                        carnetPhotoImg.src = imageData;
-                        carnetPhotoImg.classList.remove('hidden');
-                        carnetPhotoIcon.classList.add('hidden');
-                        
-                        // Mostrar nombre
-                        photoFilename.textContent = '📸 ' + file.name;
-                        
-                        showToast('Foto subida correctamente');
-                        updateSyncStatus('Foto actualizada', true);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            // ================================================
-            // SISTEMA DE GUARDADO - MÚLTIPLES BOTONES
-            // ================================================
-
-            // Función principal de guardado
-            function guardarTodosLosCambios() {
-                const cambios = [];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64String = event.target.result;
                 
-                // 1. Guardar campos editables del carnet
-                const campos = {
-                    'card_nombre': document.getElementById('card-nombre')?.innerText || '',
-                    'card_dni': document.getElementById('card-dni')?.innerText || '',
-                    'card_matricula': document.getElementById('card-matricula')?.innerText || '',
-                    'card_vencimiento': document.getElementById('card-vencimiento')?.innerText || '',
-                    'precio_inicial': document.getElementById('precio-inicial')?.innerText || '',
-                    'precio_inicial_periodo': document.getElementById('precio-inicial-periodo')?.innerText || '',
-                    'precio_inicial_desc': document.getElementById('precio-inicial-desc')?.innerText || '',
-                    'precio_renovacion': document.getElementById('precio-renovacion')?.innerText || '',
-                    'precio_renovacion_periodo': document.getElementById('precio-renovacion-periodo')?.innerText || '',
-                    'precio_renovacion_desc': document.getElementById('precio-renovacion-desc')?.innerText || ''
-                };
-
-                // Guardar cada campo
-                Object.entries(campos).forEach(([key, value]) => {
-                    localStorage.setItem(`remaep_${key}`, value);
-                    cambios.push({ campo: key, valor: value });
-                });
-
-                // 2. Guardar todos los campos editable-field
-                document.querySelectorAll('.editable-field[contenteditable="true"]').forEach(el => {
-                    const id = el.id;
-                    if (id) {
-                        localStorage.setItem(`remaep_${id}`, el.innerText.trim());
-                    }
-                });
-
-                // 3. Sincronizar con Index (localStorage event)
-                localStorage.setItem('remaep_last_update', JSON.stringify({
-                    timestamp: Date.now(),
-                    cambios: cambios,
-                    foto: localStorage.getItem('remaep_foto_profesional') || null
-                }));
-
-                // 4. Actualizar UI
-                const ahora = new Date();
-                const hora = ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                lastSaved.textContent = hora;
-                syncStatus.innerHTML = '✓ Todos los cambios guardados';
-                syncStatus.className = 'text-xs font-bold text-emerald-400';
+                // Guardar inmediatamente
+                localStorage.setItem('remaep_logo_institutional', base64String);
                 
-                showToast('Datos guardados correctamente');
+                // Actualizar UI
+                mostrarPreviewLogo(base64String);
+                mostrarToast('Logo actualizado');
                 
-                // Disparar evento para otras pestañas
-                window.dispatchEvent(new CustomEvent('remaep-datos-actualizados', {
-                    detail: { timestamp: Date.now() }
-                }));
-                
-                return cambios;
-            }
+                // Notificar al Index (si está abierto)
+                notificarCambios();
+            };
+            reader.readAsDataURL(file);
+        });
 
-            // 3. BOTONES DE GUARDADO
-            const btnSaveHeader = document.getElementById('btn-save-header');
-            const btnSaveFloat = document.getElementById('btn-save-float');
+        function mostrarPreviewLogo(src) {
+            logoPreview.src = src;
+            logoPreview.classList.remove('hidden');
+            logoPlaceholder.classList.add('hidden');
+        }
 
-            btnSaveHeader.addEventListener('click', function() {
-                guardarTodosLosCambios();
+        // 3. GUARDADO GENERAL DE TEXTOS
+        window.guardarCambios = function() {
+            // Guardar todos los campos con clase .editable-field
+            document.querySelectorAll('.editable-field').forEach(el => {
+                localStorage.setItem('remaep_' + el.id, el.innerText.trim());
             });
 
-            btnSaveFloat.addEventListener('click', function() {
-                guardarTodosLosCambios();
-                // Animación extra
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => this.style.transform = 'scale(1)', 200);
-            });
+            mostrarToast('Datos sincronizados');
+            notificarCambios();
+        };
 
-            // 4. AUTO-SAVE (opcional, cada 30 segundos)
-            setInterval(() => {
-                guardarTodosLosCambios();
-            }, 30000);
+        // 4. SISTEMA DE NOTIFICACIÓN
+        function notificarCambios() {
+            // Disparar evento de storage para otras pestañas
+            // (El evento 'storage' se dispara automáticamente en otras pestañas al usar setItem, 
+            // pero esto es un refuerzo para la misma ventana si fuera necesario)
+            window.dispatchEvent(new CustomEvent('remaep-datos-actualizados'));
+        }
 
-            // 5. Cargar datos guardados al iniciar
-            function cargarDatosGuardados() {
-                // Cargar nombre
-                const nombre = localStorage.getItem('remaep_card_nombre');
-                if (nombre) document.getElementById('card-nombre').innerText = nombre;
-                
-                // Cargar DNI
-                const dni = localStorage.getItem('remaep_card_dni');
-                if (dni) document.getElementById('card-dni').innerText = dni;
-                
-                // Cargar matrícula
-                const matricula = localStorage.getItem('remaep_card_matricula');
-                if (matricula) document.getElementById('card-matricula').innerText = matricula;
-                
-                // Cargar vencimiento
-                const vencimiento = localStorage.getItem('remaep_card_vencimiento');
-                if (vencimiento) document.getElementById('card-vencimiento').innerText = vencimiento;
-                
-                // Cargar precios
-                const precioInicial = localStorage.getItem('remaep_precio_inicial');
-                if (precioInicial) document.getElementById('precio-inicial').innerText = precioInicial;
-                
-                const precioRenovacion = localStorage.getItem('remaep_precio_renovacion');
-                if (precioRenovacion) document.getElementById('precio-renovacion').innerText = precioRenovacion;
-                
-                // Actualizar última sincronización
-                const lastUpdate = localStorage.getItem('remaep_last_update');
-                if (lastUpdate) {
-                    try {
-                        const data = JSON.parse(lastUpdate);
-                        const fecha = new Date(data.timestamp);
-                        lastSaved.textContent = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-                    } catch (e) {}
-                }
-            }
-
-            cargarDatosGuardados();
-
-            // 6. BOTONES DE NAVEGACIÓN
-            document.getElementById('nav-dashboard')?.addEventListener('click', (e) => {
-                e.preventDefault();
-                showToast('Dashboard - Vista principal');
-            });
-
-            document.getElementById('nav-homologaciones')?.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelector('.glass-panel.rounded-3xl')?.scrollIntoView({ behavior: 'smooth' });
-                showToast('Navegando a Homologaciones');
-            });
-
-            document.getElementById('nav-branding')?.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelector('.glass-panel')?.scrollIntoView({ behavior: 'smooth' });
-                showToast('Editando Branding');
-            });
-
-            // 7. BOTÓN LOGOUT
-            document.getElementById('btn-logout')?.addEventListener('click', () => {
-                if (confirm('¿Cerrar sesión?')) {
-                    showToast('Sesión cerrada');
-                    setTimeout(() => window.location.href = 'index.html', 1000);
-                }
-            });
-
-            // 8. BOTONES DE TABLA
-            document.getElementById('btn-filtrar')?.addEventListener('click', () => {
-                showToast('Filtro de homologaciones');
-            });
-
-            document.getElementById('btn-nuevo')?.addEventListener('click', () => {
-                showToast('Crear nueva homologación');
-            });
-
-            document.querySelectorAll('.btn-approve').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const row = this.closest('tr');
-                    const nombre = row?.querySelector('.font-bold')?.innerText || 'Profesional';
-                    showToast(`✅ Homologación aprobada: ${nombre}`);
-                    this.innerHTML = '<i data-lucide="check-circle" class="w-3 h-3"></i> Aprobado';
-                    this.disabled = true;
-                    this.classList.add('opacity-50');
-                    lucide.createIcons();
-                });
-            });
-
-            // 9. ACTUALIZAR ESTADO DE SINCRONIZACIÓN
-            function updateSyncStatus(message, isSaved = true) {
-                if (syncStatus) {
-                    syncStatus.innerHTML = isSaved ? '✓ ' + message : '⚠️ ' + message;
-                    syncStatus.className = isSaved ? 'text-xs font-bold text-emerald-400' : 'text-xs font-bold text-amber-400';
-                }
-            }
-
-            // Detectar cambios no guardados
-            document.querySelectorAll('.editable-field[contenteditable="true"]').forEach(el => {
-                el.addEventListener('input', () => {
-                    syncStatus.innerHTML = '⚠️ Hay cambios sin guardar';
-                    syncStatus.className = 'text-xs font-bold text-amber-400';
-                });
-            });
-
-            // 10. SOPORTE REDUCED MOTION
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.documentElement.style.setProperty('animation', 'none');
-            }
-        })();
+        function mostrarToast(msg) {
+            toast.textContent = "✅ " + msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
     </script>
 </body>
 </html>
