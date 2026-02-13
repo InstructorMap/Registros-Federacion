@@ -3,103 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control · REMAEP 2026</title>
+    <title>REMAEP Admin · CMS & CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Montserrat', sans-serif; background: #000b1a; color: white; }
-        .editable-field:focus { outline: 2px solid #00e5ff; background: rgba(0,229,255,0.1); border-radius: 4px; }
+        body { font-family: 'Montserrat', sans-serif; background: #0f172a; color: white; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+        .nav-item.active { background: rgba(6, 182, 212, 0.1); border-left: 3px solid #06b6d4; color: #22d3ee; }
+        .table-row:hover { background: rgba(255,255,255,0.03); }
         
-        /* Estilos del área de carga */
-        .upload-zone { transition: all 0.3s ease; }
-        .upload-zone:hover { border-color: #00e5ff; background: rgba(0,229,255,0.05); }
-        
-        .toast {
-            position: fixed; bottom: 20px; right: 20px;
-            background: rgba(0,229,255,0.9); color: #000;
-            padding: 12px 24px; border-radius: 8px; font-weight: bold;
-            transform: translateY(100px); transition: transform 0.3s;
-        }
-        .toast.show { transform: translateY(0); }
+        /* Animación suave para cambio de pestañas */
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .tab-content.active { display: block; opacity: 1; }
     </style>
 </head>
-<body class="bg-slate-900 h-screen flex overflow-hidden">
+<body class="h-screen flex overflow-hidden text-sm">
 
-    <aside class="w-64 bg-slate-950 border-r border-slate-800 p-6 hidden md:block">
-        <div class="flex items-center gap-3 mb-10">
-            <i data-lucide="shield" class="text-cyan-400"></i>
-            <span class="font-bold text-lg">REMAEP ADMIN</span>
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-20">
+        <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
+            <div class="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center font-bold text-slate-900">R</div>
+            <span class="font-bold tracking-wider">REMAEP ADMIN</span>
         </div>
-        <nav class="space-y-4 text-sm text-slate-400">
-            <a href="#" class="block text-cyan-400 font-bold">Dashboard</a>
-            <a href="index.html" class="block hover:text-white">Ver Sitio Público</a>
+
+        <nav class="flex-1 py-6 px-3 space-y-1">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item active w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-r-lg transition-all">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+            </button>
+            
+            <button onclick="switchTab('solicitudes')" id="nav-solicitudes" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-r-lg transition-all">
+                <i data-lucide="inbox" class="w-5 h-5"></i> Solicitudes <span class="ml-auto bg-cyan-500 text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full" id="badge-count">3</span>
+            </button>
+
+            <div class="pt-6 pb-2 px-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Portal Web</div>
+            
+            <button onclick="switchTab('configuracion')" id="nav-configuracion" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-r-lg transition-all">
+                <i data-lucide="settings" class="w-5 h-5"></i> Configuración Index
+            </button>
         </nav>
+
+        <div class="p-4 border-t border-slate-800">
+            <a href="index.html" target="_blank" class="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors text-xs font-bold uppercase">
+                <i data-lucide="external-link" class="w-4 h-4"></i> Ver Sitio Público
+            </a>
+        </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto p-8 relative">
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-950">
         
-        <header class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-bold">Configuración SaaS</h1>
-            <button onclick="guardarCambios()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold px-6 py-2 rounded-lg flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(0,229,255,0.3)]">
-                <i data-lucide="save" class="w-4 h-4"></i> GUARDAR CAMBIOS
-            </button>
+        <header class="h-16 bg-slate-900/50 backdrop-blur border-b border-slate-800 flex justify-between items-center px-8">
+            <h2 id="page-title" class="text-xl font-bold text-white">Panel de Control</h2>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-bold text-emerald-400">Sistema Online</span>
+                </div>
+            </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
-                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <i data-lucide="dollar-sign" class="text-cyan-400"></i> Precios del Sitio
-                </h3>
-                <div class="space-y-4">
-                    <div class="bg-slate-900 p-4 rounded-xl">
-                        <label class="text-xs text-slate-500 uppercase">Inversión Inicial</label>
-                        <div id="precio-inicial" class="text-2xl font-bold text-cyan-400 editable-field" contenteditable="true">$50.000</div>
-                    </div>
-                    <div class="bg-slate-900 p-4 rounded-xl">
-                        <label class="text-xs text-slate-500 uppercase">Renovación Anual</label>
-                        <div id="precio-renovacion" class="text-2xl font-bold text-emerald-400 editable-field" contenteditable="true">$30.000</div>
-                    </div>
-                </div>
-            </div>
+        <div class="flex-1 overflow-y-auto p-8">
 
-            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
-                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <i data-lucide="image" class="text-cyan-400"></i> Logo Institucional
-                </h3>
-                
-                <input type="file" id="logo-input" accept="image/*" class="hidden">
-                
-                <div id="logo-dropzone" class="upload-zone border-2 border-dashed border-slate-600 rounded-xl p-6 text-center cursor-pointer h-48 flex flex-col items-center justify-center relative overflow-hidden group">
-                    
-                    <div id="logo-placeholder" class="pointer-events-none">
-                        <i data-lucide="upload-cloud" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
-                        <p class="text-xs text-slate-400">Click para subir logo</p>
-                    </div>
-
-                    <img id="logo-preview" class="absolute inset-0 w-full h-full object-contain bg-slate-900 hidden p-4" />
-                    
-                    <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span class="text-xs font-bold text-white">Cambiar Logo</span>
-                    </div>
-                </div>
-                <p class="text-[10px] text-slate-500 mt-2 text-center">Se actualizará automáticamente en el Index</p>
-            </div>
-
-            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 col-span-1 lg:col-span-2">
-                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <i data-lucide="credit-card" class="text-cyan-400"></i> Carnet Demo
-                </h3>
-                <div class="bg-white text-slate-900 p-4 rounded-xl max-w-md mx-auto">
-                    <div class="flex gap-4">
-                        <div class="w-20 h-20 bg-slate-300 rounded-lg overflow-hidden">
-                             <img id="profesional-foto" class="w-full h-full object-cover hidden">
-                             <div id="profesional-placeholder" class="w-full h-full flex items-center justify-center text-slate-500 text-xs">Sin Foto</div>
+            <div id="view-dashboard" class="tab-content active space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-cyan-500/10 rounded-xl"><i data-lucide="users" class="text-cyan-400"></i></div>
+                            <span class="text-emerald-400 text-xs font-bold">+12%</span>
                         </div>
-                        <div>
-                            <div id="card-nombre" class="font-black uppercase text-lg editable-field" contenteditable="true">PABLO VERDICCHIO</div>
-                            <div class="text-xs font-bold text-slate-600 mt-1">MATRÍCULA: <span id="card-matricula" class="text-red-600 editable-field" contenteditable="true">824374</span></div>
+                        <h3 class="text-slate-400 text-sm font-medium">Total Matriculados</h3>
+                        <p class="text-3xl font-bold text-white mt-1">1,248</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-amber-500/10 rounded-xl"><i data-lucide="clock" class="text-amber-400"></i></div>
+                            <span class="text-amber-400 text-xs font-bold">Acción requerida</span>
+                        </div>
+                        <h3 class="text-slate-400 text-sm font-medium">Pendientes de Revisión</h3>
+                        <p class="text-3xl font-bold text-white mt-1" id="dash-pending-count">3</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-emerald-500/10 rounded-xl"><i data-lucide="dollar-sign" class="text-emerald-400"></i></div>
+                            <span class="text-slate-500 text-xs font-bold">Mes actual</span>
+                        </div>
+                        <h3 class="text-slate-400 text-sm font-medium">Ingresos Estimados</h3>
+                        <p class="text-3xl font-bold text-white mt-1">$1.5M</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-solicitudes" class="tab-content">
+                <div class="glass-panel rounded-2xl overflow-hidden">
+                    <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                        <h3 class="font-bold text-lg">Homologaciones Recientes</h3>
+                        <div class="flex gap-2">
+                            <input type="text" placeholder="Buscar DNI o Apellido..." class="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-4 py-2 outline-none focus:border-cyan-500">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-900 text-slate-400 text-xs uppercase font-bold">
+                                <tr>
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Profesional</th>
+                                    <th class="px-6 py-4">DNI</th>
+                                    <th class="px-6 py-4">Fecha</th>
+                                    <th class="px-6 py-4">Estado</th>
+                                    <th class="px-6 py-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requests-table-body" class="divide-y divide-slate-800">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-configuracion" class="tab-content max-w-4xl mx-auto">
+                
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Personalización del Portal</h2>
+                        <p class="text-slate-400 text-sm">Modifica el contenido de index.html en tiempo real.</p>
+                    </div>
+                    <button onclick="saveSiteConfig()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-900 px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition-all">
+                        <i data-lucide="save" class="w-4 h-4"></i> Guardar Cambios
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="font-bold mb-4 flex items-center gap-2 text-cyan-400"><i data-lucide="image"></i> Logo Institucional</h3>
+                        <div class="flex items-center gap-6">
+                            <div class="w-24 h-24 bg-slate-800 rounded-full border-2 border-dashed border-slate-600 flex items-center justify-center overflow-hidden relative group">
+                                <img id="cms-logo-preview" src="" class="w-full h-full object-cover hidden">
+                                <i id="cms-logo-placeholder" data-lucide="upload" class="text-slate-500"></i>
+                                <input type="file" id="cms-logo-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium mb-1">Cargar nuevo escudo/logo</p>
+                                <p class="text-xs text-slate-500">Formato PNG transparente recomendado. Se actualizará en el header del Index.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="font-bold mb-4 flex items-center gap-2 text-cyan-400"><i data-lucide="type"></i> Textos y Valores</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Año de Edición (Header)</label>
+                                <input type="text" id="conf-year" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 focus:border-cyan-500 outline-none transition-colors" value="2026">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Email de Contacto</label>
+                                <input type="email" id="conf-email" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 focus:border-cyan-500 outline-none transition-colors" value="admin@remaep.gob.ar">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Precio Inversión Inicial</label>
+                                <input type="text" id="conf-price-init" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 focus:border-cyan-500 outline-none transition-colors" value="$50.000">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Precio Renovación</label>
+                                <input type="text" id="conf-price-ren" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 focus:border-cyan-500 outline-none transition-colors" value="$30.000">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -108,98 +174,177 @@
         </div>
     </main>
 
-    <div id="toast" class="toast">✅ Cambios Guardados</div>
+    <div id="toast" class="fixed bottom-8 right-8 bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-2xl transform translate-y-24 transition-transform duration-300 flex items-center gap-3">
+        <i data-lucide="check-circle"></i>
+        <span id="toast-msg">Cambios guardados</span>
+    </div>
 
     <script>
-        // === LÓGICA DE PANEL "NIVEL DIOS" ===
+        // --- LÓGICA DEL SISTEMA ---
         
-        const logoInput = document.getElementById('logo-input');
-        const logoDropzone = document.getElementById('logo-dropzone');
-        const logoPreview = document.getElementById('logo-preview');
-        const logoPlaceholder = document.getElementById('logo-placeholder');
-        const toast = document.getElementById('toast');
+        // 1. BASE DE DATOS SIMULADA (Seed Data)
+        const mockRequests = [
+            { id: 'REQ-001', name: 'Dr. Roberto Fernández', dni: '20.123.456', date: '12/02/2026', status: 'pending' },
+            { id: 'REQ-002', name: 'Lic. María Gonzalez', dni: '24.555.777', date: '11/02/2026', status: 'approved' },
+            { id: 'REQ-003', name: 'Tec. Carlos Ruiz', dni: '30.987.654', date: '10/02/2026', status: 'pending' },
+            { id: 'REQ-004', name: 'Enf. Laura Martinez', dni: '18.444.222', date: '09/02/2026', status: 'pending' },
+        ];
 
-        // 1. INICIALIZAR DATOS AL CARGAR
+        // 2. INICIALIZACIÓN
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            cargarDatos();
+            loadRequests();
+            loadConfig();
         });
 
-        function cargarDatos() {
-            // Cargar Textos
-            const editableIds = ['precio-inicial', 'precio-renovacion', 'card-nombre', 'card-matricula'];
-            editableIds.forEach(id => {
-                const val = localStorage.getItem('remaep_' + id);
-                if(val) document.getElementById(id).textContent = val;
+        // 3. NAVEGACIÓN (TABS)
+        window.switchTab = function(tabName) {
+            // Ocultar todas las vistas
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            // Mostrar seleccionada
+            document.getElementById('view-' + tabName).classList.add('active');
+            document.getElementById('nav-' + tabName).classList.add('active');
+            
+            // Actualizar título
+            const titles = {
+                'dashboard': 'Dashboard General',
+                'solicitudes': 'Gestión de Solicitudes',
+                'configuracion': 'Configuración del Sitio'
+            };
+            document.getElementById('page-title').textContent = titles[tabName];
+        };
+
+        // 4. GESTIÓN DE SOLICITUDES (Render Table)
+        function loadRequests() {
+            // En una app real, esto vendría del servidor. Aquí usamos el mock o localStorage.
+            const data = JSON.parse(localStorage.getItem('remaep_requests')) || mockRequests;
+            // Guardamos el mock si no existe para que veas datos
+            if(!localStorage.getItem('remaep_requests')) {
+                localStorage.setItem('remaep_requests', JSON.stringify(mockRequests));
+            }
+
+            const tbody = document.getElementById('requests-table-body');
+            tbody.innerHTML = '';
+            
+            let pendingCount = 0;
+
+            data.forEach(req => {
+                if(req.status === 'pending') pendingCount++;
+                
+                const tr = document.createElement('tr');
+                tr.className = 'table-row border-b border-slate-800 text-slate-300';
+                
+                const statusBadge = req.status === 'approved' 
+                    ? '<span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded text-xs font-bold uppercase">Aprobado</span>'
+                    : '<span class="px-2 py-1 bg-amber-500/10 text-amber-500 rounded text-xs font-bold uppercase">Pendiente</span>';
+
+                const actionBtn = req.status === 'pending'
+                    ? `<button onclick="approveRequest('${req.id}')" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold px-3 py-1.5 rounded transition-colors">Aprobar</button>`
+                    : `<button class="text-xs text-slate-500 cursor-not-allowed" disabled>Finalizado</button>`;
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-mono text-xs text-slate-500">${req.id}</td>
+                    <td class="px-6 py-4 font-bold text-white">${req.name}</td>
+                    <td class="px-6 py-4">${req.dni}</td>
+                    <td class="px-6 py-4">${req.date}</td>
+                    <td class="px-6 py-4">${statusBadge}</td>
+                    <td class="px-6 py-4 text-right">${actionBtn}</td>
+                `;
+                tbody.appendChild(tr);
             });
 
-            // Cargar Logo Institucional
-            const savedLogo = localStorage.getItem('remaep_logo_institutional');
-            if (savedLogo) {
-                mostrarPreviewLogo(savedLogo);
+            // Actualizar badges
+            document.getElementById('badge-count').textContent = pendingCount;
+            document.getElementById('dash-pending-count').textContent = pendingCount;
+        }
+
+        window.approveRequest = function(id) {
+            const data = JSON.parse(localStorage.getItem('remaep_requests'));
+            const idx = data.findIndex(r => r.id === id);
+            if(idx !== -1) {
+                data[idx].status = 'approved';
+                localStorage.setItem('remaep_requests', JSON.stringify(data));
+                loadRequests(); // Recargar tabla
+                showToast(`Solicitud ${id} aprobada`);
+            }
+        };
+
+        // 5. CONFIGURACIÓN DEL SITIO (CMS)
+        function loadConfig() {
+            const conf = {
+                year: localStorage.getItem('remaep_conf_year') || '2026',
+                email: localStorage.getItem('remaep_conf_email') || 'admin@remaep.gob.ar',
+                priceInit: localStorage.getItem('remaep_conf_price_init') || '$50.000',
+                priceRen: localStorage.getItem('remaep_conf_price_ren') || '$30.000',
+                logo: localStorage.getItem('remaep_conf_logo')
+            };
+
+            document.getElementById('conf-year').value = conf.year;
+            document.getElementById('conf-email').value = conf.email;
+            document.getElementById('conf-price-init').value = conf.priceInit;
+            document.getElementById('conf-price-ren').value = conf.priceRen;
+
+            if(conf.logo) {
+                const img = document.getElementById('cms-logo-preview');
+                img.src = conf.logo;
+                img.classList.remove('hidden');
+                document.getElementById('cms-logo-placeholder').classList.add('hidden');
             }
         }
 
-        // 2. MANEJO DE LOGO (Lógica que faltaba)
-        logoDropzone.addEventListener('click', () => logoInput.click());
-
-        logoInput.addEventListener('change', function(e) {
+        // Manejo de subida de Logo
+        document.getElementById('cms-logo-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            if (!file) return;
-
-            // Validación básica
-            if (file.size > 2 * 1024 * 1024) { // 2MB
-                alert('El logo es muy pesado. Máximo 2MB.');
-                return;
-            }
-
+            if(!file) return;
             const reader = new FileReader();
-            reader.onload = function(event) {
-                const base64String = event.target.result;
-                
-                // Guardar inmediatamente
-                localStorage.setItem('remaep_logo_institutional', base64String);
-                
-                // Actualizar UI
-                mostrarPreviewLogo(base64String);
-                mostrarToast('Logo actualizado');
-                
-                // Notificar al Index (si está abierto)
-                notificarCambios();
+            reader.onload = function(evt) {
+                const base64 = evt.target.result;
+                const img = document.getElementById('cms-logo-preview');
+                img.src = base64;
+                img.classList.remove('hidden');
+                document.getElementById('cms-logo-placeholder').classList.add('hidden');
+                // Guardamos temporalmente en atributo para cuando de click en guardar
+                img.dataset.tempSrc = base64; 
             };
             reader.readAsDataURL(file);
         });
 
-        function mostrarPreviewLogo(src) {
-            logoPreview.src = src;
-            logoPreview.classList.remove('hidden');
-            logoPlaceholder.classList.add('hidden');
-        }
+        window.saveSiteConfig = function() {
+            // Obtener valores
+            const year = document.getElementById('conf-year').value;
+            const email = document.getElementById('conf-email').value;
+            const priceInit = document.getElementById('conf-price-init').value;
+            const priceRen = document.getElementById('conf-price-ren').value;
+            
+            // Obtener logo (si hubo cambio reciente)
+            const imgPreview = document.getElementById('cms-logo-preview');
+            if(imgPreview.dataset.tempSrc) {
+                localStorage.setItem('remaep_conf_logo', imgPreview.dataset.tempSrc);
+            }
 
-        // 3. GUARDADO GENERAL DE TEXTOS
-        window.guardarCambios = function() {
-            // Guardar todos los campos con clase .editable-field
-            document.querySelectorAll('.editable-field').forEach(el => {
-                localStorage.setItem('remaep_' + el.id, el.innerText.trim());
-            });
+            // Guardar en LocalStorage (La "Base de datos")
+            localStorage.setItem('remaep_conf_year', year);
+            localStorage.setItem('remaep_conf_email', email);
+            localStorage.setItem('remaep_conf_price_init', priceInit);
+            localStorage.setItem('remaep_conf_price_ren', priceRen);
 
-            mostrarToast('Datos sincronizados');
-            notificarCambios();
+            // Notificar al Index
+            window.dispatchEvent(new CustomEvent('remaep-config-updated')); // Para misma ventana
+            // Forzar evento storage escribiendo un timestamp dummy
+            localStorage.setItem('remaep_force_update', Date.now());
+
+            showToast('Configuración del Portal Actualizada');
         };
 
-        // 4. SISTEMA DE NOTIFICACIÓN
-        function notificarCambios() {
-            // Disparar evento de storage para otras pestañas
-            // (El evento 'storage' se dispara automáticamente en otras pestañas al usar setItem, 
-            // pero esto es un refuerzo para la misma ventana si fuera necesario)
-            window.dispatchEvent(new CustomEvent('remaep-datos-actualizados'));
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg;
+            t.classList.remove('translate-y-24');
+            setTimeout(() => t.classList.add('translate-y-24'), 3000);
         }
 
-        function mostrarToast(msg) {
-            toast.textContent = "✅ " + msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
     </script>
 </body>
 </html>
