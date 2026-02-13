@@ -3,347 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REMAEP Admin · CMS & CRM</title>
+    <title>Panel SaaS · Master Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Montserrat', sans-serif; background: #0f172a; color: white; }
-        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
-        .nav-item.active { background: rgba(6, 182, 212, 0.1); border-left: 3px solid #06b6d4; color: #22d3ee; }
-        .table-row:hover { background: rgba(255,255,255,0.03); }
+        body { font-family: 'Inter', sans-serif; background: #020617; color: #e2e8f0; }
+        .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; color: #94a3b8; }
+        .sidebar-link:hover, .sidebar-link.active { background: #1e293b; color: white; }
+        .sidebar-link.active { border-left: 3px solid #3b82f6; }
+        .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
-        /* Animación suave para cambio de pestañas */
-        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        .tab-content.active { display: block; opacity: 1; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden text-sm">
+<body class="h-screen flex overflow-hidden">
 
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-20">
-        <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
-            <div class="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center font-bold text-slate-900">R</div>
-            <span class="font-bold tracking-wider">REMAEP ADMIN</span>
+    <aside class="w-64 bg-slate-950 border-r border-slate-900 flex flex-col">
+        <div class="h-16 flex items-center px-6 border-b border-slate-900 gap-2 text-white font-bold tracking-wider">
+            <div class="w-6 h-6 bg-blue-600 rounded"></div> SAAS ENGINE
         </div>
 
-        <nav class="flex-1 py-6 px-3 space-y-1">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item active w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-r-lg transition-all">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="showTab('dashboard')" id="nav-dashboard" class="sidebar-link active w-full">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Dashboard
             </button>
-            
-            <button onclick="switchTab('solicitudes')" id="nav-solicitudes" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-r-lg transition-all">
-                <i data-lucide="inbox" class="w-5 h-5"></i> Solicitudes <span class="ml-auto bg-cyan-500 text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full" id="badge-count">3</span>
+            <button onclick="showTab('solicitudes')" id="nav-solicitudes" class="sidebar-link w-full">
+                <i data-lucide="inbox" class="w-5 h-5"></i> Solicitudes <span class="ml-auto bg-blue-600 text-xs px-2 py-0.5 rounded-full text-white" id="badge-req">0</span>
             </button>
-
-            <div class="pt-6 pb-2 px-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Portal Web</div>
-            
-            <button onclick="switchTab('configuracion')" id="nav-configuracion" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-r-lg transition-all">
-                <i data-lucide="settings" class="w-5 h-5"></i> Configuración Index
+            <div class="pt-6 pb-2 px-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Configuración</div>
+            <button onclick="showTab('identidad')" id="nav-identidad" class="sidebar-link w-full">
+                <i data-lucide="palette" class="w-5 h-5"></i> Identidad (SaaS)
             </button>
         </nav>
 
-        <div class="p-4 border-t border-slate-800">
-            <a href="index.html" target="_blank" class="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors text-xs font-bold uppercase">
-                <i data-lucide="external-link" class="w-4 h-4"></i> Ver Sitio Público
+        <div class="p-4 border-t border-slate-900">
+            <a href="index.html" target="_blank" class="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors">
+                <i data-lucide="external-link" class="w-4 h-4"></i> VER LANDING PAGE
             </a>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-950">
-        
-        <header class="h-16 bg-slate-900/50 backdrop-blur border-b border-slate-800 flex justify-between items-center px-8">
-            <h2 id="page-title" class="text-xl font-bold text-white">Panel de Control</h2>
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span class="text-xs font-bold text-emerald-400">Sistema Online</span>
-                </div>
+    <main class="flex-1 flex flex-col">
+        <header class="h-16 bg-slate-950 border-b border-slate-900 flex justify-between items-center px-8">
+            <h2 class="text-xl font-bold text-white" id="page-title">Dashboard</h2>
+            <div class="flex items-center gap-3">
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span class="text-xs font-bold text-emerald-500">Pasarela Activa</span>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8">
+        <div class="flex-1 overflow-y-auto p-8 bg-slate-950">
 
-            <div id="view-dashboard" class="tab-content active space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="glass-panel p-6 rounded-2xl">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-3 bg-cyan-500/10 rounded-xl"><i data-lucide="users" class="text-cyan-400"></i></div>
-                            <span class="text-emerald-400 text-xs font-bold">+12%</span>
-                        </div>
-                        <h3 class="text-slate-400 text-sm font-medium">Total Matriculados</h3>
-                        <p class="text-3xl font-bold text-white mt-1">1,248</p>
+            <div id="view-dashboard" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="card p-6">
+                        <p class="text-slate-400 text-sm font-medium mb-1">Ingresos Totales</p>
+                        <h3 class="text-3xl font-bold text-white" id="stat-money">$0</h3>
                     </div>
-                    <div class="glass-panel p-6 rounded-2xl">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-3 bg-amber-500/10 rounded-xl"><i data-lucide="clock" class="text-amber-400"></i></div>
-                            <span class="text-amber-400 text-xs font-bold">Acción requerida</span>
-                        </div>
-                        <h3 class="text-slate-400 text-sm font-medium">Pendientes de Revisión</h3>
-                        <p class="text-3xl font-bold text-white mt-1" id="dash-pending-count">3</p>
+                    <div class="card p-6">
+                        <p class="text-slate-400 text-sm font-medium mb-1">Solicitudes Pendientes</p>
+                        <h3 class="text-3xl font-bold text-white" id="stat-pending">0</h3>
                     </div>
-                    <div class="glass-panel p-6 rounded-2xl">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-3 bg-emerald-500/10 rounded-xl"><i data-lucide="dollar-sign" class="text-emerald-400"></i></div>
-                            <span class="text-slate-500 text-xs font-bold">Mes actual</span>
-                        </div>
-                        <h3 class="text-slate-400 text-sm font-medium">Ingresos Estimados</h3>
-                        <p class="text-3xl font-bold text-white mt-1">$1.5M</p>
+                    <div class="card p-6">
+                        <p class="text-slate-400 text-sm font-medium mb-1">Tasa de Aprobación</p>
+                        <h3 class="text-3xl font-bold text-emerald-400">98%</h3>
                     </div>
                 </div>
             </div>
 
             <div id="view-solicitudes" class="tab-content">
-                <div class="glass-panel rounded-2xl overflow-hidden">
-                    <div class="p-6 border-b border-slate-800 flex justify-between items-center">
-                        <h3 class="font-bold text-lg">Homologaciones Recientes</h3>
-                        <div class="flex gap-2">
-                            <input type="text" placeholder="Buscar DNI o Apellido..." class="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-4 py-2 outline-none focus:border-cyan-500">
-                        </div>
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                        <h3 class="font-bold">Bandeja de Entrada</h3>
+                        <button onclick="loadRequests()" class="text-xs text-blue-400 hover:text-white flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Actualizar</button>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-900 text-slate-400 text-xs uppercase font-bold">
-                                <tr>
-                                    <th class="px-6 py-4">ID</th>
-                                    <th class="px-6 py-4">Profesional</th>
-                                    <th class="px-6 py-4">DNI</th>
-                                    <th class="px-6 py-4">Fecha</th>
-                                    <th class="px-6 py-4">Estado</th>
-                                    <th class="px-6 py-4 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="requests-table-body" class="divide-y divide-slate-800">
-                                </tbody>
-                        </table>
-                    </div>
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-900 text-slate-400 font-medium border-b border-slate-800">
+                            <tr>
+                                <th class="p-4">ID</th>
+                                <th class="p-4">Solicitante</th>
+                                <th class="p-4">DNI</th>
+                                <th class="p-4">Estado Pago</th>
+                                <th class="p-4">Documentación</th>
+                                <th class="p-4 text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-800">
+                            </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div id="view-configuracion" class="tab-content max-w-4xl mx-auto">
-                
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold">Personalización del Portal</h2>
-                        <p class="text-slate-400 text-sm">Modifica el contenido de index.html en tiempo real.</p>
-                    </div>
-                    <button onclick="saveSiteConfig()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-900 px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition-all">
-                        <i data-lucide="save" class="w-4 h-4"></i> Guardar Cambios
-                    </button>
+            <div id="view-identidad" class="tab-content max-w-3xl">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-white mb-2">Personalización SaaS</h2>
+                    <p class="text-slate-400">Modifica la apariencia de la landing page para adaptarla a cualquier institución.</p>
                 </div>
 
                 <div class="space-y-6">
-                    <div class="glass-panel p-6 rounded-2xl">
-                        <h3 class="font-bold mb-4 flex items-center gap-2 text-cyan-400"><i data-lucide="image"></i> Logo Institucional</h3>
-                        <div class="flex items-center gap-6">
-                            <div class="w-24 h-24 bg-slate-800 rounded-full border-2 border-dashed border-slate-600 flex items-center justify-center overflow-hidden relative group">
-                                <img id="cms-logo-preview" src="" class="w-full h-full object-cover hidden">
-                                <i id="cms-logo-placeholder" data-lucide="upload" class="text-slate-500"></i>
-                                <input type="file" id="cms-logo-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <div class="card p-6">
+                        <h3 class="font-bold mb-4 flex gap-2"><i data-lucide="palette" class="text-blue-500"></i> Marca Visual</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Color Primario (Tema)</label>
+                                <div class="flex gap-2 items-center">
+                                    <input type="color" id="conf-color" class="bg-transparent h-10 w-10 cursor-pointer border-none" value="#06b6d4">
+                                    <span class="text-xs text-slate-400">Click para cambiar</span>
+                                </div>
                             </div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium mb-1">Cargar nuevo escudo/logo</p>
-                                <p class="text-xs text-slate-500">Formato PNG transparente recomendado. Se actualizará en el header del Index.</p>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Logo Institucional</label>
+                                <input type="file" id="conf-logo" accept="image/*" class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-blue-400 hover:file:bg-slate-700">
+                                <img id="logo-preview" class="mt-4 h-12 w-auto object-contain hidden border border-slate-700 p-1 bg-slate-900 rounded">
                             </div>
                         </div>
                     </div>
 
-                    <div class="glass-panel p-6 rounded-2xl">
-                        <h3 class="font-bold mb-4 flex items-center gap-2 text-cyan-400"><i data-lucide="type"></i> Textos y Valores</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Año de Edición (Header)</label>
-                                <input type="text" id="conf-year" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 focus:border-cyan-500 outline-none transition-colors" value="2026">
+                    <div class="card p-6">
+                        <h3 class="font-bold mb-4 flex gap-2"><i data-lucide="type" class="text-blue-500"></i> Textos y Precios</h3>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nombre Corto (Nav)</label>
+                                    <input type="text" id="conf-title" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: REMAEP">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Precio Trámite</label>
+                                    <input type="text" id="conf-price" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-blue-500 outline-none" placeholder="$50.000">
+                                </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Email de Contacto</label>
-                                <input type="email" id="conf-email" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 focus:border-cyan-500 outline-none transition-colors" value="admin@remaep.gob.ar">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Título Principal (Hero)</label>
+                                <input type="text" id="conf-hero-title" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: Registro Nacional">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Precio Inversión Inicial</label>
-                                <input type="text" id="conf-price-init" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 focus:border-cyan-500 outline-none transition-colors" value="$50.000">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Precio Renovación</label>
-                                <input type="text" id="conf-price-ren" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 focus:border-cyan-500 outline-none transition-colors" value="$30.000">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Subtítulo (Hero)</label>
+                                <input type="text" id="conf-hero-subtitle" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: Matrícula Profesional">
                             </div>
                         </div>
                     </div>
+
+                    <button onclick="saveConfig()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-blue-500/20 transition-all">
+                        PUBLICAR CAMBIOS EN LANDING
+                    </button>
                 </div>
             </div>
 
         </div>
     </main>
 
-    <div id="toast" class="fixed bottom-8 right-8 bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-2xl transform translate-y-24 transition-transform duration-300 flex items-center gap-3">
-        <i data-lucide="check-circle"></i>
-        <span id="toast-msg">Cambios guardados</span>
-    </div>
-
     <script>
-        // --- LÓGICA DEL SISTEMA ---
-        
-        // 1. BASE DE DATOS SIMULADA (Seed Data)
-        const mockRequests = [
-            { id: 'REQ-001', name: 'Dr. Roberto Fernández', dni: '20.123.456', date: '12/02/2026', status: 'pending' },
-            { id: 'REQ-002', name: 'Lic. María Gonzalez', dni: '24.555.777', date: '11/02/2026', status: 'approved' },
-            { id: 'REQ-003', name: 'Tec. Carlos Ruiz', dni: '30.987.654', date: '10/02/2026', status: 'pending' },
-            { id: 'REQ-004', name: 'Enf. Laura Martinez', dni: '18.444.222', date: '09/02/2026', status: 'pending' },
-        ];
+        // --- LOGICA DEL PANEL ---
 
-        // 2. INICIALIZACIÓN
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            loadRequests();
-            loadConfig();
-        });
-
-        // 3. NAVEGACIÓN (TABS)
-        window.switchTab = function(tabName) {
-            // Ocultar todas las vistas
+        function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
             
-            // Mostrar seleccionada
-            document.getElementById('view-' + tabName).classList.add('active');
-            document.getElementById('nav-' + tabName).classList.add('active');
+            document.getElementById('view-' + id).classList.add('active');
+            document.getElementById('nav-' + id).classList.add('active');
             
-            // Actualizar título
-            const titles = {
-                'dashboard': 'Dashboard General',
-                'solicitudes': 'Gestión de Solicitudes',
-                'configuracion': 'Configuración del Sitio'
-            };
-            document.getElementById('page-title').textContent = titles[tabName];
-        };
+            const titles = { dashboard: 'Resumen', solicitudes: 'Gestión CRM', identidad: 'Configuración SaaS' };
+            document.getElementById('page-title').textContent = titles[id];
+        }
 
-        // 4. GESTIÓN DE SOLICITUDES (Render Table)
+        // 1. CARGA DE SOLICITUDES (CRM)
         function loadRequests() {
-            // En una app real, esto vendría del servidor. Aquí usamos el mock o localStorage.
-            const data = JSON.parse(localStorage.getItem('remaep_requests')) || mockRequests;
-            // Guardamos el mock si no existe para que veas datos
-            if(!localStorage.getItem('remaep_requests')) {
-                localStorage.setItem('remaep_requests', JSON.stringify(mockRequests));
-            }
-
-            const tbody = document.getElementById('requests-table-body');
+            const db = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
+            const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
-            
-            let pendingCount = 0;
 
-            data.forEach(req => {
-                if(req.status === 'pending') pendingCount++;
-                
+            let totalMoney = 0;
+            let pending = 0;
+
+            db.forEach((req, index) => {
+                // Calcular estadisticas
+                const monto = parseInt(req.monto.replace(/\D/g, '')) || 0;
+                totalMoney += monto;
+                if(req.status !== 'finalizado') pending++;
+
                 const tr = document.createElement('tr');
-                tr.className = 'table-row border-b border-slate-800 text-slate-300';
+                tr.className = 'hover:bg-slate-900/50 transition-colors';
                 
-                const statusBadge = req.status === 'approved' 
-                    ? '<span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded text-xs font-bold uppercase">Aprobado</span>'
-                    : '<span class="px-2 py-1 bg-amber-500/10 text-amber-500 rounded text-xs font-bold uppercase">Pendiente</span>';
+                // Botones de descarga para archivos
+                let filesHtml = '';
+                if(req.archivos && req.archivos.length) {
+                    req.archivos.forEach(f => {
+                        // Creamos un link de descarga falso usando el base64
+                        filesHtml += `<a href="${f.data}" download="${f.name}" class="text-xs bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-blue-400 mr-1 inline-block border border-slate-700" title="${f.name}">📄 PDF/IMG</a>`;
+                    });
+                } else {
+                    filesHtml = '<span class="text-xs text-slate-600">Sin archivos</span>';
+                }
 
-                const actionBtn = req.status === 'pending'
-                    ? `<button onclick="approveRequest('${req.id}')" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold px-3 py-1.5 rounded transition-colors">Aprobar</button>`
-                    : `<button class="text-xs text-slate-500 cursor-not-allowed" disabled>Finalizado</button>`;
+                const statusBadge = `<span class="bg-emerald-500/10 text-emerald-500 text-xs px-2 py-1 rounded font-bold uppercase">✅ ${req.status}</span>`;
 
                 tr.innerHTML = `
-                    <td class="px-6 py-4 font-mono text-xs text-slate-500">${req.id}</td>
-                    <td class="px-6 py-4 font-bold text-white">${req.name}</td>
-                    <td class="px-6 py-4">${req.dni}</td>
-                    <td class="px-6 py-4">${req.date}</td>
-                    <td class="px-6 py-4">${statusBadge}</td>
-                    <td class="px-6 py-4 text-right">${actionBtn}</td>
+                    <td class="p-4 font-mono text-xs text-slate-500">${req.id}</td>
+                    <td class="p-4 font-bold text-white">${req.nombre}</td>
+                    <td class="p-4 text-slate-300">${req.dni}</td>
+                    <td class="p-4">${statusBadge}</td>
+                    <td class="p-4">${filesHtml}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteReq(${index})" class="text-slate-500 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Actualizar badges
-            document.getElementById('badge-count').textContent = pendingCount;
-            document.getElementById('dash-pending-count').textContent = pendingCount;
+            document.getElementById('stat-money').textContent = "$" + totalMoney.toLocaleString();
+            document.getElementById('stat-pending').textContent = pending;
+            document.getElementById('badge-req').textContent = pending;
         }
 
-        window.approveRequest = function(id) {
-            const data = JSON.parse(localStorage.getItem('remaep_requests'));
-            const idx = data.findIndex(r => r.id === id);
-            if(idx !== -1) {
-                data[idx].status = 'approved';
-                localStorage.setItem('remaep_requests', JSON.stringify(data));
-                loadRequests(); // Recargar tabla
-                showToast(`Solicitud ${id} aprobada`);
+        function deleteReq(index) {
+            if(confirm('¿Borrar registro?')) {
+                const db = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
+                db.splice(index, 1);
+                localStorage.setItem('saas_solicitudes', JSON.stringify(db));
+                loadRequests();
             }
-        };
+        }
 
-        // 5. CONFIGURACIÓN DEL SITIO (CMS)
+        // 2. CONFIGURACIÓN SAAS (CAMALEÓN)
         function loadConfig() {
-            const conf = {
-                year: localStorage.getItem('remaep_conf_year') || '2026',
-                email: localStorage.getItem('remaep_conf_email') || 'admin@remaep.gob.ar',
-                priceInit: localStorage.getItem('remaep_conf_price_init') || '$50.000',
-                priceRen: localStorage.getItem('remaep_conf_price_ren') || '$30.000',
-                logo: localStorage.getItem('remaep_conf_logo')
-            };
+            const config = JSON.parse(localStorage.getItem('saas_config')) || {};
+            
+            document.getElementById('conf-color').value = config.color || '#06b6d4';
+            document.getElementById('conf-title').value = config.title || 'REMAEP';
+            document.getElementById('conf-price').value = config.price || '$50.000';
+            document.getElementById('conf-hero-title').value = config.heroTitle || 'Registro Nacional';
+            document.getElementById('conf-hero-subtitle').value = config.heroSubtitle || 'Matrícula Profesional';
 
-            document.getElementById('conf-year').value = conf.year;
-            document.getElementById('conf-email').value = conf.email;
-            document.getElementById('conf-price-init').value = conf.priceInit;
-            document.getElementById('conf-price-ren').value = conf.priceRen;
-
-            if(conf.logo) {
-                const img = document.getElementById('cms-logo-preview');
-                img.src = conf.logo;
+            if(config.logo) {
+                const img = document.getElementById('logo-preview');
+                img.src = config.logo;
                 img.classList.remove('hidden');
-                document.getElementById('cms-logo-placeholder').classList.add('hidden');
             }
         }
 
-        // Manejo de subida de Logo
-        document.getElementById('cms-logo-input').addEventListener('change', function(e) {
+        // Manejo de logo
+        document.getElementById('conf-logo').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if(!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
-                const base64 = evt.target.result;
-                const img = document.getElementById('cms-logo-preview');
-                img.src = base64;
+                const img = document.getElementById('logo-preview');
+                img.src = evt.target.result;
                 img.classList.remove('hidden');
-                document.getElementById('cms-logo-placeholder').classList.add('hidden');
-                // Guardamos temporalmente en atributo para cuando de click en guardar
-                img.dataset.tempSrc = base64; 
+                // Guardamos en dataset temporalmente
+                img.dataset.temp = evt.target.result;
             };
             reader.readAsDataURL(file);
         });
 
-        window.saveSiteConfig = function() {
-            // Obtener valores
-            const year = document.getElementById('conf-year').value;
-            const email = document.getElementById('conf-email').value;
-            const priceInit = document.getElementById('conf-price-init').value;
-            const priceRen = document.getElementById('conf-price-ren').value;
+        function saveConfig() {
+            const img = document.getElementById('logo-preview');
+            const logoData = img.dataset.temp || img.src; // Usar nuevo o el que ya estaba
+
+            const config = {
+                color: document.getElementById('conf-color').value,
+                title: document.getElementById('conf-title').value,
+                price: document.getElementById('conf-price').value,
+                heroTitle: document.getElementById('conf-hero-title').value,
+                heroSubtitle: document.getElementById('conf-hero-subtitle').value,
+                logo: logoData.startsWith('data:') ? logoData : null // Solo guardar si es data URI válida
+            };
+
+            localStorage.setItem('saas_config', JSON.stringify(config));
             
-            // Obtener logo (si hubo cambio reciente)
-            const imgPreview = document.getElementById('cms-logo-preview');
-            if(imgPreview.dataset.tempSrc) {
-                localStorage.setItem('remaep_conf_logo', imgPreview.dataset.tempSrc);
-            }
-
-            // Guardar en LocalStorage (La "Base de datos")
-            localStorage.setItem('remaep_conf_year', year);
-            localStorage.setItem('remaep_conf_email', email);
-            localStorage.setItem('remaep_conf_price_init', priceInit);
-            localStorage.setItem('remaep_conf_price_ren', priceRen);
-
-            // Notificar al Index
-            window.dispatchEvent(new CustomEvent('remaep-config-updated')); // Para misma ventana
-            // Forzar evento storage escribiendo un timestamp dummy
-            localStorage.setItem('remaep_force_update', Date.now());
-
-            showToast('Configuración del Portal Actualizada');
-        };
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').textContent = msg;
-            t.classList.remove('translate-y-24');
-            setTimeout(() => t.classList.add('translate-y-24'), 3000);
+            // Forzar actualización en Index
+            window.dispatchEvent(new CustomEvent('storage')); // Mismo tab
+            
+            alert('Configuración publicada. Revisa la landing page.');
         }
+
+        // INICIALIZACIÓN
+        lucide.createIcons();
+        loadRequests();
+        loadConfig();
+
+        // Escuchar cambios entrantes (por si se hacen pagos mientras el admin mira)
+        window.addEventListener('storage', loadRequests);
 
     </script>
 </body>
