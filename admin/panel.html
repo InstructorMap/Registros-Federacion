@@ -12,36 +12,43 @@
         .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; color: #94a3b8; }
         .sidebar-link:hover, .sidebar-link.active { background: #1e293b; color: white; }
         .sidebar-link.active { border-left: 3px solid #3b82f6; }
-        .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; }
+        .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        input[type="text"], input[type="number"], input[type="url"] {
+            width: 100%; background: #1e293b; border: 1px solid #334155; 
+            border-radius: 8px; padding: 10px; color: white; outline: none;
+        }
+        input:focus { border-color: #3b82f6; }
+        label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
 
-    <aside class="w-64 bg-slate-950 border-r border-slate-900 flex flex-col">
+    <aside class="w-64 bg-slate-950 border-r border-slate-900 flex flex-col z-20">
         <div class="h-16 flex items-center px-6 border-b border-slate-900 gap-2 text-white font-bold tracking-wider">
             <div class="w-6 h-6 bg-blue-600 rounded"></div> SAAS ENGINE
         </div>
-
-        <nav class="flex-1 p-4 space-y-2">
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <button onclick="showTab('dashboard')" id="nav-dashboard" class="sidebar-link active w-full">
                 <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Dashboard
             </button>
             <button onclick="showTab('solicitudes')" id="nav-solicitudes" class="sidebar-link w-full">
-                <i data-lucide="inbox" class="w-5 h-5"></i> Solicitudes <span class="ml-auto bg-blue-600 text-xs px-2 py-0.5 rounded-full text-white" id="badge-req">0</span>
+                <i data-lucide="inbox" class="w-5 h-5"></i> Solicitudes
             </button>
+            
             <div class="pt-6 pb-2 px-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Configuración</div>
+            
             <button onclick="showTab('identidad')" id="nav-identidad" class="sidebar-link w-full">
-                <i data-lucide="palette" class="w-5 h-5"></i> Identidad (SaaS)
+                <i data-lucide="palette" class="w-5 h-5"></i> Diseño & Banner
+            </button>
+            <button onclick="showTab('contacto')" id="nav-contacto" class="sidebar-link w-full">
+                <i data-lucide="map-pin" class="w-5 h-5"></i> Contacto & Redes
+            </button>
+            <button onclick="showTab('pagos')" id="nav-pagos" class="sidebar-link w-full">
+                <i data-lucide="credit-card" class="w-5 h-5"></i> Pagos (MP)
             </button>
         </nav>
-
         <div class="p-4 border-t border-slate-900">
             <a href="index.html" target="_blank" class="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors">
                 <i data-lucide="external-link" class="w-4 h-4"></i> VER LANDING PAGE
@@ -49,109 +56,106 @@
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col">
+    <main class="flex-1 flex flex-col min-w-0 bg-slate-950">
         <header class="h-16 bg-slate-950 border-b border-slate-900 flex justify-between items-center px-8">
             <h2 class="text-xl font-bold text-white" id="page-title">Dashboard</h2>
-            <div class="flex items-center gap-3">
-                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span class="text-xs font-bold text-emerald-500">Pasarela Activa</span>
-            </div>
+            <button onclick="saveAll()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">
+                <i data-lucide="save" class="w-4 h-4"></i> PUBLICAR CAMBIOS
+            </button>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 bg-slate-950">
+        <div class="flex-1 overflow-y-auto p-8">
 
             <div id="view-dashboard" class="tab-content active">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="card p-6">
-                        <p class="text-slate-400 text-sm font-medium mb-1">Ingresos Totales</p>
-                        <h3 class="text-3xl font-bold text-white" id="stat-money">$0</h3>
-                    </div>
-                    <div class="card p-6">
-                        <p class="text-slate-400 text-sm font-medium mb-1">Solicitudes Pendientes</p>
-                        <h3 class="text-3xl font-bold text-white" id="stat-pending">0</h3>
-                    </div>
-                    <div class="card p-6">
-                        <p class="text-slate-400 text-sm font-medium mb-1">Tasa de Aprobación</p>
-                        <h3 class="text-3xl font-bold text-emerald-400">98%</h3>
-                    </div>
+                    <div class="card"><p class="text-slate-400 text-xs font-bold uppercase">Ingresos</p><h3 class="text-3xl font-bold text-white mt-1">$150.000</h3></div>
+                    <div class="card"><p class="text-slate-400 text-xs font-bold uppercase">Solicitudes</p><h3 class="text-3xl font-bold text-white mt-1">12</h3></div>
+                </div>
+                <div class="card bg-slate-900/50 border-dashed text-center py-12">
+                    <p class="text-slate-500">Selecciona una opción del menú para configurar tu plataforma SaaS.</p>
                 </div>
             </div>
 
             <div id="view-solicitudes" class="tab-content">
-                <div class="card overflow-hidden">
-                    <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-                        <h3 class="font-bold">Bandeja de Entrada</h3>
-                        <button onclick="loadRequests()" class="text-xs text-blue-400 hover:text-white flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Actualizar</button>
-                    </div>
+                <div class="card overflow-hidden p-0">
                     <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-900 text-slate-400 font-medium border-b border-slate-800">
-                            <tr>
-                                <th class="p-4">ID</th>
-                                <th class="p-4">Solicitante</th>
-                                <th class="p-4">DNI</th>
-                                <th class="p-4">Estado Pago</th>
-                                <th class="p-4">Documentación</th>
-                                <th class="p-4 text-right">Acción</th>
-                            </tr>
+                        <thead class="bg-slate-900 text-slate-400 border-b border-slate-800">
+                            <tr><th class="p-4">ID</th><th class="p-4">Nombre</th><th class="p-4">DNI</th><th class="p-4">Estado</th></tr>
                         </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-800">
+                        <tbody id="req-body" class="divide-y divide-slate-800 text-slate-300">
                             </tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="view-identidad" class="tab-content max-w-3xl">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-white mb-2">Personalización SaaS</h2>
-                    <p class="text-slate-400">Modifica la apariencia de la landing page para adaptarla a cualquier institución.</p>
+            <div id="view-identidad" class="tab-content space-y-6 max-w-4xl">
+                <div class="card">
+                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="image" class="text-blue-500"></i> Logo y Banner Principal</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label>Logo Institucional</label>
+                            <input type="file" id="conf-logo" accept="image/*" class="text-xs text-slate-400">
+                            <img id="preview-logo" class="h-10 mt-2 object-contain hidden bg-slate-800 p-1 rounded">
+                        </div>
+                        <div>
+                            <label>Imagen de Banner (Fondo Hero)</label>
+                            <input type="file" id="conf-banner" accept="image/*" class="text-xs text-slate-400">
+                            <div id="preview-banner" class="h-20 w-full mt-2 bg-cover bg-center rounded hidden opacity-50"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="space-y-6">
-                    <div class="card p-6">
-                        <h3 class="font-bold mb-4 flex gap-2"><i data-lucide="palette" class="text-blue-500"></i> Marca Visual</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Color Primario (Tema)</label>
-                                <div class="flex gap-2 items-center">
-                                    <input type="color" id="conf-color" class="bg-transparent h-10 w-10 cursor-pointer border-none" value="#06b6d4">
-                                    <span class="text-xs text-slate-400">Click para cambiar</span>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Logo Institucional</label>
-                                <input type="file" id="conf-logo" accept="image/*" class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-blue-400 hover:file:bg-slate-700">
-                                <img id="logo-preview" class="mt-4 h-12 w-auto object-contain hidden border border-slate-700 p-1 bg-slate-900 rounded">
-                            </div>
+                <div class="card">
+                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="type" class="text-blue-500"></i> Textos Principales</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label>Nombre del Sitio (Nav)</label><input type="text" id="conf-title"></div>
+                        <div><label>Color Principal (Hex)</label><input type="color" id="conf-color" class="w-full h-10 bg-transparent border-none"></div>
+                        <div><label>Título Hero</label><input type="text" id="conf-hero-title"></div>
+                        <div><label>Subtítulo Hero</label><input type="text" id="conf-hero-subtitle"></div>
+                        <div><label>Texto Botón (CTA)</label><input type="text" id="conf-cta" placeholder="Ej: Inscribirse"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-contacto" class="tab-content space-y-6 max-w-4xl">
+                <div class="card">
+                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="map-pin" class="text-blue-500"></i> Datos de Contacto</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="col-span-2"><label>Dirección Física</label><input type="text" id="conf-address" placeholder="Av. Libertador 1234, CABA"></div>
+                        <div><label>Teléfono (Visible)</label><input type="text" id="conf-phone" placeholder="+54 11 1234 5678"></div>
+                        <div><label>WhatsApp (Solo números)</label><input type="text" id="conf-whatsapp" placeholder="5491112345678"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="share-2" class="text-blue-500"></i> Redes Sociales</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label>Link Instagram</label><input type="url" id="conf-instagram"></div>
+                        <div><label>Link Facebook</label><input type="url" id="conf-facebook"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-pagos" class="tab-content space-y-6 max-w-4xl">
+                <div class="card">
+                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="credit-card" class="text-blue-500"></i> Configuración de Cobro</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label>Precio a Mostrar (Texto)</label>
+                            <input type="text" id="conf-price" class="text-2xl font-bold text-emerald-400" placeholder="$50.000">
+                        </div>
+                        <div>
+                            <label>Link de Pago (Mercado Pago / Stripe)</label>
+                            <input type="url" id="conf-mplink" placeholder="https://mpago.la/...">
+                            <p class="text-xs text-slate-500 mt-1">Al hacer click en "Pagar", el usuario será redirigido a este enlace.</p>
                         </div>
                     </div>
-
-                    <div class="card p-6">
-                        <h3 class="font-bold mb-4 flex gap-2"><i data-lucide="type" class="text-blue-500"></i> Textos y Precios</h3>
-                        <div class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nombre Corto (Nav)</label>
-                                    <input type="text" id="conf-title" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: REMAEP">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Precio Trámite</label>
-                                    <input type="text" id="conf-price" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-blue-500 outline-none" placeholder="$50.000">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Título Principal (Hero)</label>
-                                <input type="text" id="conf-hero-title" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: Registro Nacional">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Subtítulo (Hero)</label>
-                                <input type="text" id="conf-hero-subtitle" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: Matrícula Profesional">
-                            </div>
-                        </div>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="search" class="text-blue-500"></i> SEO Básico</h3>
+                    <div class="space-y-4">
+                        <div><label>Título de la Pestaña (Meta Title)</label><input type="text" id="conf-seo-title"></div>
+                        <div><label>Descripción Corta (Meta Description)</label><input type="text" id="conf-seo-desc"></div>
                     </div>
-
-                    <button onclick="saveConfig()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-blue-500/20 transition-all">
-                        PUBLICAR CAMBIOS EN LANDING
-                    </button>
                 </div>
             </div>
 
@@ -159,137 +163,145 @@
     </main>
 
     <script>
-        // --- LOGICA DEL PANEL ---
+        // --- LÓGICA DEL PANEL SAAS ---
 
+        // Navegación
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
-            
             document.getElementById('view-' + id).classList.add('active');
             document.getElementById('nav-' + id).classList.add('active');
             
-            const titles = { dashboard: 'Resumen', solicitudes: 'Gestión CRM', identidad: 'Configuración SaaS' };
+            const titles = { dashboard: 'Resumen', solicitudes: 'CRM', identidad: 'Diseño', contacto: 'Contacto', pagos: 'Pagos' };
             document.getElementById('page-title').textContent = titles[id];
         }
 
-        // 1. CARGA DE SOLICITUDES (CRM)
-        function loadRequests() {
-            const db = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
+        // Carga de Datos
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadConfig();
+            loadRequests();
+        });
 
-            let totalMoney = 0;
-            let pending = 0;
-
-            db.forEach((req, index) => {
-                // Calcular estadisticas
-                const monto = parseInt(req.monto.replace(/\D/g, '')) || 0;
-                totalMoney += monto;
-                if(req.status !== 'finalizado') pending++;
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-900/50 transition-colors';
-                
-                // Botones de descarga para archivos
-                let filesHtml = '';
-                if(req.archivos && req.archivos.length) {
-                    req.archivos.forEach(f => {
-                        // Creamos un link de descarga falso usando el base64
-                        filesHtml += `<a href="${f.data}" download="${f.name}" class="text-xs bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-blue-400 mr-1 inline-block border border-slate-700" title="${f.name}">📄 PDF/IMG</a>`;
-                    });
-                } else {
-                    filesHtml = '<span class="text-xs text-slate-600">Sin archivos</span>';
-                }
-
-                const statusBadge = `<span class="bg-emerald-500/10 text-emerald-500 text-xs px-2 py-1 rounded font-bold uppercase">✅ ${req.status}</span>`;
-
-                tr.innerHTML = `
-                    <td class="p-4 font-mono text-xs text-slate-500">${req.id}</td>
-                    <td class="p-4 font-bold text-white">${req.nombre}</td>
-                    <td class="p-4 text-slate-300">${req.dni}</td>
-                    <td class="p-4">${statusBadge}</td>
-                    <td class="p-4">${filesHtml}</td>
-                    <td class="p-4 text-right">
-                        <button onclick="deleteReq(${index})" class="text-slate-500 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('stat-money').textContent = "$" + totalMoney.toLocaleString();
-            document.getElementById('stat-pending').textContent = pending;
-            document.getElementById('badge-req').textContent = pending;
-        }
-
-        function deleteReq(index) {
-            if(confirm('¿Borrar registro?')) {
-                const db = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
-                db.splice(index, 1);
-                localStorage.setItem('saas_solicitudes', JSON.stringify(db));
-                loadRequests();
-            }
-        }
-
-        // 2. CONFIGURACIÓN SAAS (CAMALEÓN)
         function loadConfig() {
             const config = JSON.parse(localStorage.getItem('saas_config')) || {};
             
-            document.getElementById('conf-color').value = config.color || '#06b6d4';
-            document.getElementById('conf-title').value = config.title || 'REMAEP';
-            document.getElementById('conf-price').value = config.price || '$50.000';
-            document.getElementById('conf-hero-title').value = config.heroTitle || 'Registro Nacional';
-            document.getElementById('conf-hero-subtitle').value = config.heroSubtitle || 'Matrícula Profesional';
+            // Identidad
+            setVal('conf-title', config.title || 'REMAEP');
+            setVal('conf-color', config.color || '#06b6d4');
+            setVal('conf-hero-title', config.heroTitle || 'Registro Nacional');
+            setVal('conf-hero-subtitle', config.heroSubtitle || 'Matrícula Profesional');
+            setVal('conf-cta', config.ctaText || 'Iniciar Trámite');
+            
+            // Contacto
+            setVal('conf-address', config.address);
+            setVal('conf-phone', config.phone);
+            setVal('conf-whatsapp', config.whatsapp);
+            setVal('conf-instagram', config.instagram);
+            setVal('conf-facebook', config.facebook);
 
+            // Pagos
+            setVal('conf-price', config.price || '$50.000');
+            setVal('conf-mplink', config.mpLink);
+
+            // SEO
+            setVal('conf-seo-title', config.seoTitle);
+            setVal('conf-seo-desc', config.seoDesc);
+
+            // Imágenes (Preview)
             if(config.logo) {
-                const img = document.getElementById('logo-preview');
-                img.src = config.logo;
-                img.classList.remove('hidden');
+                document.getElementById('preview-logo').src = config.logo;
+                document.getElementById('preview-logo').classList.remove('hidden');
+            }
+            if(config.banner) {
+                document.getElementById('preview-banner').style.backgroundImage = `url('${config.banner}')`;
+                document.getElementById('preview-banner').classList.remove('hidden');
             }
         }
 
-        // Manejo de logo
-        document.getElementById('conf-logo').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const img = document.getElementById('logo-preview');
-                img.src = evt.target.result;
-                img.classList.remove('hidden');
-                // Guardamos en dataset temporalmente
-                img.dataset.temp = evt.target.result;
-            };
-            reader.readAsDataURL(file);
+        function setVal(id, val) { if(val) document.getElementById(id).value = val; }
+
+        // Manejo de Imágenes (Logo y Banner)
+        let tempLogo = null;
+        let tempBanner = null;
+
+        handleImage('conf-logo', (res) => {
+            tempLogo = res;
+            document.getElementById('preview-logo').src = res;
+            document.getElementById('preview-logo').classList.remove('hidden');
         });
 
-        function saveConfig() {
-            const img = document.getElementById('logo-preview');
-            const logoData = img.dataset.temp || img.src; // Usar nuevo o el que ya estaba
+        handleImage('conf-banner', (res) => {
+            tempBanner = res;
+            document.getElementById('preview-banner').style.backgroundImage = `url('${res}')`;
+            document.getElementById('preview-banner').classList.remove('hidden');
+        });
 
-            const config = {
-                color: document.getElementById('conf-color').value,
-                title: document.getElementById('conf-title').value,
-                price: document.getElementById('conf-price').value,
-                heroTitle: document.getElementById('conf-hero-title').value,
-                heroSubtitle: document.getElementById('conf-hero-subtitle').value,
-                logo: logoData.startsWith('data:') ? logoData : null // Solo guardar si es data URI válida
-            };
-
-            localStorage.setItem('saas_config', JSON.stringify(config));
-            
-            // Forzar actualización en Index
-            window.dispatchEvent(new CustomEvent('storage')); // Mismo tab
-            
-            alert('Configuración publicada. Revisa la landing page.');
+        function handleImage(id, callback) {
+            document.getElementById(id).addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => callback(evt.target.result);
+                reader.readAsDataURL(file);
+            });
         }
 
-        // INICIALIZACIÓN
-        lucide.createIcons();
-        loadRequests();
-        loadConfig();
+        // Guardar Todo
+        function saveAll() {
+            const oldConfig = JSON.parse(localStorage.getItem('saas_config')) || {};
 
-        // Escuchar cambios entrantes (por si se hacen pagos mientras el admin mira)
-        window.addEventListener('storage', loadRequests);
+            const newConfig = {
+                // Identidad
+                title: document.getElementById('conf-title').value,
+                color: document.getElementById('conf-color').value,
+                heroTitle: document.getElementById('conf-hero-title').value,
+                heroSubtitle: document.getElementById('conf-hero-subtitle').value,
+                ctaText: document.getElementById('conf-cta').value,
+                logo: tempLogo || oldConfig.logo,
+                banner: tempBanner || oldConfig.banner,
+
+                // Contacto
+                address: document.getElementById('conf-address').value,
+                phone: document.getElementById('conf-phone').value,
+                whatsapp: document.getElementById('conf-whatsapp').value,
+                instagram: document.getElementById('conf-instagram').value,
+                facebook: document.getElementById('conf-facebook').value,
+
+                // Pagos y SEO
+                price: document.getElementById('conf-price').value,
+                mpLink: document.getElementById('conf-mplink').value,
+                seoTitle: document.getElementById('conf-seo-title').value,
+                seoDesc: document.getElementById('conf-seo-desc').value
+            };
+
+            localStorage.setItem('saas_config', JSON.stringify(newConfig));
+            window.dispatchEvent(new CustomEvent('storage')); // Notificar Index
+            alert('¡Cambios publicados en el portal!');
+        }
+
+        // Cargar Solicitudes (CRM)
+        function loadRequests() {
+            const db = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
+            const tbody = document.getElementById('req-body');
+            tbody.innerHTML = '';
+            
+            if(db.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin solicitudes recientes</td></tr>';
+                return;
+            }
+
+            db.forEach(req => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-xs text-slate-500">${req.id}</td>
+                    <td class="p-4 font-bold text-white">${req.nombre}</td>
+                    <td class="p-4">${req.dni}</td>
+                    <td class="p-4"><span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded">Iniciado</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
     </script>
 </body>
