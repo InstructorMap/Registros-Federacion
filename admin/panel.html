@@ -267,21 +267,48 @@
             }
         }
 
+        // --- GESTIÓN DE AVALES CON VISIBILIDAD ---
         async function cargarAvales() {
             const grid = document.getElementById('grid-avales');
             const { data } = await db.from('instituciones').select('*').order('created_at', { ascending: false });
             
             if (data) {
                 grid.innerHTML = data.map(inst => `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center gap-3 relative group hover:border-blue-500/50 transition">
-                        <button onclick="borrarAval('${inst.id}')" class="absolute top-2 right-2 text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" size="16"></i></button>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center gap-3 relative group hover:border-blue-500/50 transition ${inst.mostrar_en_index ? '' : 'opacity-50 grayscale border-red-900/30'}">
+                        
+                        <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                            <button onclick="toggleVisibility('${inst.id}', ${inst.mostrar_en_index})" class="text-slate-400 hover:text-white p-1" title="${inst.mostrar_en_index ? 'Ocultar en Index' : 'Mostrar en Index'}">
+                                <i data-lucide="${inst.mostrar_en_index ? 'eye' : 'eye-off'}" size="16"></i>
+                            </button>
+                            <button onclick="borrarAval('${inst.id}')" class="text-slate-400 hover:text-red-500 p-1">
+                                <i data-lucide="trash-2" size="16"></i>
+                            </button>
+                        </div>
+
                         <div class="h-16 flex items-center justify-center w-full bg-white/5 rounded-lg p-2">
                             <img src="${inst.logo_url}" class="max-h-full max-w-full object-contain">
                         </div>
-                        <span class="text-xs font-bold text-center text-slate-300">${inst.nombre}</span>
+                        <span class="text-xs font-bold text-center text-slate-300">
+                            ${inst.nombre} 
+                            ${!inst.mostrar_en_index ? '<span class="text-red-500 ml-1 text-[10px]">(Oculto)</span>' : ''}
+                        </span>
                     </div>
                 `).join('');
                 lucide.createIcons();
+            }
+        }
+
+        // --- FUNCIÓN PARA MOSTRAR / OCULTAR ---
+        async function toggleVisibility(id, estadoActual) {
+            const { error } = await db
+                .from('instituciones')
+                .update({ mostrar_en_index: !estadoActual })
+                .eq('id', id);
+            
+            if (!error) {
+                cargarAvales(); // Recargar para ver el cambio
+            } else {
+                alert("Error al actualizar visibilidad");
             }
         }
 
@@ -294,7 +321,6 @@
             }
         }
 
-        // Subir Nuevo Aval
         document.getElementById('form-aval').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
@@ -308,7 +334,8 @@
                 await db.storage.from('logos-instituciones').upload(fileName, file);
                 const logoUrl = `${PROJECT_URL}/storage/v1/object/public/logos-instituciones/${fileName}`;
 
-                await db.from('instituciones').insert([{ nombre, logo_url: logoUrl }]);
+                // POR DEFECTO: mostrar_en_index = true
+                await db.from('instituciones').insert([{ nombre, logo_url: logoUrl, mostrar_en_index: true }]);
                 
                 e.target.reset();
                 cargarAvales();
@@ -317,7 +344,6 @@
             finally { btn.innerText = "Subir"; btn.disabled = false; }
         });
 
-        // Crear Alumno
         document.getElementById('form-alumno').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -345,7 +371,7 @@
         });
 
         async function borrarAval(id) {
-            if(!confirm('¿Eliminar?')) return;
+            if(!confirm('¿Estás seguro de ELIMINAR permanentemente esta institución?')) return;
             await db.from('instituciones').delete().eq('id', id);
             cargarAvales();
         }
@@ -357,8 +383,6 @@
             document.getElementById('dash-total-alumnos').innerText = totalAl || 0;
             document.getElementById('dash-total-avales').innerText = totalAv || 0;
         }
-
-        // 2. CONFIG LOGIC
 
         function loadLocalConfig() {
             const config = JSON.parse(localStorage.getItem('saas_config')) || {};
