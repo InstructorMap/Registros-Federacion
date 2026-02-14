@@ -25,7 +25,6 @@
         input:focus, select:focus { border-color: #3b82f6; }
         label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
         
-        /* Loader */
         .spinner { border: 2px solid rgba(255,255,255,0.1); border-left-color: white; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
@@ -216,12 +215,10 @@
     </div>
 
     <script>
-        // --- CONFIGURACIÓN SUPABASE ---
         const PROJECT_URL = 'https://vxggatcfrywyodovjwxj.supabase.co';
         const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
-        // --- NAVEGACIÓN ---
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
@@ -235,7 +232,6 @@
             if(id === 'avales') cargarAvales();
         }
 
-        // --- INICIALIZACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             loadLocalConfig(); 
@@ -243,9 +239,7 @@
             updateDashboardStats(); 
         });
 
-        // ==========================================
         // 1. SUPABASE LOGIC
-        // ==========================================
 
         async function cargarAlumnos() {
             const lista = document.getElementById('lista-alumnos');
@@ -266,7 +260,7 @@
                         <td class="p-4 font-mono text-xs text-slate-400">${al.dni_alumno}</td>
                         <td class="p-4 text-xs text-blue-400">${al.instituciones?.nombre || '---'}</td>
                         <td class="p-4 text-right">
-                            <a href="validador.html?id=${al.id}" target="_blank" class="text-slate-400 hover:text-white text-xs font-bold border border-slate-700 px-2 py-1 rounded">Ver ID</a>
+                            <a href="https://asari-platform.vercel.app/validador.html?id=${al.id}" target="_blank" class="text-slate-400 hover:text-white text-xs font-bold border border-slate-700 px-2 py-1 rounded">Ver ID</a>
                         </td>
                     </tr>
                 `).join('');
@@ -364,16 +358,14 @@
             document.getElementById('dash-total-avales').innerText = totalAv || 0;
         }
 
-        // ==========================================
         // 2. CONFIG LOGIC
-        // ==========================================
 
         function loadLocalConfig() {
             const config = JSON.parse(localStorage.getItem('saas_config')) || {};
             setVal('conf-title', config.title || 'REMAEP');
             setVal('conf-color', config.color || '#0033cc');
             setVal('conf-hero-title', config.heroTitle);
-            setVal('conf-cta', config.ctaText); // Carga el texto del botón
+            setVal('conf-cta', config.ctaText); 
             setVal('conf-price', config.price || '$50.000');
             setVal('conf-mplink', config.mpLink);
             setVal('conf-logo', config.logo);
@@ -384,7 +376,7 @@
                 title: document.getElementById('conf-title').value,
                 color: document.getElementById('conf-color').value,
                 heroTitle: document.getElementById('conf-hero-title').value,
-                ctaText: document.getElementById('conf-cta').value, // Guarda el texto del botón
+                ctaText: document.getElementById('conf-cta').value, 
                 price: document.getElementById('conf-price').value,
                 mpLink: document.getElementById('conf-mplink').value,
                 logo: document.getElementById('conf-logo').value
