@@ -9,83 +9,52 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script>
-        // Configuración de colores por defecto
         tailwind.config = { theme: { extend: { colors: { brand: '#0033cc', brandDark: '#002288' }, fontFamily: { sans: ['Montserrat', 'sans-serif'] } } } }
     </script>
     <style>
         body { background: #f8fafc; color: #0f172a; }
-        
-        /* FONDO HERO */
-        .hero-section { 
-            background-color: var(--brand-color, #0033cc); 
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            background-size: auto;
-            position: relative;
-        }
+        .hero-section { background-color: var(--brand-color, #0033cc); background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); background-size: auto; position: relative; }
         .hero-photo { background-size: cover; background-position: center; }
         .hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); z-index: 1; }
-        
-        /* LOGOS A COLOR Y GRANDES (FORZADO) */
-        .logo-aval { 
-            filter: none !important; /* FORZAR COLOR */
-            opacity: 1 !important; 
-            transition: transform 0.3s ease;
-            max-height: 80px; /* Tamaño grande fijo */
-            width: auto;
-        }
-        .logo-aval:hover { 
-            transform: scale(1.05); 
-        }
+        .logo-aval { filter: none !important; opacity: 1 !important; transition: transform 0.3s ease; max-height: 80px; width: auto; }
+        .logo-aval:hover { transform: scale(1.05); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 h-28 flex items-center justify-between"> <div class="flex items-center gap-4">
-                <div id="site-logo-container" class="h-20 flex items-center"> <i data-lucide="shield-check" class="w-16 h-16 text-brand"></i> </div>
+        <div class="max-w-7xl mx-auto px-6 h-28 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div id="site-logo-container" class="h-20 flex items-center">
+                    <i data-lucide="shield-check" class="w-16 h-16 text-brand"></i>
+                </div>
                 <div class="leading-tight">
                     <span class="font-bold text-2xl tracking-tight block text-slate-900" id="site-title">REMAEP</span>
                     <span class="text-xs text-slate-500 uppercase tracking-widest font-bold">Sitio Oficial</span>
                 </div>
             </div>
-            
             <a href="tramite.html" id="nav-btn-action" class="bg-brand hover:bg-brandDark text-white font-bold uppercase text-xs px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
-                Iniciar Trámite
-                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                Iniciar Trámite <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
         </div>
     </nav>
 
     <header id="hero-header" class="hero-section py-32 px-4 flex flex-col items-center justify-center text-center overflow-hidden relative">
         <div class="hero-overlay hidden" id="hero-overlay"></div>
-        
         <div class="relative z-10 max-w-4xl mx-auto">
-            <div class="inline-block mb-6 px-4 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-[0.2em] border border-white/20 backdrop-blur-sm">
-                Blockchain Verified
-            </div>
-            
+            <div class="inline-block mb-6 px-4 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-[0.2em] border border-white/20 backdrop-blur-sm">Blockchain Verified</div>
             <h1 class="text-4xl md:text-6xl font-extrabold mb-8 text-white leading-tight drop-shadow-lg" id="hero-title">
                 Consulte el Padrón Oficial de <br>Profesionales Habilitados
             </h1>
-            
             <div class="w-full max-w-2xl mx-auto mt-12 relative group z-20">
                 <div class="absolute -inset-1 bg-white/30 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
-                
                 <form id="search-form" class="relative flex flex-col md:flex-row items-center bg-white rounded-3xl md:rounded-full shadow-2xl p-2 transition-transform transform">
-                    <div class="pl-5 pr-2 text-slate-400 hidden md:block">
-                        <i data-lucide="search" class="w-6 h-6"></i>
-                    </div>
+                    <div class="pl-5 pr-2 text-slate-400 hidden md:block"><i data-lucide="search" class="w-6 h-6"></i></div>
                     <input type="text" id="dni-input" class="w-full bg-transparent text-slate-800 text-lg px-4 py-4 focus:outline-none placeholder-slate-400 font-medium text-center md:text-left" placeholder="Ingrese DNI o Matrícula..." autocomplete="off">
-                    
-                    <button type="submit" id="btn-buscar" class="w-full md:w-auto bg-brand hover:bg-brandDark text-white font-extrabold text-lg px-8 py-4 rounded-2xl md:rounded-full transition-all flex items-center justify-center gap-2 shadow-lg mt-2 md:mt-0">
-                        CONSULTAR
-                    </button>
+                    <button type="submit" id="btn-buscar" class="w-full md:w-auto bg-brand hover:bg-brandDark text-white font-extrabold text-lg px-8 py-4 rounded-2xl md:rounded-full transition-all flex items-center justify-center gap-2 shadow-lg mt-2 md:mt-0">CONSULTAR</button>
                 </form>
-
                 <div id="error-msg" class="hidden mt-6 animate-bounce">
-                    <span class="bg-red-600 text-white font-bold px-6 py-2 rounded-full shadow-lg text-sm flex items-center gap-2 justify-center mx-auto w-fit">
-                        <i data-lucide="alert-circle" class="w-4 h-4"></i> No se encontró ningún profesional.
-                    </span>
+                    <span class="bg-red-600 text-white font-bold px-6 py-2 rounded-full shadow-lg text-sm flex items-center gap-2 justify-center mx-auto w-fit"><i data-lucide="alert-circle" class="w-4 h-4"></i> No se encontró ningún profesional.</span>
                 </div>
             </div>
         </div>
@@ -94,56 +63,34 @@
     <section class="py-20 bg-white border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-6 text-center">
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-12">Instituciones y Organismos que nos Acompañan</p>
-            
             <div id="logos-container" class="flex flex-wrap justify-center items-center gap-12 md:gap-24 min-h-[100px]">
-                <div class="animate-pulse flex gap-8 justify-center w-full opacity-50 text-slate-400">
-                    Cargando Instituciones...
-                </div>
+                <div class="animate-pulse flex gap-8 justify-center w-full opacity-50 text-slate-400">Cargando Instituciones...</div>
             </div>
         </div>
     </section>
 
     <section class="py-20 bg-slate-50">
         <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition duration-300">
-                <div class="w-12 h-12 bg-blue-50 text-brand rounded-lg flex items-center justify-center mb-4"><i data-lucide="database"></i></div>
-                <h3 class="font-bold text-lg mb-2 text-slate-800">Registro Inmutable</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">Cada credencial emitida queda registrada en la red, garantizando que no pueda ser alterada ni falsificada.</p>
-            </div>
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition duration-300">
-                <div class="w-12 h-12 bg-blue-50 text-brand rounded-lg flex items-center justify-center mb-4"><i data-lucide="qr-code"></i></div>
-                <h3 class="font-bold text-lg mb-2 text-slate-800">Validación QR</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">Acceso instantáneo al estado de matrícula (Activo, Suspendido o Vencido) mediante escaneo en tiempo real.</p>
-            </div>
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition duration-300">
-                <div class="w-12 h-12 bg-blue-50 text-brand rounded-lg flex items-center justify-center mb-4"><i data-lucide="globe"></i></div>
-                <h3 class="font-bold text-lg mb-2 text-slate-800">Alcance Nacional</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">Unificamos los registros de emergencias médicas de todo el país en una sola base de datos centralizada.</p>
-            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100"><div class="w-12 h-12 bg-blue-50 text-brand rounded-lg flex items-center justify-center mb-4"><i data-lucide="database"></i></div><h3 class="font-bold text-lg mb-2 text-slate-800">Registro Inmutable</h3><p class="text-slate-500 text-sm">Cada credencial emitida queda registrada en la red.</p></div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100"><div class="w-12 h-12 bg-blue-50 text-brand rounded-lg flex items-center justify-center mb-4"><i data-lucide="qr-code"></i></div><h3 class="font-bold text-lg mb-2 text-slate-800">Validación QR</h3><p class="text-slate-500 text-sm">Acceso instantáneo al estado de matrícula.</p></div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100"><div class="w-12 h-12 bg-blue-50 text-brand rounded-lg flex items-center justify-center mb-4"><i data-lucide="globe"></i></div><h3 class="font-bold text-lg mb-2 text-slate-800">Alcance Nacional</h3><p class="text-slate-500 text-sm">Unificamos los registros de emergencias médicas.</p></div>
         </div>
     </section>
 
     <footer class="bg-slate-900 text-white py-12 text-center border-t border-slate-800">
-        <div class="mb-4 flex items-center justify-center gap-3">
-            <i data-lucide="shield-check" class="w-8 h-8 text-brand"></i>
-            <span class="font-bold text-xl tracking-tight">REMAEP</span>
-        </div>
+        <div class="mb-4 flex items-center justify-center gap-3"><i data-lucide="shield-check" class="w-8 h-8 text-brand"></i><span class="font-bold text-xl tracking-tight">REMAEP</span></div>
         <p class="text-xs text-slate-500 uppercase tracking-widest font-bold">Sitio Oficial © 2026</p>
     </footer>
 
     <script>
-        // --- CONFIGURACIÓN ---
         const URL_VALIDADOR = 'https://asari-platform.vercel.app/validador.html'; 
         const PROJECT_URL = 'https://vxggatcfrywyodovjwxj.supabase.co';
         const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
-
         lucide.createIcons();
 
-        // 1. CARGAR DISEÑO (PANEL)
         function aplicarConfigVisual() {
             const config = JSON.parse(localStorage.getItem('saas_config')) || {};
-            
             if(config.color) {
                 document.documentElement.style.setProperty('--brand-color', config.color);
                 document.getElementById('btn-buscar').style.backgroundColor = config.color;
@@ -152,13 +99,7 @@
             if(config.title) document.getElementById('site-title').innerText = config.title;
             if(config.heroTitle) document.getElementById('hero-title').innerHTML = config.heroTitle.replace(/\n/g, "<br>");
             if(config.ctaText) document.getElementById('btn-buscar').innerText = config.ctaText;
-
-            // Logo Grande (Sobrescribe si hay uno nuevo)
-            if(config.logo && config.logo.length > 5) {
-                document.getElementById('site-logo-container').innerHTML = `<img src="${config.logo}" class="h-24 w-auto object-contain">`;
-            }
-
-            // Banner (Foto de Fondo)
+            if(config.logo && config.logo.length > 5) document.getElementById('site-logo-container').innerHTML = `<img src="${config.logo}" class="h-24 w-auto object-contain">`;
             if(config.banner && config.banner.length > 5) {
                 const hero = document.getElementById('hero-header');
                 hero.style.backgroundImage = `url('${config.banner}')`;
@@ -167,21 +108,19 @@
             }
         }
 
-        // 2. CARGAR AVALES
         async function cargarAvales() {
             const container = document.getElementById('logos-container');
             
-            // FILTRO ESTRICTO: Solo trae instituciones con logo válido
+            // AQUI ESTA LA MAGIA: SOLO MOSTRAR SI "mostrar_en_index" ES TRUE
             const { data, error } = await db
                 .from('instituciones')
                 .select('nombre, logo_url')
-                .neq('logo_url', null)
+                .eq('mostrar_en_index', true) // Solo los visibles
+                .neq('logo_url', null)        // Y que tengan logo
                 .order('created_at', { ascending: false });
             
             if (data && data.length > 0) {
-                // Filtro adicional de JS para strings vacios
                 const validos = data.filter(i => i.logo_url && i.logo_url.length > 10);
-                
                 if(validos.length > 0) {
                     container.innerHTML = validos.map(i => `
                         <div class="group relative p-4 transition hover:bg-slate-50 rounded-xl">
@@ -196,32 +135,20 @@
             }
         }
 
-        // 3. BUSCADOR
         document.getElementById('search-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-buscar');
             const msg = document.getElementById('error-msg');
             const input = document.getElementById('dni-input').value.trim();
             const originalText = btn.innerText;
-
             if (input.length < 4) return;
-            
             btn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>';
             msg.classList.add('hidden');
-
             try {
                 const { data } = await db.from('matriculas').select('id').eq('dni_alumno', input).limit(1).maybeSingle();
-                
-                if (data) {
-                    window.location.href = `${URL_VALIDADOR}?id=${data.id}`;
-                } else {
-                    msg.classList.remove('hidden');
-                    btn.innerText = originalText;
-                }
-            } catch (err) {
-                console.error(err);
-                btn.innerText = originalText;
-            }
+                if (data) window.location.href = `${URL_VALIDADOR}?id=${data.id}`;
+                else { msg.classList.remove('hidden'); btn.innerText = originalText; }
+            } catch (err) { btn.innerText = originalText; }
         });
 
         document.addEventListener('DOMContentLoaded', () => {
