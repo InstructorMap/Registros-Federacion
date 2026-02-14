@@ -13,31 +13,42 @@
     </script>
     <style>
         body { background: #f8fafc; color: #0f172a; }
-        /* Fondo por defecto (Patrón) si no hay foto */
+        
+        /* Fondo por defecto (Patrón) */
         .hero-section { 
             background-color: var(--brand-color, #0033cc); 
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             background-size: auto;
             position: relative;
         }
+        
         /* Clase para cuando hay foto (Cover) */
         .hero-photo {
             background-size: cover;
             background-position: center;
         }
-        /* Overlay oscuro para que se lea el texto sobre la foto */
+        
+        /* Overlay oscuro para leer texto */
         .hero-overlay {
             position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 1;
         }
         
-        .logo-aval { filter: grayscale(100%); opacity: 0.7; transition: all 0.4s ease; }
-        .logo-aval:hover { filter: grayscale(0%); opacity: 1; transform: scale(1.05); }
+        /* LOGOS A COLOR (CORREGIDO) */
+        .logo-aval { 
+            filter: none; /* Sin filtros, color real */
+            opacity: 1;   /* Totalmente visible */
+            transition: transform 0.3s ease; /* Solo animamos el tamaño */
+        }
+        .logo-aval:hover { 
+            transform: scale(1.1); /* Efecto zoom suave al pasar el mouse */
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between"> <div class="flex items-center gap-4">
+        <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+            <div class="flex items-center gap-4">
                 <div id="site-logo-container" class="h-16 flex items-center">
                     <i data-lucide="shield-check" class="w-12 h-12 text-brand"></i>
                 </div>
@@ -55,7 +66,9 @@
     </nav>
 
     <header id="hero-header" class="hero-section py-32 px-4 flex flex-col items-center justify-center text-center overflow-hidden">
-        <div class="hero-overlay hidden" id="hero-overlay"></div> <div class="relative z-10 max-w-4xl mx-auto">
+        <div class="hero-overlay hidden" id="hero-overlay"></div>
+        
+        <div class="relative z-10 max-w-4xl mx-auto">
             
             <div class="inline-block mb-6 px-4 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-[0.2em] border border-white/20 backdrop-blur-sm">
                 Blockchain Verified
@@ -93,7 +106,7 @@
     <section class="py-16 bg-white border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-6 text-center">
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-10">Instituciones y Organismos</p>
-            <div id="logos-container" class="flex flex-wrap justify-center items-center gap-8 md:gap-16 min-h-[80px]">
+            <div id="logos-container" class="flex flex-wrap justify-center items-center gap-10 md:gap-20 min-h-[80px]">
                 <div class="animate-pulse flex gap-4 justify-center w-full">
                     <div class="h-12 w-32 bg-slate-200 rounded"></div>
                     <div class="h-12 w-32 bg-slate-200 rounded"></div>
@@ -111,7 +124,7 @@
     </footer>
 
     <script>
-        // URL DEL VALIDADOR (Cambiar si es necesario)
+        // URL DEL VALIDADOR
         const URL_VALIDADOR = 'validador.html'; 
 
         const PROJECT_URL = 'https://vxggatcfrywyodovjwxj.supabase.co';
@@ -120,45 +133,41 @@
 
         lucide.createIcons();
 
-        // 1. APLICAR CONFIGURACIÓN VISUAL (LOGO, BANNER, COLORES)
+        // 1. APLICAR CONFIG VISUAL
         function aplicarConfigVisual() {
             const config = JSON.parse(localStorage.getItem('saas_config')) || {};
             
-            // Color de Marca
             if(config.color) {
                 document.documentElement.style.setProperty('--brand-color', config.color);
                 document.getElementById('btn-buscar').style.backgroundColor = config.color;
                 document.getElementById('nav-btn-action').style.backgroundColor = config.color;
             }
 
-            // Textos
             if(config.title) document.getElementById('site-title').innerText = config.title;
             if(config.heroTitle) document.getElementById('hero-title').innerHTML = config.heroTitle.replace(/\n/g, "<br>");
-            if(config.ctaText) document.getElementById('btn-buscar').innerText = config.ctaText; // Botón Buscador
+            if(config.ctaText) document.getElementById('btn-buscar').innerText = config.ctaText;
 
-            // Logo Grande
             if(config.logo && config.logo.length > 5) {
-                // Aumentamos tamaño h-16 a h-20 para que sea bien visible
+                // Logo Grande
                 document.getElementById('site-logo-container').innerHTML = `<img src="${config.logo}" class="h-20 w-auto object-contain">`;
             }
 
-            // Banner (Foto de Fondo)
             if(config.banner && config.banner.length > 5) {
                 const hero = document.getElementById('hero-header');
                 hero.style.backgroundImage = `url('${config.banner}')`;
                 hero.classList.add('hero-photo');
-                document.getElementById('hero-overlay').classList.remove('hidden'); // Activar capa oscura
+                document.getElementById('hero-overlay').classList.remove('hidden');
             }
         }
 
-        // 2. CARGAR AVALES
+        // 2. CARGAR AVALES (A COLOR)
         async function cargarAvales() {
             const container = document.getElementById('logos-container');
             const { data } = await db.from('instituciones').select('nombre, logo_url').order('created_at', { ascending: false });
             
             if (data && data.length > 0) {
                 container.innerHTML = data.map(i => `
-                    <img src="${i.logo_url}" alt="${i.nombre}" title="${i.nombre}" class="h-16 md:h-20 w-auto object-contain logo-aval cursor-pointer">
+                    <img src="${i.logo_url}" alt="${i.nombre}" title="${i.nombre}" class="h-20 md:h-24 w-auto object-contain logo-aval cursor-pointer p-2 bg-white rounded-lg">
                 `).join('');
             } else {
                 container.innerHTML = '<span class="text-slate-300 text-sm">Registro Oficial</span>';
