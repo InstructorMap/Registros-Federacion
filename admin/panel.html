@@ -3,306 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel SaaS · Master Admin</title>
+    <title>Panel REMAEP | Gestión de Avales</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #020617; color: #e2e8f0; }
-        .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; color: #94a3b8; }
-        .sidebar-link:hover, .sidebar-link.active { background: #1e293b; color: white; }
-        .sidebar-link.active { border-left: 3px solid #3b82f6; }
-        .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        input[type="text"], input[type="number"], input[type="url"] {
-            width: 100%; background: #1e293b; border: 1px solid #334155; 
-            border-radius: 8px; padding: 10px; color: white; outline: none;
-        }
-        input:focus { border-color: #3b82f6; }
-        label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; } </style>
 </head>
-<body class="h-screen flex overflow-hidden">
+<body class="min-h-screen bg-slate-950 p-6 md:p-12">
 
-    <aside class="w-64 bg-slate-950 border-r border-slate-900 flex flex-col z-20">
-        <div class="h-16 flex items-center px-6 border-b border-slate-900 gap-2 text-white font-bold tracking-wider">
-            <div class="w-6 h-6 bg-blue-600 rounded"></div> SAAS ENGINE
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                    <i data-lucide="shield-check" class="text-white w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">Gestión de Avales</h1>
+                    <p class="text-slate-400 text-sm">Estos logos se mostrarán en la portada (Index)</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="text-slate-500 hover:text-red-400 text-sm">Cerrar Sesión</button>
         </div>
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <button onclick="showTab('dashboard')" id="nav-dashboard" class="sidebar-link active w-full">
-                <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Dashboard
-            </button>
-            <button onclick="showTab('solicitudes')" id="nav-solicitudes" class="sidebar-link w-full">
-                <i data-lucide="inbox" class="w-5 h-5"></i> Solicitudes
-            </button>
-            
-            <div class="pt-6 pb-2 px-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Configuración</div>
-            
-            <button onclick="showTab('identidad')" id="nav-identidad" class="sidebar-link w-full">
-                <i data-lucide="palette" class="w-5 h-5"></i> Diseño & Banner
-            </button>
-            <button onclick="showTab('contacto')" id="nav-contacto" class="sidebar-link w-full">
-                <i data-lucide="map-pin" class="w-5 h-5"></i> Contacto & Redes
-            </button>
-            <button onclick="showTab('pagos')" id="nav-pagos" class="sidebar-link w-full">
-                <i data-lucide="credit-card" class="w-5 h-5"></i> Pagos (MP)
-            </button>
-        </nav>
-        <div class="p-4 border-t border-slate-900">
-            <a href="index.html" target="_blank" class="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors">
-                <i data-lucide="external-link" class="w-4 h-4"></i> VER LANDING PAGE
-            </a>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i data-lucide="plus-circle" class="text-blue-500"></i> Agregar Institución</h2>
+            <form id="form-inst" class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex-1 w-full">
+                    <label class="text-xs text-slate-500 uppercase font-bold mb-1 block">Nombre de la Institución</label>
+                    <input type="text" id="inst-nombre" placeholder="Ej: Cruz Roja Argentina" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none" required>
+                </div>
+                <div class="flex-1 w-full">
+                    <label class="text-xs text-slate-500 uppercase font-bold mb-1 block">Logo (PNG/JPG)</label>
+                    <input type="file" id="inst-logo" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-400 file:bg-slate-800 file:border-0 file:rounded file:text-white file:px-2 file:mr-4" required>
+                </div>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg transition w-full md:w-auto">
+                    Subir
+                </button>
+            </form>
         </div>
-    </aside>
 
-    <main class="flex-1 flex flex-col min-w-0 bg-slate-950">
-        <header class="h-16 bg-slate-950 border-b border-slate-900 flex justify-between items-center px-8">
-            <h2 class="text-xl font-bold text-white" id="page-title">Dashboard</h2>
-            <button onclick="saveAll()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">
-                <i data-lucide="save" class="w-4 h-4"></i> PUBLICAR CAMBIOS
-            </button>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-8">
-
-            <div id="view-dashboard" class="tab-content active">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="card"><p class="text-slate-400 text-xs font-bold uppercase">Ingresos</p><h3 class="text-3xl font-bold text-white mt-1">$150.000</h3></div>
-                    <div class="card"><p class="text-slate-400 text-xs font-bold uppercase">Solicitudes</p><h3 class="text-3xl font-bold text-white mt-1">12</h3></div>
-                </div>
-                <div class="card bg-slate-900/50 border-dashed text-center py-12">
-                    <p class="text-slate-500">Selecciona una opción del menú para configurar tu plataforma SaaS.</p>
-                </div>
-            </div>
-
-            <div id="view-solicitudes" class="tab-content">
-                <div class="card overflow-hidden p-0">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-900 text-slate-400 border-b border-slate-800">
-                            <tr><th class="p-4">ID</th><th class="p-4">Nombre</th><th class="p-4">DNI</th><th class="p-4">Estado</th></tr>
-                        </thead>
-                        <tbody id="req-body" class="divide-y divide-slate-800 text-slate-300">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="view-identidad" class="tab-content space-y-6 max-w-4xl">
-                <div class="card">
-                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="image" class="text-blue-500"></i> Logo y Banner Principal</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label>Logo Institucional</label>
-                            <input type="file" id="conf-logo" accept="image/*" class="text-xs text-slate-400">
-                            <img id="preview-logo" class="h-10 mt-2 object-contain hidden bg-slate-800 p-1 rounded">
-                        </div>
-                        <div>
-                            <label>Imagen de Banner (Fondo Hero)</label>
-                            <input type="file" id="conf-banner" accept="image/*" class="text-xs text-slate-400">
-                            <div id="preview-banner" class="h-20 w-full mt-2 bg-cover bg-center rounded hidden opacity-50"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="type" class="text-blue-500"></i> Textos Principales</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label>Nombre del Sitio (Nav)</label><input type="text" id="conf-title"></div>
-                        <div><label>Color Principal (Hex)</label><input type="color" id="conf-color" class="w-full h-10 bg-transparent border-none"></div>
-                        <div><label>Título Hero</label><input type="text" id="conf-hero-title"></div>
-                        <div><label>Subtítulo Hero</label><input type="text" id="conf-hero-subtitle"></div>
-                        <div><label>Texto Botón (CTA)</label><input type="text" id="conf-cta" placeholder="Ej: Inscribirse"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view-contacto" class="tab-content space-y-6 max-w-4xl">
-                <div class="card">
-                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="map-pin" class="text-blue-500"></i> Datos de Contacto</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="col-span-2"><label>Dirección Física</label><input type="text" id="conf-address" placeholder="Av. Libertador 1234, CABA"></div>
-                        <div><label>Teléfono (Visible)</label><input type="text" id="conf-phone" placeholder="+54 11 1234 5678"></div>
-                        <div><label>WhatsApp (Solo números)</label><input type="text" id="conf-whatsapp" placeholder="5491112345678"></div>
-                    </div>
-                </div>
-                <div class="card">
-                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="share-2" class="text-blue-500"></i> Redes Sociales</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label>Link Instagram</label><input type="url" id="conf-instagram"></div>
-                        <div><label>Link Facebook</label><input type="url" id="conf-facebook"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view-pagos" class="tab-content space-y-6 max-w-4xl">
-                <div class="card">
-                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="credit-card" class="text-blue-500"></i> Configuración de Cobro</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label>Precio a Mostrar (Texto)</label>
-                            <input type="text" id="conf-price" class="text-2xl font-bold text-emerald-400" placeholder="$50.000">
-                        </div>
-                        <div>
-                            <label>Link de Pago (Mercado Pago / Stripe)</label>
-                            <input type="url" id="conf-mplink" placeholder="https://mpago.la/...">
-                            <p class="text-xs text-slate-500 mt-1">Al hacer click en "Pagar", el usuario será redirigido a este enlace.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="search" class="text-blue-500"></i> SEO Básico</h3>
-                    <div class="space-y-4">
-                        <div><label>Título de la Pestaña (Meta Title)</label><input type="text" id="conf-seo-title"></div>
-                        <div><label>Descripción Corta (Meta Description)</label><input type="text" id="conf-seo-desc"></div>
-                    </div>
-                </div>
-            </div>
-
+        <h2 class="text-lg font-bold mb-4 text-slate-400">Instituciones Activas</h2>
+        <div id="grid-instituciones" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="col-span-4 text-center py-10 text-slate-600 animate-pulse">Cargando avales...</div>
         </div>
-    </main>
+    </div>
 
     <script>
-        // --- LÓGICA DEL PANEL SAAS ---
+        // --- CONFIGURACIÓN SUPABASE ---
+        const PROJECT_URL = 'https://vxggatcfrywyodovjwxj.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg';
+        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+        lucide.createIcons();
 
-        // Navegación
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-' + id).classList.add('active');
-            document.getElementById('nav-' + id).classList.add('active');
-            
-            const titles = { dashboard: 'Resumen', solicitudes: 'CRM', identidad: 'Diseño', contacto: 'Contacto', pagos: 'Pagos' };
-            document.getElementById('page-title').textContent = titles[id];
-        }
+        // 1. CARGAR INSTITUCIONES
+        async function cargarInstituciones() {
+            const grid = document.getElementById('grid-instituciones');
+            const { data, error } = await db.from('instituciones').select('*').order('created_at', { ascending: false });
 
-        // Carga de Datos
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            loadConfig();
-            loadRequests();
-        });
-
-        function loadConfig() {
-            const config = JSON.parse(localStorage.getItem('saas_config')) || {};
-            
-            // Identidad
-            setVal('conf-title', config.title || 'REMAEP');
-            setVal('conf-color', config.color || '#06b6d4');
-            setVal('conf-hero-title', config.heroTitle || 'Registro Nacional');
-            setVal('conf-hero-subtitle', config.heroSubtitle || 'Matrícula Profesional');
-            setVal('conf-cta', config.ctaText || 'Iniciar Trámite');
-            
-            // Contacto
-            setVal('conf-address', config.address);
-            setVal('conf-phone', config.phone);
-            setVal('conf-whatsapp', config.whatsapp);
-            setVal('conf-instagram', config.instagram);
-            setVal('conf-facebook', config.facebook);
-
-            // Pagos
-            setVal('conf-price', config.price || '$50.000');
-            setVal('conf-mplink', config.mpLink);
-
-            // SEO
-            setVal('conf-seo-title', config.seoTitle);
-            setVal('conf-seo-desc', config.seoDesc);
-
-            // Imágenes (Preview)
-            if(config.logo) {
-                document.getElementById('preview-logo').src = config.logo;
-                document.getElementById('preview-logo').classList.remove('hidden');
-            }
-            if(config.banner) {
-                document.getElementById('preview-banner').style.backgroundImage = `url('${config.banner}')`;
-                document.getElementById('preview-banner').classList.remove('hidden');
+            if (data) {
+                grid.innerHTML = data.map(inst => `
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center gap-3 relative group hover:border-blue-500/50 transition">
+                        <button onclick="borrar('${inst.id}')" class="absolute top-2 right-2 text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" size="16"></i></button>
+                        <div class="h-16 flex items-center justify-center w-full bg-white/5 rounded-lg p-2">
+                            <img src="${inst.logo_url}" class="max-h-full max-w-full object-contain">
+                        </div>
+                        <span class="text-xs font-bold text-center text-slate-300">${inst.nombre}</span>
+                    </div>
+                `).join('');
+                lucide.createIcons();
             }
         }
 
-        function setVal(id, val) { if(val) document.getElementById(id).value = val; }
+        // 2. SUBIR LOGO
+        document.getElementById('form-inst').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = "Subiendo..."; btn.disabled = true;
 
-        // Manejo de Imágenes (Logo y Banner)
-        let tempLogo = null;
-        let tempBanner = null;
+            try {
+                const nombre = document.getElementById('inst-nombre').value;
+                const file = document.getElementById('inst-logo').files[0];
+                
+                // Subir imagen al Bucket
+                const fileName = `logo_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+                const { error: uploadError } = await db.storage.from('logos-instituciones').upload(fileName, file);
+                if(uploadError) throw uploadError;
 
-        handleImage('conf-logo', (res) => {
-            tempLogo = res;
-            document.getElementById('preview-logo').src = res;
-            document.getElementById('preview-logo').classList.remove('hidden');
-        });
+                const logoUrl = `${PROJECT_URL}/storage/v1/object/public/logos-instituciones/${fileName}`;
 
-        handleImage('conf-banner', (res) => {
-            tempBanner = res;
-            document.getElementById('preview-banner').style.backgroundImage = `url('${res}')`;
-            document.getElementById('preview-banner').classList.remove('hidden');
-        });
+                // Guardar en Tabla
+                const { error: dbError } = await db.from('instituciones').insert([{ nombre, logo_url: logoUrl }]);
+                if(dbError) throw dbError;
 
-        function handleImage(id, callback) {
-            document.getElementById(id).addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if(!file) return;
-                const reader = new FileReader();
-                reader.onload = (evt) => callback(evt.target.result);
-                reader.readAsDataURL(file);
-            });
-        }
+                document.getElementById('form-inst').reset();
+                cargarInstituciones();
 
-        // Guardar Todo
-        function saveAll() {
-            const oldConfig = JSON.parse(localStorage.getItem('saas_config')) || {};
-
-            const newConfig = {
-                // Identidad
-                title: document.getElementById('conf-title').value,
-                color: document.getElementById('conf-color').value,
-                heroTitle: document.getElementById('conf-hero-title').value,
-                heroSubtitle: document.getElementById('conf-hero-subtitle').value,
-                ctaText: document.getElementById('conf-cta').value,
-                logo: tempLogo || oldConfig.logo,
-                banner: tempBanner || oldConfig.banner,
-
-                // Contacto
-                address: document.getElementById('conf-address').value,
-                phone: document.getElementById('conf-phone').value,
-                whatsapp: document.getElementById('conf-whatsapp').value,
-                instagram: document.getElementById('conf-instagram').value,
-                facebook: document.getElementById('conf-facebook').value,
-
-                // Pagos y SEO
-                price: document.getElementById('conf-price').value,
-                mpLink: document.getElementById('conf-mplink').value,
-                seoTitle: document.getElementById('conf-seo-title').value,
-                seoDesc: document.getElementById('conf-seo-desc').value
-            };
-
-            localStorage.setItem('saas_config', JSON.stringify(newConfig));
-            window.dispatchEvent(new CustomEvent('storage')); // Notificar Index
-            alert('¡Cambios publicados en el portal!');
-        }
-
-        // Cargar Solicitudes (CRM)
-        function loadRequests() {
-            const db = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
-            const tbody = document.getElementById('req-body');
-            tbody.innerHTML = '';
-            
-            if(db.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin solicitudes recientes</td></tr>';
-                return;
+            } catch (err) {
+                alert("Error: " + err.message);
+            } finally {
+                btn.innerText = originalText; btn.disabled = false;
             }
+        });
 
-            db.forEach(req => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-4 font-mono text-xs text-slate-500">${req.id}</td>
-                    <td class="p-4 font-bold text-white">${req.nombre}</td>
-                    <td class="p-4">${req.dni}</td>
-                    <td class="p-4"><span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded">Iniciado</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
+        // 3. BORRAR
+        async function borrar(id) {
+            if(!confirm('¿Eliminar esta institución?')) return;
+            await db.from('instituciones').delete().eq('id', id);
+            cargarInstituciones();
         }
 
+        cargarInstituciones();
     </script>
 </body>
 </html>
