@@ -156,11 +156,24 @@
             <div id="view-identidad" class="tab-content space-y-6 max-w-4xl">
                 <div class="card">
                     <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="image" class="text-blue-500"></i> Marca Visual</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label>Imagen de Fondo (Banner)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="conf-banner" placeholder="URL de la imagen" class="flex-1">
+                                <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg border border-slate-700 flex items-center justify-center" title="Subir desde PC">
+                                    <i data-lucide="upload" class="w-4 h-4"></i>
+                                    <input type="file" id="conf-banner-upload" class="hidden" accept="image/*">
+                                </label>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1">Sube una foto para el fondo del Index.</p>
+                        </div>
+
                         <div>
                             <label>Logo Institucional URL</label>
                             <input type="text" id="conf-logo" placeholder="URL del logo">
                         </div>
+                        
                         <div>
                             <label>Color Principal</label>
                             <input type="color" id="conf-color" class="h-11 cursor-pointer">
@@ -267,7 +280,6 @@
             }
         }
 
-        // --- GESTIÓN DE AVALES CON VISIBILIDAD ---
         async function cargarAvales() {
             const grid = document.getElementById('grid-avales');
             const { data } = await db.from('instituciones').select('*').order('created_at', { ascending: false });
@@ -277,7 +289,7 @@
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center gap-3 relative group hover:border-blue-500/50 transition ${inst.mostrar_en_index ? '' : 'opacity-50 grayscale border-red-900/30'}">
                         
                         <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                            <button onclick="toggleVisibility('${inst.id}', ${inst.mostrar_en_index})" class="text-slate-400 hover:text-white p-1" title="${inst.mostrar_en_index ? 'Ocultar en Index' : 'Mostrar en Index'}">
+                            <button onclick="toggleVisibility('${inst.id}', ${inst.mostrar_en_index})" class="text-slate-400 hover:text-white p-1" title="Mostrar/Ocultar">
                                 <i data-lucide="${inst.mostrar_en_index ? 'eye' : 'eye-off'}" size="16"></i>
                             </button>
                             <button onclick="borrarAval('${inst.id}')" class="text-slate-400 hover:text-red-500 p-1">
@@ -298,18 +310,10 @@
             }
         }
 
-        // --- FUNCIÓN PARA MOSTRAR / OCULTAR ---
         async function toggleVisibility(id, estadoActual) {
-            const { error } = await db
-                .from('instituciones')
-                .update({ mostrar_en_index: !estadoActual })
-                .eq('id', id);
-            
-            if (!error) {
-                cargarAvales(); // Recargar para ver el cambio
-            } else {
-                alert("Error al actualizar visibilidad");
-            }
+            const { error } = await db.from('instituciones').update({ mostrar_en_index: !estadoActual }).eq('id', id);
+            if (!error) cargarAvales();
+            else alert("Error al actualizar visibilidad");
         }
 
         async function cargarAvalesSelect() {
@@ -321,6 +325,7 @@
             }
         }
 
+        // SUBIR LOGO (CORREGIDO: DETECCIÓN DE EXTENSIÓN)
         document.getElementById('form-aval').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
@@ -330,11 +335,13 @@
                 const nombre = document.getElementById('aval-nombre').value;
                 const file = document.getElementById('aval-logo').files[0];
                 
-                const fileName = `logo_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+                // CORRECCIÓN AQUÍ: Tomar la extensión real del archivo (.png, .jpg)
+                const fileExt = file.name.split('.').pop(); 
+                const fileName = `logo_${Date.now()}.${fileExt}`; // Ahora sí tiene extensión
+
                 await db.storage.from('logos-instituciones').upload(fileName, file);
                 const logoUrl = `${PROJECT_URL}/storage/v1/object/public/logos-instituciones/${fileName}`;
 
-                // POR DEFECTO: mostrar_en_index = true
                 await db.from('instituciones').insert([{ nombre, logo_url: logoUrl, mostrar_en_index: true }]);
                 
                 e.target.reset();
@@ -342,6 +349,21 @@
                 updateDashboardStats();
             } catch (err) { alert("Error: " + err.message); } 
             finally { btn.innerText = "Subir"; btn.disabled = false; }
+        });
+
+        // SUBIR BANNER (NUEVO)
+        document.getElementById('conf-banner-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `banner_${Date.now()}.${fileExt}`;
+                const { error } = await db.storage.from('logos-instituciones').upload(fileName, file);
+                if (error) throw error;
+                const url = `${PROJECT_URL}/storage/v1/object/public/logos-instituciones/${fileName}`;
+                document.getElementById('conf-banner').value = url;
+                alert("Banner subido correctamente. Recuerda pulsar 'GUARDAR CONFIG' arriba.");
+            } catch (err) { alert("Error al subir banner: " + err.message); }
         });
 
         document.getElementById('form-alumno').addEventListener('submit', async (e) => {
@@ -379,7 +401,6 @@
         async function updateDashboardStats() {
             const { count: totalAl } = await db.from('matriculas').select('*', { count: 'exact', head: true });
             const { count: totalAv } = await db.from('instituciones').select('*', { count: 'exact', head: true });
-            
             document.getElementById('dash-total-alumnos').innerText = totalAl || 0;
             document.getElementById('dash-total-avales').innerText = totalAv || 0;
         }
@@ -393,6 +414,7 @@
             setVal('conf-price', config.price || '$50.000');
             setVal('conf-mplink', config.mpLink);
             setVal('conf-logo', config.logo);
+            setVal('conf-banner', config.banner); // Cargar Banner
         }
 
         function saveConfig() {
@@ -403,7 +425,8 @@
                 ctaText: document.getElementById('conf-cta').value, 
                 price: document.getElementById('conf-price').value,
                 mpLink: document.getElementById('conf-mplink').value,
-                logo: document.getElementById('conf-logo').value
+                logo: document.getElementById('conf-logo').value,
+                banner: document.getElementById('conf-banner').value // Guardar Banner
             };
             localStorage.setItem('saas_config', JSON.stringify(newConfig));
             alert('Configuración guardada en LocalStorage');
@@ -412,7 +435,6 @@
         function loadCRM() {
             const reqs = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
             document.getElementById('dash-total-solicitudes').innerText = reqs.length;
-            
             const tbody = document.getElementById('crm-body');
             if(reqs.length > 0) {
                 tbody.innerHTML = reqs.slice(0, 5).map(r => `
