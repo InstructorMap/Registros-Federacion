@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Trámite de Homologación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>tailwind.config = { theme: { extend: { colors: { brand: 'var(--brand-color, #0033cc)' }, fontFamily: { sans: ['Montserrat'] } } } }</script>
+    <style> body { background: #0f172a; color: white; } </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative bg-slate-950">
+    
+    <a href="index.html" class="absolute top-6 left-6 text-slate-400 hover:text-white flex items-center gap-2 font-bold text-sm z-10">
+        <i data-lucide="arrow-left"></i> Volver
+    </a>
+
+    <div class="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+        
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-800 p-8 md:p-12 md:w-1/3 flex flex-col justify-between text-white relative overflow-hidden">
+            <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,...');"></div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6 backdrop-blur-sm">
+                    <i data-lucide="file-badge" class="w-6 h-6 text-white"></i>
+                </div>
+                <h1 class="text-3xl font-bold mb-2">Solicitud de Homologación</h1>
+                <p class="text-blue-100 text-sm leading-relaxed">Complete el formulario y adjunte la documentación requerida para iniciar el proceso de validación oficial en Blockchain.</p>
+            </div>
+            
+            <div class="relative z-10 mt-10">
+                <div class="text-xs font-bold uppercase text-blue-200 mb-1">Costo del trámite</div>
+                <div class="text-4xl font-extrabold text-white" id="display-price">---</div>
+                <p class="text-[10px] text-blue-200 mt-2">Pago único. Procesado vía Mercado Pago.</p>
+            </div>
+        </div>
+
+        <div class="p-8 md:p-12 md:w-2/3">
+            <form id="tramiteForm" class="space-y-5">
+                
+                <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest border-b border-slate-800 pb-2 mb-4">Datos Personales</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase">Nombre</label>
+                        <input type="text" id="nombre" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 mt-1 focus:border-blue-500 outline-none" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase">Apellido</label>
+                        <input type="text" id="apellido" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 mt-1 focus:border-blue-500 outline-none" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase">DNI</label>
+                        <input type="number" id="dni" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 mt-1 focus:border-blue-500 outline-none" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase">Teléfono / WhatsApp</label>
+                        <input type="tel" id="telefono" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 mt-1 focus:border-blue-500 outline-none" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Correo Electrónico</label>
+                    <input type="email" id="email" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 mt-1 focus:border-blue-500 outline-none" required>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Curso / Especialidad a Homologar</label>
+                    <input type="text" id="curso" placeholder="Ej: Paramédico Profesional" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 mt-1 focus:border-blue-500 outline-none" required>
+                </div>
+
+                <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest border-b border-slate-800 pb-2 pt-4 mb-4">Documentación</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-950 border border-slate-800 border-dashed rounded-xl p-4 text-center hover:bg-slate-800/50 transition relative">
+                        <i data-lucide="id-card" class="mx-auto text-slate-600 mb-2"></i>
+                        <span class="text-xs text-slate-400 block font-bold">Foto del DNI</span>
+                        <input type="file" id="file-dni" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" required>
+                        <div id="check-dni" class="hidden absolute top-2 right-2 text-green-500"><i data-lucide="check-circle" class="w-4 h-4"></i></div>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 border-dashed rounded-xl p-4 text-center hover:bg-slate-800/50 transition relative">
+                        <i data-lucide="graduation-cap" class="mx-auto text-slate-600 mb-2"></i>
+                        <span class="text-xs text-slate-400 block font-bold">Diploma / Certificado</span>
+                        <input type="file" id="file-diploma" accept="image/*,application/pdf" class="absolute inset-0 opacity-0 cursor-pointer" required>
+                        <div id="check-diploma" class="hidden absolute top-2 right-2 text-green-500"><i data-lucide="check-circle" class="w-4 h-4"></i></div>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" id="btn-submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2">
+                        CONTINUAR AL PAGO
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                    <p class="text-center text-xs text-slate-500 mt-4">Al enviar, sus datos serán auditados por REMAEP.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const PROJECT_URL = 'https://vxggatcfrywyodovjwxj.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg';
+        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+
+        lucide.createIcons();
+
+        // 1. CARGAR CONFIG (PRECIO/COLOR)
+        document.addEventListener('DOMContentLoaded', () => {
+            const config = JSON.parse(localStorage.getItem('saas_config')) || {};
+            if(config.price) document.getElementById('display-price').innerText = config.price;
+            if(config.color) document.documentElement.style.setProperty('--brand-color', config.color);
+        });
+
+        // 2. FEEDBACK VISUAL ARCHIVOS
+        document.getElementById('file-dni').onchange = () => document.getElementById('check-dni').classList.remove('hidden');
+        document.getElementById('file-diploma').onchange = () => document.getElementById('check-diploma').classList.remove('hidden');
+
+        // 3. PROCESAR FORMULARIO
+        document.getElementById('tramiteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.innerHTML = '<div class="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div> Procesando...';
+            btn.disabled = true;
+
+            try {
+                const nombre = document.getElementById('nombre').value;
+                const apellido = document.getElementById('apellido').value;
+                const dni = document.getElementById('dni').value;
+                const curso = document.getElementById('curso').value;
+                const email = document.getElementById('email').value;
+                const telefono = document.getElementById('telefono').value;
+
+                // A. SUBIR ARCHIVOS A SUPABASE
+                const fileDni = document.getElementById('file-dni').files[0];
+                const fileDip = document.getElementById('file-diploma').files[0];
+                
+                const urlDni = await uploadFile(fileDni, `dni_${dni}`);
+                const urlDip = await uploadFile(fileDip, `dip_${dni}`);
+
+                // B. GUARDAR EN "CRM" (LOCALSTORAGE) PARA EL PANEL
+                // Esto simula una base de datos de solicitudes para que el admin las vea
+                const nuevaSolicitud = {
+                    id: Date.now(),
+                    fecha: new Date().toISOString(),
+                    nombre: `${nombre} ${apellido}`,
+                    dni: dni,
+                    curso: curso,
+                    contacto: { email, telefono },
+                    archivos: { dni: urlDni, diploma: urlDip },
+                    estado: 'PENDIENTE_PAGO'
+                };
+
+                // Recuperar solicitudes existentes y agregar la nueva
+                const solicitudes = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
+                solicitudes.unshift(nuevaSolicitud); // Agregar al principio
+                localStorage.setItem('saas_solicitudes', JSON.stringify(solicitudes));
+                
+                // Disparar evento para que si tienes el panel abierto en otra pestaña, se entere (opcional)
+                window.dispatchEvent(new CustomEvent('storage'));
+
+                // C. REDIRECCIÓN A PAGO
+                const config = JSON.parse(localStorage.getItem('saas_config')) || {};
+                
+                setTimeout(() => {
+                    if(config.mpLink && config.mpLink.length > 5) {
+                        window.location.href = config.mpLink;
+                    } else {
+                        alert('Solicitud enviada con éxito. Nos contactaremos a la brevedad para el pago.');
+                        window.location.href = 'index.html';
+                    }
+                }, 1500);
+
+            } catch (err) {
+                console.error(err);
+                alert('Error al subir archivos: ' + err.message);
+                btn.innerText = "INTENTAR DE NUEVO";
+                btn.disabled = false;
+            }
+        });
+
+        async function uploadFile(file, prefix) {
+            const ext = file.name.split('.').pop();
+            const fileName = `${prefix}_${Date.now()}.${ext}`;
+            const { error } = await db.storage.from('solicitudes-archivos').upload(fileName, file);
+            if(error) throw error;
+            return `${PROJECT_URL}/storage/v1/object/public/solicitudes-archivos/${fileName}`;
+        }
+    </script>
+</body>
+</html>
