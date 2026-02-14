@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script>
+        // Configuración de colores por defecto
         tailwind.config = { theme: { extend: { colors: { brand: '#0033cc', brandDark: '#002288' }, fontFamily: { sans: ['Montserrat', 'sans-serif'] } } } }
     </script>
     <style>
@@ -24,35 +25,31 @@
         .hero-photo { background-size: cover; background-position: center; }
         .hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); z-index: 1; }
         
-        /* LOGOS A COLOR Y GRANDES */
+        /* LOGOS A COLOR Y GRANDES (FORZADO) */
         .logo-aval { 
-            filter: none; /* Color original */
-            opacity: 1; 
-            transition: transform 0.3s ease, filter 0.3s ease;
-            max-height: 90px; /* Altura máxima controlada */
+            filter: none !important; /* FORZAR COLOR */
+            opacity: 1 !important; 
+            transition: transform 0.3s ease;
+            max-height: 80px; /* Tamaño grande fijo */
             width: auto;
         }
         .logo-aval:hover { 
             transform: scale(1.05); 
-            filter: drop-shadow(0 10px 8px rgba(0,0,0,0.1));
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div id="site-logo-container" class="h-16 flex items-center">
-                    <i data-lucide="shield-check" class="w-12 h-12 text-brand"></i>
-                </div>
+        <div class="max-w-7xl mx-auto px-6 h-28 flex items-center justify-between"> <div class="flex items-center gap-4">
+                <div id="site-logo-container" class="h-20 flex items-center"> <i data-lucide="shield-check" class="w-16 h-16 text-brand"></i> </div>
                 <div class="leading-tight">
                     <span class="font-bold text-2xl tracking-tight block text-slate-900" id="site-title">REMAEP</span>
                     <span class="text-xs text-slate-500 uppercase tracking-widest font-bold">Sitio Oficial</span>
                 </div>
             </div>
             
-            <a href="tramite.html" id="nav-btn-action" class="bg-brand hover:bg-brandDark text-white font-bold uppercase text-xs px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+            <a href="tramite.html" id="nav-btn-action" class="bg-brand hover:bg-brandDark text-white font-bold uppercase text-xs px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
                 Iniciar Trámite
                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
@@ -87,7 +84,7 @@
 
                 <div id="error-msg" class="hidden mt-6 animate-bounce">
                     <span class="bg-red-600 text-white font-bold px-6 py-2 rounded-full shadow-lg text-sm flex items-center gap-2 justify-center mx-auto w-fit">
-                        <i data-lucide="alert-circle" class="w-4 h-4"></i> No se encontró ningún profesional con ese documento.
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i> No se encontró ningún profesional.
                     </span>
                 </div>
             </div>
@@ -98,11 +95,9 @@
         <div class="max-w-7xl mx-auto px-6 text-center">
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-12">Instituciones y Organismos que nos Acompañan</p>
             
-            <div id="logos-container" class="flex flex-wrap justify-center items-center gap-12 md:gap-24">
-                <div class="animate-pulse flex gap-8 justify-center w-full opacity-50">
-                    <div class="h-16 w-32 bg-slate-200 rounded-lg"></div>
-                    <div class="h-16 w-32 bg-slate-200 rounded-lg"></div>
-                    <div class="h-16 w-32 bg-slate-200 rounded-lg"></div>
+            <div id="logos-container" class="flex flex-wrap justify-center items-center gap-12 md:gap-24 min-h-[100px]">
+                <div class="animate-pulse flex gap-8 justify-center w-full opacity-50 text-slate-400">
+                    Cargando Instituciones...
                 </div>
             </div>
         </div>
@@ -138,7 +133,7 @@
 
     <script>
         // --- CONFIGURACIÓN ---
-        const URL_VALIDADOR = 'validador.html'; 
+        const URL_VALIDADOR = 'https://asari-platform.vercel.app/validador.html?id='; 
         const PROJECT_URL = 'https://vxggatcfrywyodovjwxj.supabase.co';
         const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
@@ -158,10 +153,12 @@
             if(config.heroTitle) document.getElementById('hero-title').innerHTML = config.heroTitle.replace(/\n/g, "<br>");
             if(config.ctaText) document.getElementById('btn-buscar').innerText = config.ctaText;
 
+            // Logo Grande (Sobrescribe si hay uno nuevo)
             if(config.logo && config.logo.length > 5) {
-                document.getElementById('site-logo-container').innerHTML = `<img src="${config.logo}" class="h-20 w-auto object-contain">`;
+                document.getElementById('site-logo-container').innerHTML = `<img src="${config.logo}" class="h-24 w-auto object-contain">`;
             }
 
+            // Banner (Foto de Fondo)
             if(config.banner && config.banner.length > 5) {
                 const hero = document.getElementById('hero-header');
                 hero.style.backgroundImage = `url('${config.banner}')`;
@@ -170,27 +167,25 @@
             }
         }
 
-        // 2. CARGAR AVALES (FILTRO DE SEGURIDAD)
+        // 2. CARGAR AVALES
         async function cargarAvales() {
             const container = document.getElementById('logos-container');
             
-            // FILTRO DE SEGURIDAD: neq('logo_url', null)
-            // Esto asegura que SOLO mostramos instituciones que tengan logo subido.
-            // Si creaste una institución sin logo para un alumno, el Index la ignora.
+            // FILTRO ESTRICTO: Solo trae instituciones con logo válido
             const { data, error } = await db
                 .from('instituciones')
                 .select('nombre, logo_url')
-                .neq('logo_url', null) // <--- ESTA ES LA CLAVE
+                .neq('logo_url', null)
                 .order('created_at', { ascending: false });
             
             if (data && data.length > 0) {
-                // Filtramos también cadenas vacías por seguridad
-                const validos = data.filter(i => i.logo_url && i.logo_url.length > 5);
+                // Filtro adicional de JS para strings vacios
+                const validos = data.filter(i => i.logo_url && i.logo_url.length > 10);
                 
                 if(validos.length > 0) {
                     container.innerHTML = validos.map(i => `
-                        <div class="group relative">
-                             <img src="${i.logo_url}" alt="${i.nombre}" title="${i.nombre}" class="logo-aval cursor-pointer object-contain">
+                        <div class="group relative p-4 transition hover:bg-slate-50 rounded-xl">
+                             <img src="${i.logo_url}" alt="${i.nombre}" title="${i.nombre}" class="logo-aval object-contain h-20">
                         </div>
                     `).join('');
                 } else {
@@ -201,7 +196,7 @@
             }
         }
 
-        // 3. BUSCADOR INTELIGENTE
+        // 3. BUSCADOR
         document.getElementById('search-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-buscar');
@@ -211,12 +206,10 @@
 
             if (input.length < 4) return;
             
-            // Feedback
             btn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>';
             msg.classList.add('hidden');
 
             try {
-                // Buscamos ID
                 const { data } = await db.from('matriculas').select('id').eq('dni_alumno', input).limit(1).maybeSingle();
                 
                 if (data) {
