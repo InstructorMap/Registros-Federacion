@@ -3,133 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Público de Profesionales</title>
+    <title>Registro Público REMAEP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script>
-        tailwind.config = { theme: { extend: { colors: { brand: 'var(--brand-color)', brandDark: 'var(--brand-dark)' }, fontFamily: { sans: ['Montserrat', 'sans-serif'] } } } }
+        // Configuración de colores inicial (se sobrescribe con lo del panel)
+        tailwind.config = { theme: { extend: { colors: { brand: '#0033cc', brandDark: '#002288' }, fontFamily: { sans: ['Montserrat', 'sans-serif'] } } } }
     </script>
     <style>
-        :root { --brand-color: #06b6d4; --brand-dark: #083344; }
-        body { background: #020617; color: white; }
-        .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
-        .hero-bg { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; opacity: 0.2; mask-image: linear-gradient(to bottom, black 0%, transparent 90%); }
+        body { background: #f8fafc; color: #0f172a; }
+        /* Patrón de fondo sutil */
+        .hero-pattern { background-color: var(--brand-color, #0033cc); background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+        
+        /* Animación suave para los logos */
+        .logo-aval { filter: grayscale(100%); opacity: 0.7; transition: all 0.4s ease; }
+        .logo-aval:hover { filter: grayscale(0%); opacity: 1; transform: scale(1.05); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col relative overflow-x-hidden">
+<body class="min-h-screen flex flex-col">
 
-    <div id="hero-banner" class="hero-bg" style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80');"></div>
-
-    <nav class="relative z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md">
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-3" id="nav-brand-area">
-                <i data-lucide="shield-check" class="w-8 h-8 text-brand"></i>
+            <div class="flex items-center gap-3">
+                <div id="site-logo-container">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-brand"></i>
+                </div>
                 <div class="leading-tight">
-                    <span class="font-bold text-xl tracking-tight block" id="site-title">REMAEP</span>
-                    <span class="text-[10px] text-slate-400 uppercase tracking-widest">Validación Oficial</span>
+                    <span class="font-bold text-xl tracking-tight block text-slate-900" id="site-title">REMAEP</span>
+                    <span class="text-[10px] text-slate-500 uppercase tracking-widest">Registro Nacional</span>
                 </div>
             </div>
-            <div class="flex gap-4">
-                <a href="panel.html" class="text-xs font-bold text-slate-500 hover:text-white uppercase py-2">Panel</a>
-                <a href="tramite.html" class="bg-white/5 hover:bg-brand hover:text-slate-900 border border-white/10 text-white text-xs font-bold px-4 py-2 rounded-full transition-all uppercase tracking-wider">
-                    Solicitar Homologación
-                </a>
-            </div>
+            <a href="panel.html" class="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-brand uppercase py-2 transition-colors">
+                <i data-lucide="lock" class="w-3 h-3"></i> Acceso Instituciones
+            </a>
         </div>
     </nav>
 
-    <header class="relative z-10 py-24 px-4 flex flex-col items-center justify-center min-h-[60vh]">
-        
-        <div class="mb-8 px-4 py-1 rounded-full border border-brand/30 bg-brand/5 text-brand text-xs font-bold uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)]">
-            Sistema Nacional de Trazabilidad
-        </div>
+    <header class="hero-pattern py-24 px-4 flex flex-col items-center justify-center text-center relative overflow-hidden">
+        <div class="relative z-10 max-w-4xl mx-auto">
+            
+            <div class="inline-block mb-6 px-4 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-[0.2em] border border-white/20 backdrop-blur-sm">
+                Blockchain Verified
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 text-white leading-tight drop-shadow-md" id="hero-title">
+                Consulte el Padrón Oficial de <br>Profesionales Habilitados
+            </h1>
+            
+            <div class="w-full max-w-2xl mx-auto mt-12 relative group z-20">
+                <div class="absolute -inset-1 bg-gradient-to-r from-blue-400 to-cyan-300 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                
+                <form id="search-form" class="relative flex flex-col md:flex-row items-center bg-white rounded-3xl md:rounded-full shadow-2xl p-2 transition-transform transform">
+                    <div class="pl-5 pr-2 text-slate-400 hidden md:block">
+                        <i data-lucide="search" class="w-6 h-6"></i>
+                    </div>
+                    
+                    <input type="text" id="dni-input" class="w-full bg-transparent text-slate-800 text-lg px-4 py-4 focus:outline-none placeholder-slate-400 font-medium text-center md:text-left" placeholder="Ingrese DNI o Matrícula..." autocomplete="off">
+                    
+                    <button type="submit" id="btn-buscar" class="w-full md:w-auto bg-brand hover:bg-brandDark text-white font-extrabold text-lg px-8 py-4 rounded-2xl md:rounded-full transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl mt-2 md:mt-0">
+                        CONSULTAR
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </form>
 
-        <h1 class="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight text-center max-w-4xl leading-tight">
-            Consulte el Padrón Oficial de <br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand to-blue-500" id="hero-title">Matriculados Habilitados</span>
-        </h1>
-        
-        <div class="w-full max-w-2xl relative group z-20 mt-6">
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-brand to-blue-600 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
-            <form id="search-form" class="relative flex items-center bg-slate-900 rounded-full shadow-2xl overflow-hidden p-1">
-                <div class="pl-5 pr-2 text-slate-400">
-                    <i data-lucide="search" class="w-6 h-6"></i>
+                <div id="error-msg" class="hidden mt-6 animate-bounce">
+                    <span class="bg-red-500 text-white font-bold px-6 py-2 rounded-full shadow-lg">
+                        ⚠️ No se encontró ningún profesional con ese documento.
+                    </span>
                 </div>
-                <input type="text" id="dni-input" class="w-full bg-transparent text-white text-lg px-2 py-4 focus:outline-none placeholder-slate-600 font-medium" placeholder="Ingrese DNI, Matrícula o Apellido..." autocomplete="off">
-                <button type="submit" class="bg-brand hover:bg-white hover:text-slate-900 text-slate-900 font-extrabold px-8 py-3 rounded-full transition-all flex items-center gap-2">
-                    CONSULTAR
-                </button>
-            </form>
+            </div>
+
         </div>
-        
-        <p class="text-slate-400 text-sm mt-6 max-w-xl text-center">
-            La información mostrada posee carácter de declaración jurada y cuenta con trazabilidad Blockchain.
-        </p>
     </header>
 
-    <section class="relative z-10 py-20 border-t border-white/5 bg-slate-950">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                
-                <div class="md:col-span-2 space-y-6">
-                    <h2 class="text-3xl font-bold text-white mb-4">Nuestra Misión</h2>
-                    <p class="text-slate-400 leading-relaxed text-lg">
-                        Garantizar la excelencia y la ética profesional mediante un sistema de registro transparente, seguro y accesible. 
-                        Nuestro objetivo es jerarquizar la actividad profesional a través de la homologación de competencias, 
-                        brindando seguridad a la comunidad y respaldo a los matriculados.
-                    </p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
-                        <div class="glass p-6 rounded-xl border-l-4 border-brand">
-                            <h3 class="font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="award" class="text-brand"></i> INPI</h3>
-                            <p class="text-sm text-slate-500">Marca Registrada y Propiedad Intelectual protegida bajo normativas vigentes.</p>
-                        </div>
-                        <div class="glass p-6 rounded-xl border-l-4 border-blue-500">
-                            <h3 class="font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="heart-pulse" class="text-blue-500"></i> AAPS</h3>
-                            <p class="text-sm text-slate-500">Aval técnico de la Asociación Argentina para la Salud.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass rounded-2xl p-8 flex flex-col justify-center items-center text-center space-y-8">
-                    <div>
-                        <div class="text-4xl font-black text-white mb-1">1.2k+</div>
-                        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest">Profesionales Activos</div>
-                    </div>
-                    <div class="w-full h-px bg-white/10"></div>
-                    <div>
-                        <div class="text-4xl font-black text-brand mb-1">100%</div>
-                        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest">Validación Digital</div>
-                    </div>
-                    <div class="w-full h-px bg-white/10"></div>
-                    <a href="tramite.html" class="text-sm font-bold text-white hover:text-brand flex items-center gap-2 transition-colors">
-                        ¿Sos profesional? Registrate <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </a>
+    <section class="py-16 bg-white border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-10">Instituciones y Organismos que nos Acompañan</p>
+            
+            <div id="logos-container" class="flex flex-wrap justify-center items-center gap-8 md:gap-16 min-h-[80px]">
+                <div class="animate-pulse flex gap-4 justify-center w-full">
+                    <div class="h-12 w-32 bg-slate-200 rounded"></div>
+                    <div class="h-12 w-32 bg-slate-200 rounded"></div>
+                    <div class="h-12 w-32 bg-slate-200 rounded"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="py-8 border-t border-white/5 text-center text-slate-600 text-xs uppercase tracking-widest">
-        © 2026 REMAEP · Registro Oficial · <a href="#" class="hover:text-brand">Legales</a>
+    <section class="py-20 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-blue-50 text-brand rounded-lg flex items-center justify-center mb-4"><i data-lucide="database"></i></div>
+                <h3 class="font-bold text-lg mb-2 text-slate-800">Registro Inmutable</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">Cada credencial emitida queda registrada en la red, garantizando que no pueda ser alterada ni falsificada.</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-blue-50 text-brand rounded-lg flex items-center justify-center mb-4"><i data-lucide="qr-code"></i></div>
+                <h3 class="font-bold text-lg mb-2 text-slate-800">Validación QR</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">Acceso instantáneo al estado de matrícula (Activo, Suspendido o Vencido) mediante escaneo en tiempo real.</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-blue-50 text-brand rounded-lg flex items-center justify-center mb-4"><i data-lucide="globe"></i></div>
+                <h3 class="font-bold text-lg mb-2 text-slate-800">Alcance Nacional</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">Unificamos los registros de emergencias médicas de todo el país en una sola base de datos centralizada.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-slate-900 text-white py-12 text-center border-t border-slate-800">
+        <div class="mb-6">
+            <i data-lucide="shield-check" class="w-10 h-10 text-brand mx-auto mb-2"></i>
+            <span class="font-bold text-xl tracking-tight">REMAEP</span>
+        </div>
+        <p class="text-xs text-slate-500 uppercase tracking-widest">© 2026 REMAEP · Registro Nacional de Emergencias</p>
     </footer>
 
     <script>
-        // SCRIPT BÁSICO DE NAVEGACIÓN Y CONFIGURACIÓN
-        lucide.createIcons();
-        
-        // Cargar Configuración Visual (Camaleón)
-        const config = JSON.parse(localStorage.getItem('saas_config')) || {};
-        if(config.color) document.documentElement.style.setProperty('--brand-color', config.color);
-        if(config.logo) document.querySelector('#nav-brand-area').innerHTML = `<img src="${config.logo}" class="h-10">`;
-        if(config.title) document.getElementById('site-title').textContent = config.title;
+        // ==========================================
+        // CONFIGURACIÓN (CONEXIÓN Y LÓGICA)
+        // ==========================================
 
-        // Lógica del Buscador
-        document.getElementById('search-form').addEventListener('submit', (e) => {
+        // URL del validador (Donde se muestra la credencial)
+        const URL_VALIDADOR = 'validador.html'; 
+
+        // Credenciales Supabase (Las mismas del panel)
+        const PROJECT_URL = 'https://vxggatcfrywyodovjwxj.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg';
+        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+
+        lucide.createIcons();
+
+        // 1. CARGAR CONFIGURACIÓN VISUAL (DEL LOCALSTORAGE DEL PANEL)
+        function aplicarConfigVisual() {
+            const config = JSON.parse(localStorage.getItem('saas_config')) || {};
+            
+            if(config.color) {
+                document.documentElement.style.setProperty('--brand-color', config.color);
+                // Ajustar botones manualmente si es necesario
+                document.getElementById('btn-buscar').style.backgroundColor = config.color;
+            }
+            if(config.title) document.getElementById('site-title').innerText = config.title;
+            if(config.heroTitle) document.getElementById('hero-title').innerHTML = config.heroTitle.replace(/\n/g, "<br>");
+            
+            // Si hay logo en config, usarlo
+            if(config.logo && config.logo.length > 5) {
+                document.getElementById('site-logo-container').innerHTML = `<img src="${config.logo}" class="h-10 w-auto">`;
+            }
+        }
+
+        // 2. CARGAR LOGOS DE AVALES DESDE SUPABASE
+        async function cargarAvales() {
+            const container = document.getElementById('logos-container');
+            
+            // Consultamos la tabla 'instituciones'
+            const { data, error } = await db
+                .from('instituciones')
+                .select('nombre, logo_url')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error("Error cargando avales:", error);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                container.innerHTML = data.map(i => `
+                    <div class="group relative">
+                        <img src="${i.logo_url}" alt="${i.nombre}" title="${i.nombre}" 
+                             class="h-16 md:h-20 w-auto object-contain logo-aval cursor-pointer">
+                        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
+                            ${i.nombre}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p class="text-slate-400 text-sm">No hay instituciones asociadas visiblemente.</p>';
+            }
+        }
+
+        // 3. LÓGICA DEL BUSCADOR
+        document.getElementById('search-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const q = document.getElementById('dni-input').value;
-            if(q.length > 3) window.location.href = `validador.html?q=${q}`;
+            const btn = document.getElementById('btn-buscar');
+            const msg = document.getElementById('error-msg');
+            const input = document.getElementById('dni-input').value.trim();
+            const originalText = btn.innerHTML;
+
+            if (input.length < 5) return;
+
+            // Loading state
+            btn.innerHTML = '<div class="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>';
+            msg.classList.add('hidden');
+
+            try {
+                // Buscamos si existe el DNI en la tabla 'matriculas'
+                const { data, error } = await db
+                    .from('matriculas')
+                    .select('id')
+                    .eq('dni_alumno', input)
+                    .limit(1)
+                    .maybeSingle(); // maybeSingle evita error si no encuentra nada
+
+                if (data) {
+                    // ¡ENCONTRADO! -> Redirigir al validador
+                    window.location.href = `${URL_VALIDADOR}?id=${data.id}`;
+                } else {
+                    // NO ENCONTRADO
+                    msg.classList.remove('hidden');
+                    btn.innerHTML = originalText;
+                }
+
+            } catch (err) {
+                console.error(err);
+                btn.innerHTML = originalText;
+            }
         });
+
+        // INICIAR
+        document.addEventListener('DOMContentLoaded', () => {
+            aplicarConfigVisual();
+            cargarAvales();
+        });
+
     </script>
 </body>
 </html>
