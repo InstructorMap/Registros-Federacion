@@ -166,45 +166,44 @@
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
         lucide.createIcons();
 
-        function aplicarConfigVisual() {
-            const config = JSON.parse(localStorage.getItem('saas_config')) || {};
-            
-            // Colores
-            if(config.color) {
-                document.documentElement.style.setProperty('--brand-color', config.color);
-                document.getElementById('btn-buscar').style.backgroundColor = config.color;
-                document.getElementById('nav-btn-action').style.backgroundColor = config.color;
-            }
-            
-            // Textos
-            if(config.title) document.getElementById('site-title').innerText = config.title;
-            if(config.heroTitle) document.getElementById('hero-title').innerHTML = config.heroTitle.replace(/\n/g, "<br>");
-            if(config.ctaText) document.getElementById('btn-buscar').innerText = config.ctaText;
+        // --- CARGA CONFIGURACIÓN DESDE LA NUBE (TABLA OFICIAL) ---
+        async function aplicarConfigVisual() {
+            try {
+                // USAMOS LA NUEVA TABLA
+                const { data } = await db.from('configuracion_sitios_oficiales').select('*').eq('id', 1).single();
+                
+                if (data) {
+                    if(data.color) {
+                        document.documentElement.style.setProperty('--brand-color', data.color);
+                        document.getElementById('btn-buscar').style.backgroundColor = data.color;
+                        document.getElementById('nav-btn-action').style.backgroundColor = data.color;
+                    }
+                    if(data.titulo) document.getElementById('site-title').innerText = data.titulo;
+                    if(data.hero_title) document.getElementById('hero-title').innerHTML = data.hero_title.replace(/\n/g, "<br>");
+                    if(data.cta_text) document.getElementById('btn-buscar').innerText = data.cta_text;
 
-            // Logo Header
-            if(config.logo && config.logo.length > 5) {
-                document.getElementById('site-logo-container').innerHTML = `<img src="${config.logo}" class="h-20 w-auto object-contain">`;
-            }
+                    if(data.logo_url) {
+                        document.getElementById('site-logo-container').innerHTML = `<img src="${data.logo_url}" class="h-20 w-auto object-contain">`;
+                    }
 
-            // Banner Hero
-            if(config.banner && config.banner.length > 5) {
-                const hero = document.getElementById('hero-header');
-                hero.style.backgroundImage = `url('${config.banner}')`;
-                hero.classList.add('hero-photo');
-                document.getElementById('hero-overlay').classList.remove('hidden');
-            }
+                    if(data.banner_url) {
+                        const hero = document.getElementById('hero-header');
+                        hero.style.backgroundImage = `url('${data.banner_url}')`;
+                        hero.classList.add('hero-photo');
+                        document.getElementById('hero-overlay').classList.remove('hidden');
+                    }
 
-            // WhatsApp
-            if(config.whatsapp && config.whatsapp.length > 5) {
-                const waBtn = document.getElementById('whatsapp-btn');
-                waBtn.href = `https://wa.me/${config.whatsapp}`;
-                waBtn.classList.remove('hidden');
-            }
+                    if(data.whatsapp) {
+                        const waBtn = document.getElementById('whatsapp-btn');
+                        waBtn.href = `https://wa.me/${data.whatsapp}`;
+                        waBtn.classList.remove('hidden');
+                    }
+                }
+            } catch (err) { console.error("Error al cargar config", err); }
         }
 
         async function cargarPartners() {
             const container = document.getElementById('logos-container');
-            // AHORA LEE DE LA NUEVA TABLA 'partners'
             const { data } = await db.from('partners').select('nombre, logo_url').order('created_at', { ascending: false });
             
             if (data && data.length > 0) {
@@ -228,7 +227,6 @@
             btn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>';
             msg.classList.add('hidden');
             
-            // Busca la matrícula (Datos Académicos)
             const { data } = await db.from('matriculas').select('id').eq('dni_alumno', val).limit(1).maybeSingle();
             
             if(data) window.location.href = `${URL_VALIDADOR}?id=${data.id}`;
