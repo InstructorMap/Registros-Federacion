@@ -59,7 +59,7 @@
                 <h2 class="text-xl font-bold text-white" id="page-title">Dashboard</h2>
             </div>
             <div class="flex gap-3">
-                <button onclick="saveConfig()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2 text-sm"><i data-lucide="save" class="w-4 h-4"></i> GUARDAR CONFIG</button>
+                <button onclick="saveConfigCloud()" id="btn-save-cloud" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2 text-sm"><i data-lucide="cloud-upload" class="w-4 h-4"></i> GUARDAR EN NUBE</button>
             </div>
         </header>
 
@@ -101,7 +101,6 @@
             <div id="view-avales" class="tab-content space-y-6">
                 <div class="card bg-slate-900 border border-slate-700">
                     <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="upload-cloud" class="text-emerald-500"></i> Agregar Partner al Index</h3>
-                    <p class="text-xs text-slate-400 mb-4">Logos de instituciones aliadas (Aparecen abajo en el sitio). No son las escuelas de los alumnos.</p>
                     <form id="form-partner" class="flex flex-col md:flex-row gap-4 items-end">
                         <div class="flex-1 w-full"><label>Nombre Partner</label><input type="text" id="partner-nombre" placeholder="Ej: Municipio de Dolores" required></div>
                         <div class="flex-1 w-full"><label>Logo (PNG/JPG)</label><input type="file" id="partner-logo" class="text-sm text-slate-400" required></div>
@@ -119,10 +118,7 @@
                             <label>Imagen Fondo (Banner)</label>
                             <div class="flex gap-2"><input type="text" id="conf-banner" placeholder="URL" class="flex-1"><label class="cursor-pointer bg-slate-800 px-3 py-2 rounded-lg border border-slate-700"><i data-lucide="upload" class="w-4 h-4 text-white"></i><input type="file" id="conf-banner-upload" class="hidden" accept="image/*"></label></div>
                         </div>
-                        <div>
-                            <label>Logo REMAEP (URL)</label>
-                            <div class="flex gap-2"><input type="text" id="conf-logo" placeholder="URL" class="flex-1"><label class="cursor-pointer bg-slate-800 px-3 py-2 rounded-lg border border-slate-700"><i data-lucide="upload" class="w-4 h-4 text-white"></i><input type="file" id="conf-logo-upload" class="hidden" accept="image/*"></label></div>
-                        </div>
+                        <div><label>Logo REMAEP (URL)</label><div class="flex gap-2"><input type="text" id="conf-logo" placeholder="URL" class="flex-1"><label class="cursor-pointer bg-slate-800 px-3 py-2 rounded-lg border border-slate-700"><i data-lucide="upload" class="w-4 h-4 text-white"></i><input type="file" id="conf-logo-upload" class="hidden" accept="image/*"></label></div></div>
                         <div><label>Color Principal</label><input type="color" id="conf-color" class="h-11 cursor-pointer"></div>
                     </div>
                 </div>
@@ -188,113 +184,116 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            loadLocalConfig(); 
+            loadCloudConfig(); 
             loadCRM();         
             updateDashboardStats(); 
         });
 
+        // --- GESTIÓN DE CONFIGURACIÓN EN NUBE (TABLA NUEVA) ---
+        async function loadCloudConfig() {
+            try {
+                // USAMOS LA NUEVA TABLA
+                const { data, error } = await db.from('configuracion_sitios_oficiales').select('*').eq('id', 1).single();
+                if (data) {
+                    setVal('conf-title', data.titulo);
+                    setVal('conf-color', data.color);
+                    setVal('conf-hero-title', data.hero_title);
+                    setVal('conf-cta', data.cta_text);
+                    setVal('conf-price', data.precio);
+                    setVal('conf-mplink', data.mp_link);
+                    setVal('conf-logo', data.logo_url);
+                    setVal('conf-banner', data.banner_url);
+                    setVal('conf-whatsapp', data.whatsapp);
+                }
+            } catch (err) { console.error("Error cargando config", err); }
+        }
+
+        async function saveConfigCloud() {
+            const btn = document.getElementById('btn-save-cloud');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "Guardando..."; btn.disabled = true;
+
+            const configData = {
+                id: 1, 
+                titulo: document.getElementById('conf-title').value,
+                hero_title: document.getElementById('conf-hero-title').value,
+                cta_text: document.getElementById('conf-cta').value,
+                logo_url: document.getElementById('conf-logo').value,
+                banner_url: document.getElementById('conf-banner').value,
+                color: document.getElementById('conf-color').value,
+                precio: document.getElementById('conf-price').value,
+                mp_link: document.getElementById('conf-mplink').value,
+                whatsapp: document.getElementById('conf-whatsapp').value
+            };
+
+            // USAMOS LA NUEVA TABLA
+            const { error } = await db.from('configuracion_sitios_oficiales').upsert(configData);
+            
+            btn.innerHTML = originalText; btn.disabled = false;
+            if(!error) alert("¡Configuración guardada en la NUBE! Todos verán los cambios.");
+            else alert("Error al guardar: " + error.message);
+        }
+
+        // --- RESTO DE FUNCIONALIDAD ---
         async function cargarAlumnos() {
             const lista = document.getElementById('lista-alumnos');
-            lista.innerHTML = '<tr><td colspan="4" class="p-4 text-center"><div class="spinner mx-auto"></div></td></tr>';
             const { data } = await db.from('matriculas').select('*, instituciones(nombre)').order('created_at', { ascending: false }).limit(50);
-            if (data) {
-                lista.innerHTML = data.map(al => `
-                    <tr class="hover:bg-slate-800/50 border-b border-slate-800/50">
-                        <td class="p-4"><div class="font-bold text-white">${al.nombre} ${al.apellido}</div><div class="text-xs text-slate-500">${al.curso}</div></td>
-                        <td class="p-4 font-mono text-xs text-slate-400">${al.dni_alumno}</td>
-                        <td class="p-4 text-xs text-blue-400">${al.instituciones?.nombre || '---'}</td>
-                        <td class="p-4 text-right"><a href="https://asari-platform.vercel.app/validador.html?id=${al.id}" target="_blank" class="text-slate-400 hover:text-white text-xs font-bold border border-slate-700 px-2 py-1 rounded">Ver ID</a></td>
-                    </tr>
-                `).join('');
-            }
+            if (data) lista.innerHTML = data.map(al => `<tr class="hover:bg-slate-800/50 border-b border-slate-800/50"><td class="p-4"><div class="font-bold text-white">${al.nombre} ${al.apellido}</div><div class="text-xs text-slate-500">${al.curso}</div></td><td class="p-4 font-mono text-xs text-slate-400">${al.dni_alumno}</td><td class="p-4 text-xs text-blue-400">${al.instituciones?.nombre || '---'}</td><td class="p-4 text-right"><a href="https://asari-platform.vercel.app/validador.html?id=${al.id}" target="_blank" class="text-slate-400 hover:text-white text-xs font-bold border border-slate-700 px-2 py-1 rounded">Ver ID</a></td></tr>`).join('');
         }
 
         async function cargarPartners() {
             const grid = document.getElementById('grid-partners');
             const { data } = await db.from('partners').select('*').order('created_at', { ascending: false });
-            if (data) {
-                grid.innerHTML = data.map(p => `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center gap-3 relative group">
-                        <button onclick="borrarPartner('${p.id}')" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" size="16"></i></button>
-                        <div class="h-16 w-full flex items-center justify-center bg-white/5 rounded-lg p-2"><img src="${p.logo_url}" class="max-h-full object-contain"></div>
-                        <span class="text-xs font-bold text-center text-slate-300">${p.nombre}</span>
-                    </div>
-                `).join('');
-                lucide.createIcons();
-            }
+            if (data) grid.innerHTML = data.map(p => `<div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center gap-3 relative group"><button onclick="borrarPartner('${p.id}')" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" size="16"></i></button><div class="h-16 w-full flex items-center justify-center bg-white/5 rounded-lg p-2"><img src="${p.logo_url}" class="max-h-full object-contain"></div><span class="text-xs font-bold text-center text-slate-300">${p.nombre}</span></div>`).join('');
+            lucide.createIcons();
         }
 
         document.getElementById('form-partner').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerText = "..."; btn.disabled = true;
+            const btn = e.target.querySelector('button'); btn.innerText = "..."; btn.disabled = true;
             try {
                 const nombre = document.getElementById('partner-nombre').value;
                 const file = document.getElementById('partner-logo').files[0];
-                const fileExt = file.name.split('.').pop(); 
-                const fileName = `partner_${Date.now()}.${fileExt}`;
-                
+                const fileName = `partner_${Date.now()}.${file.name.split('.').pop()}`;
                 await db.storage.from('logos-partners').upload(fileName, file);
                 const logoUrl = `${PROJECT_URL}/storage/v1/object/public/logos-partners/${fileName}`;
-                
                 await db.from('partners').insert([{ nombre, logo_url: logoUrl }]);
-                e.target.reset();
-                cargarPartners();
-                updateDashboardStats();
-            } catch (err) { alert("Error: " + err.message); } 
-            finally { btn.innerText = "Publicar"; btn.disabled = false; }
+                e.target.reset(); cargarPartners(); updateDashboardStats();
+            } catch (err) { alert("Error: " + err.message); } finally { btn.innerText = "Publicar"; btn.disabled = false; }
         });
 
-        async function borrarPartner(id) {
-            if(!confirm('¿Quitar este logo del Index?')) return;
-            await db.from('partners').delete().eq('id', id);
-            cargarPartners();
-        }
-
+        async function borrarPartner(id) { if(confirm('¿Borrar?')) { await db.from('partners').delete().eq('id', id); cargarPartners(); } }
+        
         async function cargarInstitucionesSelect() {
-            const select = document.getElementById('al-institucion');
+            const s = document.getElementById('al-institucion');
             const { data } = await db.from('instituciones').select('id, nombre');
-            if(data) select.innerHTML = '<option value="">Seleccione...</option>' + data.map(i => `<option value="${i.id}">${i.nombre}</option>`).join('');
+            if(data) s.innerHTML = '<option value="">Seleccione...</option>' + data.map(i => `<option value="${i.id}">${i.nombre}</option>`).join('');
         }
 
-        // FUNCIONES DE SUBIDA DE IMÁGENES (BANNER Y LOGO)
-        async function uploadImage(file, targetInputId) {
-            if (!file) return;
-            if (file.size > 5 * 1024 * 1024) { alert("Imagen muy pesada (Max 5MB)."); return; }
+        // Subida de imagenes (Banner y Logo)
+        async function uploadImage(file, inputId) {
+            if(!file) return;
+            if(file.size > 5*1024*1024) { alert("Max 5MB"); return; }
+            const fileName = `img_${Date.now()}.${file.name.split('.').pop()}`;
             try {
-                const fileExt = file.name.split('.').pop();
-                const cleanName = `img_${Date.now()}.${fileExt}`;
-                const { error } = await db.storage.from('logos-partners').upload(cleanName, file);
-                if (error) throw error;
-                const url = `${PROJECT_URL}/storage/v1/object/public/logos-partners/${cleanName}`;
-                document.getElementById(targetInputId).value = url;
-                saveConfig();
-                alert("Imagen actualizada.");
-            } catch (err) { alert("Error: " + err.message); }
+                const { error } = await db.storage.from('logos-partners').upload(fileName, file);
+                if(error) throw error;
+                const url = `${PROJECT_URL}/storage/v1/object/public/logos-partners/${fileName}`;
+                document.getElementById(inputId).value = url;
+                alert("Imagen subida. Dale a 'GUARDAR EN NUBE' para aplicar.");
+            } catch (err) { alert("Error subida: " + err.message); }
         }
-
         document.getElementById('conf-banner-upload').addEventListener('change', (e) => uploadImage(e.target.files[0], 'conf-banner'));
         document.getElementById('conf-logo-upload').addEventListener('change', (e) => uploadImage(e.target.files[0], 'conf-logo'));
 
         document.getElementById('form-alumno').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerText = "Guardando..."; btn.disabled = true;
-            const datos = {
-                nombre: document.getElementById('al-nombre').value,
-                apellido: document.getElementById('al-apellido').value,
-                dni_alumno: document.getElementById('al-dni').value,
-                curso: document.getElementById('al-curso').value,
-                institucion_id: document.getElementById('al-institucion').value || null
-            };
+            const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true;
+            const datos = { nombre: document.getElementById('al-nombre').value, apellido: document.getElementById('al-apellido').value, dni_alumno: document.getElementById('al-dni').value, curso: document.getElementById('al-curso').value, institucion_id: document.getElementById('al-institucion').value || null };
             const { error } = await db.from('matriculas').insert([datos]);
-            if(!error) {
-                document.getElementById('modal-alumno').classList.add('hidden');
-                document.getElementById('form-alumno').reset();
-                if(document.getElementById('view-matriculados').classList.contains('active')) cargarAlumnos();
-                updateDashboardStats();
-            } else { alert(error.message); }
-            btn.innerText = "Guardar"; btn.disabled = false;
+            if(!error) { document.getElementById('modal-alumno').classList.add('hidden'); document.getElementById('form-alumno').reset(); cargarAlumnos(); updateDashboardStats(); }
+            else alert(error.message);
+            btn.disabled = false;
         });
 
         async function updateDashboardStats() {
@@ -303,39 +302,12 @@
             document.getElementById('dash-total-alumnos').innerText = c1 || 0;
             document.getElementById('dash-total-avales').innerText = c2 || 0;
         }
-        function loadLocalConfig() {
-            const c = JSON.parse(localStorage.getItem('saas_config')) || {};
-            setVal('conf-title', c.title); setVal('conf-color', c.color); setVal('conf-hero-title', c.heroTitle);
-            setVal('conf-cta', c.ctaText); setVal('conf-price', c.price); setVal('conf-mplink', c.mpLink);
-            setVal('conf-logo', c.logo); setVal('conf-banner', c.banner); setVal('conf-whatsapp', c.whatsapp);
-        }
-        function saveConfig() {
-            localStorage.setItem('saas_config', JSON.stringify({
-                title: document.getElementById('conf-title').value,
-                color: document.getElementById('conf-color').value,
-                heroTitle: document.getElementById('conf-hero-title').value,
-                ctaText: document.getElementById('conf-cta').value,
-                price: document.getElementById('conf-price').value,
-                mpLink: document.getElementById('conf-mplink').value,
-                logo: document.getElementById('conf-logo').value,
-                banner: document.getElementById('conf-banner').value,
-                whatsapp: document.getElementById('conf-whatsapp').value
-            }));
-            alert('Configuración Guardada');
-        }
         function loadCRM() {
             const reqs = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
             document.getElementById('dash-total-solicitudes').innerText = reqs.length;
             const tbody = document.getElementById('crm-body');
             if(reqs.length > 0) {
-                tbody.innerHTML = reqs.slice(0, 5).map(r => `
-                    <tr>
-                        <td class="p-3 text-xs text-slate-500">${new Date(r.fecha || Date.now()).toLocaleDateString()}</td>
-                        <td class="p-3 font-bold text-white">${r.nombre}</td>
-                        <td class="p-3 font-mono text-xs">${r.dni}</td>
-                        <td class="p-3"><span class="bg-purple-500/20 text-purple-400 text-xs px-2 py-1 rounded">Pendiente</span></td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = reqs.slice(0, 5).map(r => `<tr><td class="p-3 text-xs text-slate-500">${new Date(r.fecha || Date.now()).toLocaleDateString()}</td><td class="p-3 font-bold text-white">${r.nombre}</td><td class="p-3 font-mono text-xs">${r.dni}</td><td class="p-3"><span class="bg-purple-500/20 text-purple-400 text-xs px-2 py-1 rounded">Pendiente</span></td></tr>`).join('');
             }
         }
         function setVal(id, v) { if(v) document.getElementById(id).value = v; }
