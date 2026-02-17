@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background: #020617; color: #e2e8f0; }
@@ -56,7 +57,7 @@
         <header class="h-16 bg-slate-950 border-b border-slate-900 flex justify-between items-center px-8">
             <div class="flex items-center gap-4">
                 <button class="md:hidden text-slate-400"><i data-lucide="menu"></i></button>
-                <h2 class="text-xl font-bold text-white" id="page-title">Dashboard</h2>
+                <h2 class="text-xl font-bold text-white" id="page-title">DASHBOARD</h2>
             </div>
             <div class="flex gap-3">
                 <button onclick="saveConfigCloud()" id="btn-save-cloud" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2 text-sm"><i data-lucide="cloud-upload" class="w-4 h-4"></i> GUARDAR EN NUBE</button>
@@ -66,7 +67,7 @@
         <div class="flex-1 overflow-y-auto p-6 md:p-8">
 
             <div id="view-dashboard" class="tab-content active space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="card bg-gradient-to-br from-slate-900 to-slate-900 border-l-4 border-l-blue-500">
                         <p class="text-slate-400 text-xs font-bold uppercase">Matriculados Activos</p>
                         <h3 class="text-3xl font-bold text-white mt-1" id="dash-total-alumnos">---</h3>
@@ -79,11 +80,35 @@
                         <p class="text-slate-400 text-xs font-bold uppercase">Solicitudes Web</p>
                         <h3 class="text-3xl font-bold text-white mt-1" id="dash-total-solicitudes">0</h3>
                     </div>
+                    <div class="card bg-gradient-to-br from-slate-900 to-slate-900 border-l-4 border-l-yellow-500">
+                        <p class="text-slate-400 text-xs font-bold uppercase">Ingresos Estimados</p>
+                        <h3 class="text-3xl font-bold text-yellow-400 mt-1" id="dash-total-ingresos">$0</h3>
+                        <p class="text-[10px] text-slate-500">Calculado s/ precio config.</p>
+                    </div>
                 </div>
+
                 <div class="card">
-                    <h3 class="font-bold text-lg text-white mb-4 flex items-center gap-2"><i data-lucide="inbox" class="text-purple-500"></i> Solicitudes Recientes</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg text-white flex items-center gap-2"><i data-lucide="inbox" class="text-purple-500"></i> Solicitudes Recientes</h3>
+                        <button onclick="descargarExcelSolicitudes()" class="bg-green-700 hover:bg-green-600 text-white text-xs font-bold py-2 px-3 rounded flex items-center gap-2">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> EXPORTAR EXCEL
+                        </button>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm"><thead class="bg-slate-900 text-slate-400 border-b border-slate-800"><tr><th class="p-3">Fecha</th><th class="p-3">Nombre</th><th class="p-3">DNI</th><th class="p-3">Estado</th></tr></thead><tbody id="crm-body" class="divide-y divide-slate-800 text-slate-300"><tr><td colspan="4" class="p-4 text-center text-slate-500">No hay solicitudes nuevas.</td></tr></tbody></table>
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-900 text-slate-400 border-b border-slate-800">
+                                <tr>
+                                    <th class="p-3">Fecha</th>
+                                    <th class="p-3">Solicitante</th>
+                                    <th class="p-3">Contacto</th>
+                                    <th class="p-3">Estado</th>
+                                    <th class="p-3">Archivos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crm-body" class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td colspan="5" class="p-4 text-center text-slate-500">Cargando solicitudes...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -137,8 +162,8 @@
                 <div class="card">
                     <h3 class="font-bold text-lg text-white mb-4"><i data-lucide="credit-card" class="text-emerald-500"></i> Cobros</h3>
                     <div class="space-y-4">
-                        <div><label>Precio</label><input type="text" id="conf-price" class="text-emerald-400 font-bold text-lg"></div>
-                        <div><label>Link MP</label><input type="url" id="conf-mplink" placeholder="https://mpago.la/..."></div>
+                        <div><label>Precio del Trámite ($)</label><input type="number" id="conf-price" class="text-emerald-400 font-bold text-lg" placeholder="5000"></div>
+                        <div><label>Link de Pago (Mercado Pago)</label><input type="url" id="conf-mplink" placeholder="https://mpago.la/..."></div>
                     </div>
                 </div>
             </div>
@@ -172,6 +197,8 @@
         const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
+        let globalPrecio = 0; // Para el cálculo de ingresos
+
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
@@ -185,15 +212,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             loadCloudConfig(); 
-            loadCRM();         
+            loadCRM();          
             updateDashboardStats(); 
         });
 
-        // --- GESTIÓN DE CONFIGURACIÓN EN NUBE (TABLA NUEVA) ---
+        // --- CARGAR CONFIGURACIÓN ---
         async function loadCloudConfig() {
             try {
-                // USAMOS LA NUEVA TABLA
-                const { data, error } = await db.from('configuracion_sitios_oficiales').select('*').eq('id', 1).single();
+                const { data } = await db.from('configuracion_sitios_oficiales').select('*').eq('id', 1).single();
                 if (data) {
                     setVal('conf-title', data.titulo);
                     setVal('conf-color', data.color);
@@ -204,8 +230,10 @@
                     setVal('conf-logo', data.logo_url);
                     setVal('conf-banner', data.banner_url);
                     setVal('conf-whatsapp', data.whatsapp);
+                    
+                    globalPrecio = parseFloat(data.precio) || 0;
                 }
-            } catch (err) { console.error("Error cargando config", err); }
+            } catch (err) { console.error(err); }
         }
 
         async function saveConfigCloud() {
@@ -226,15 +254,102 @@
                 whatsapp: document.getElementById('conf-whatsapp').value
             };
 
-            // USAMOS LA NUEVA TABLA
             const { error } = await db.from('configuracion_sitios_oficiales').upsert(configData);
             
             btn.innerHTML = originalText; btn.disabled = false;
-            if(!error) alert("¡Configuración guardada en la NUBE! Todos verán los cambios.");
-            else alert("Error al guardar: " + error.message);
+            if(!error) {
+                alert("¡Configuración guardada!");
+                globalPrecio = parseFloat(configData.precio) || 0;
+                updateDashboardStats(); // Recalcular ingresos
+            }
+            else alert("Error: " + error.message);
         }
 
-        // --- RESTO DE FUNCIONALIDAD ---
+        // --- CRM Y SOLICITUDES (NUEVO: CONECTADO A SUPABASE) ---
+        async function loadCRM() {
+            const tbody = document.getElementById('crm-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500"><div class="spinner mx-auto"></div></td></tr>';
+
+            try {
+                // Consultamos la tabla real en la nube
+                const { data: reqs, error } = await db
+                    .from('solicitudes_tramites')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if(error) throw error;
+
+                document.getElementById('dash-total-solicitudes').innerText = reqs.length;
+                
+                // CALCULAR INGRESOS ESTIMADOS
+                const totalIngresos = reqs.length * globalPrecio;
+                document.getElementById('dash-total-ingresos').innerText = "$" + new Intl.NumberFormat('es-AR').format(totalIngresos);
+
+                if(reqs && reqs.length > 0) {
+                    tbody.innerHTML = reqs.slice(0, 50).map(r => `
+                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                            <td class="p-3 text-xs text-slate-500">${new Date(r.created_at).toLocaleDateString()}</td>
+                            <td class="p-3 font-bold text-white">
+                                ${r.nombre} ${r.apellido}
+                                <div class="text-[10px] text-slate-500 font-normal">${r.curso}</div>
+                            </td>
+                            <td class="p-3 text-xs text-slate-400">
+                                <div class="font-mono mb-1">📞 ${r.telefono}</div>
+                                <div class="truncate w-32" title="${r.email}">${r.email}</div>
+                            </td>
+                            <td class="p-3">
+                                <span class="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded font-bold uppercase tracking-wider">${r.estado || 'PENDIENTE'}</span>
+                            </td>
+                            <td class="p-3 flex gap-2">
+                                ${r.archivo_dni_url ? `<a href="${r.archivo_dni_url}" target="_blank" class="text-blue-400 hover:text-white" title="Ver DNI"><i data-lucide="id-card" class="w-4 h-4"></i></a>` : ''}
+                                ${r.archivo_diploma_url ? `<a href="${r.archivo_diploma_url}" target="_blank" class="text-emerald-400 hover:text-white" title="Ver Diploma"><i data-lucide="file-check" class="w-4 h-4"></i></a>` : ''}
+                            </td>
+                        </tr>
+                    `).join('');
+                    lucide.createIcons();
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay solicitudes nuevas.</td></tr>';
+                }
+            } catch(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500">Error al cargar solicitudes.</td></tr>';
+            }
+        }
+
+        // --- FUNCIÓN EXPORTAR EXCEL ---
+        async function descargarExcelSolicitudes() {
+            try {
+                const { data: reqs } = await db.from('solicitudes_tramites').select('*').order('created_at', { ascending: false });
+                if (!reqs || reqs.length === 0) return alert("No hay datos para exportar.");
+
+                // Preparar datos limpios para Excel
+                const datosExcel = reqs.map(r => ({
+                    Fecha: new Date(r.created_at).toLocaleDateString(),
+                    Nombre: r.nombre,
+                    Apellido: r.apellido,
+                    DNI: r.dni,
+                    Curso: r.curso,
+                    Email: r.email,
+                    Telefono: r.telefono,
+                    Estado: r.estado,
+                    Link_DNI: r.archivo_dni_url,
+                    Link_Diploma: r.archivo_diploma_url
+                }));
+
+                const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Solicitudes");
+                
+                // Nombre archivo con fecha
+                const fecha = new Date().toISOString().slice(0,10);
+                XLSX.writeFile(workbook, `Solicitudes_REMAEP_${fecha}.xlsx`);
+
+            } catch (e) {
+                alert("Error al exportar: " + e.message);
+            }
+        }
+
+        // --- GESTIÓN MATRICULADOS Y PARTNERS ---
         async function cargarAlumnos() {
             const lista = document.getElementById('lista-alumnos');
             const { data } = await db.from('matriculas').select('*, instituciones(nombre)').order('created_at', { ascending: false }).limit(50);
@@ -270,7 +385,6 @@
             if(data) s.innerHTML = '<option value="">Seleccione...</option>' + data.map(i => `<option value="${i.id}">${i.nombre}</option>`).join('');
         }
 
-        // Subida de imagenes (Banner y Logo)
         async function uploadImage(file, inputId) {
             if(!file) return;
             if(file.size > 5*1024*1024) { alert("Max 5MB"); return; }
@@ -302,14 +416,7 @@
             document.getElementById('dash-total-alumnos').innerText = c1 || 0;
             document.getElementById('dash-total-avales').innerText = c2 || 0;
         }
-        function loadCRM() {
-            const reqs = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
-            document.getElementById('dash-total-solicitudes').innerText = reqs.length;
-            const tbody = document.getElementById('crm-body');
-            if(reqs.length > 0) {
-                tbody.innerHTML = reqs.slice(0, 5).map(r => `<tr><td class="p-3 text-xs text-slate-500">${new Date(r.fecha || Date.now()).toLocaleDateString()}</td><td class="p-3 font-bold text-white">${r.nombre}</td><td class="p-3 font-mono text-xs">${r.dni}</td><td class="p-3"><span class="bg-purple-500/20 text-purple-400 text-xs px-2 py-1 rounded">Pendiente</span></td></tr>`).join('');
-            }
-        }
+
         function setVal(id, v) { if(v) document.getElementById(id).value = v; }
     </script>
 </body>
