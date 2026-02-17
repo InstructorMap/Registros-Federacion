@@ -13,14 +13,14 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 relative bg-slate-950">
     
-    <a href="index.html" class="absolute top-6 left-6 text-slate-400 hover:text-white flex items-center gap-2 font-bold text-sm z-10">
+    <a href="../index.html" class="absolute top-6 left-6 text-slate-400 hover:text-white flex items-center gap-2 font-bold text-sm z-10">
         <i data-lucide="arrow-left"></i> Volver
     </a>
 
     <div class="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
         
         <div class="bg-gradient-to-br from-blue-600 to-indigo-800 p-8 md:p-12 md:w-1/3 flex flex-col justify-between text-white relative overflow-hidden">
-            <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,...');"></div>
+            <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
             <div class="relative z-10">
                 <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6 backdrop-blur-sm">
                     <i data-lucide="file-badge" class="w-6 h-6 text-white"></i>
@@ -108,21 +108,29 @@
 
         lucide.createIcons();
 
-        // 1. CARGAR CONFIG (PRECIO/COLOR)
-        document.addEventListener('DOMContentLoaded', () => {
-            const config = JSON.parse(localStorage.getItem('saas_config')) || {};
-            if(config.price) document.getElementById('display-price').innerText = config.price;
-            if(config.color) document.documentElement.style.setProperty('--brand-color', config.color);
-        });
+        // 1. CARGAR CONFIG (PRECIO/COLOR) DESDE NUBE
+        async function loadConfig() {
+            try {
+                const { data } = await db.from('configuracion_sitios_oficiales').select('*').eq('id', 1).single();
+                if (data) {
+                    if(data.precio) document.getElementById('display-price').innerText = data.precio;
+                    if(data.color) document.documentElement.style.setProperty('--brand-color', data.color);
+                    // Guardamos el link de pago para usarlo al enviar
+                    window.mpLink = data.mp_link; 
+                }
+            } catch(e) { console.error(e); }
+        }
+        loadConfig();
 
         // 2. FEEDBACK VISUAL ARCHIVOS
         document.getElementById('file-dni').onchange = () => document.getElementById('check-dni').classList.remove('hidden');
         document.getElementById('file-diploma').onchange = () => document.getElementById('check-diploma').classList.remove('hidden');
 
-        // 3. PROCESAR FORMULARIO
+        // 3. PROCESAR FORMULARIO (ENVÍO A LA NUBE)
         document.getElementById('tramiteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
+            const originalText = btn.innerHTML;
             btn.innerHTML = '<div class="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div> Procesando...';
             btn.disabled = true;
 
@@ -134,50 +142,38 @@
                 const email = document.getElementById('email').value;
                 const telefono = document.getElementById('telefono').value;
 
-                // A. SUBIR ARCHIVOS A SUPABASE
+                // A. SUBIR ARCHIVOS A SUPABASE (BUCKET: solicitudes-archivos)
                 const fileDni = document.getElementById('file-dni').files[0];
                 const fileDip = document.getElementById('file-diploma').files[0];
                 
                 const urlDni = await uploadFile(fileDni, `dni_${dni}`);
                 const urlDip = await uploadFile(fileDip, `dip_${dni}`);
 
-                // B. GUARDAR EN "CRM" (LOCALSTORAGE) PARA EL PANEL
-                // Esto simula una base de datos de solicitudes para que el admin las vea
-                const nuevaSolicitud = {
-                    id: Date.now(),
-                    fecha: new Date().toISOString(),
-                    nombre: `${nombre} ${apellido}`,
-                    dni: dni,
-                    curso: curso,
-                    contacto: { email, telefono },
-                    archivos: { dni: urlDni, diploma: urlDip },
-                    estado: 'PENDIENTE_PAGO'
-                };
+                // B. INSERTAR EN LA BASE DE DATOS (TABLA NUEVA)
+                const { error } = await db.from('solicitudes_tramites').insert([{
+                    nombre, apellido, dni, curso, email, telefono,
+                    archivo_dni_url: urlDni,
+                    archivo_diploma_url: urlDip,
+                    estado: 'PENDIENTE'
+                }]);
 
-                // Recuperar solicitudes existentes y agregar la nueva
-                const solicitudes = JSON.parse(localStorage.getItem('saas_solicitudes')) || [];
-                solicitudes.unshift(nuevaSolicitud); // Agregar al principio
-                localStorage.setItem('saas_solicitudes', JSON.stringify(solicitudes));
-                
-                // Disparar evento para que si tienes el panel abierto en otra pestaña, se entere (opcional)
-                window.dispatchEvent(new CustomEvent('storage'));
+                if(error) throw error;
 
-                // C. REDIRECCIÓN A PAGO
-                const config = JSON.parse(localStorage.getItem('saas_config')) || {};
-                
+                // C. REDIRECCIÓN A MERCADO PAGO O FIN
                 setTimeout(() => {
-                    if(config.mpLink && config.mpLink.length > 5) {
-                        window.location.href = config.mpLink;
+                    const linkPago = window.mpLink; 
+                    if(linkPago && linkPago.startsWith('http')) {
+                        window.location.href = linkPago;
                     } else {
-                        alert('Solicitud enviada con éxito. Nos contactaremos a la brevedad para el pago.');
-                        window.location.href = 'index.html';
+                        alert('Solicitud enviada correctamente. Un asesor se contactará para el pago.');
+                        window.location.href = '../index.html';
                     }
                 }, 1500);
 
             } catch (err) {
                 console.error(err);
-                alert('Error al subir archivos: ' + err.message);
-                btn.innerText = "INTENTAR DE NUEVO";
+                alert('Error al procesar la solicitud: ' + err.message);
+                btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         });
