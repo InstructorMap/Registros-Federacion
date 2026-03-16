@@ -310,11 +310,15 @@
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
         lucide.createIcons();
 
-        // Función hasheo de matrícula (Misma que Wallet)
-        function generarHashMatricula(d) { 
-            let h = 0; 
-            for (let i = 0; i < d.length; i++) { h = ((h << 5) - h) + d.charCodeAt(i); h |= 0; } 
-            return String(Math.abs(h)).substring(0, 6).padStart(6, '9'); 
+        // --- ALGORITMO DE MATRÍCULA HOMOLOGADO CON MODO DIOS ---
+        function generarHashMatricula(dni, curso, id) { 
+            const str = String(dni) + String(curso).trim().toLowerCase() + String(id);
+            let h = 0x811c9dc5; 
+            for (let i = 0; i < str.length; i++) { 
+                h ^= str.charCodeAt(i); 
+                h = Math.imul(h, 0x01000193); 
+            } 
+            return String(Math.abs(h)).substring(0, 6).padStart(6, '1'); 
         }
 
         async function aplicarConfigVisual() {
@@ -343,7 +347,7 @@
                     }
                     if(data.whatsapp) {
                         const waBtn = document.getElementById('whatsapp-btn');
-                        waBtn.href = `https://wa.me/${data.whatsapp}`;
+                        waBtn.href = `https://wa.me/${data.whatsapp.replace(/\D/g,'')}`;
                         waBtn.classList.remove('hidden');
                     }
                 }
@@ -369,13 +373,10 @@
                 const { count, error } = await db.from('matriculas').select('*', { count: 'exact', head: true });
                 if(!error && count !== null) {
                     const el = document.getElementById('counter-number');
-                    let start = 0;
-                    const end = count;
-                    const duration = 2000;
+                    let start = 0; const end = count; const duration = 2000;
                     const step = Math.ceil(end / (duration / 16)) || 1;
                     function updateCounter() {
-                        start += step;
-                        if(start > end) start = end;
+                        start += step; if(start > end) start = end;
                         el.innerText = new Intl.NumberFormat('es-AR').format(start);
                         if(start < end) requestAnimationFrame(updateCounter);
                     }
@@ -408,21 +409,20 @@
                     msg.classList.remove('hidden'); 
                 }
             } catch(err) {
-                console.error(err);
-                msg.classList.remove('hidden');
+                console.error(err); msg.classList.remove('hidden');
             } finally {
                 btn.innerText = originalText;
             }
         });
 
         function abrirModalPerfil(registros) {
-            const alumno = registros[0];
+            const alumno = registros[0]; // Tomamos el primer registro como principal para encabezado
             
             document.getElementById('modal-nombre').innerText = `${alumno.nombre} ${alumno.apellido}`;
             document.getElementById('modal-dni').innerText = alumno.dni_alumno;
             
-            // CALCULAR Y MOSTRAR MATRÍCULA
-            const matricula = generarHashMatricula(String(alumno.dni_alumno));
+            // --- CÁLCULO DE MATRÍCULA HOMOLOGADO ---
+            const matricula = alumno.matricula || generarHashMatricula(alumno.dni_alumno, alumno.curso, alumno.id);
             document.getElementById('modal-matricula').innerText = matricula;
             
             const imgEl = document.getElementById('modal-foto');
@@ -432,11 +432,9 @@
             
             if (registroConFoto) {
                 imgEl.src = registroConFoto.foto_url;
-                imgEl.classList.remove('hidden');
-                phEl.classList.add('hidden');
+                imgEl.classList.remove('hidden'); phEl.classList.add('hidden');
             } else {
-                imgEl.classList.add('hidden');
-                phEl.classList.remove('hidden');
+                imgEl.classList.add('hidden'); phEl.classList.remove('hidden');
             }
 
             const tbody = document.getElementById('modal-lista-cursos');
@@ -464,14 +462,20 @@
             document.getElementById('modal-perfil').classList.remove('hidden');
         }
 
-        function cerrarModal() {
-            document.getElementById('modal-perfil').classList.add('hidden');
-        }
+        function cerrarModal() { document.getElementById('modal-perfil').classList.add('hidden'); }
 
+        // --- LÓGICA AUTO-BÚSQUEDA DEL QR ---
         document.addEventListener('DOMContentLoaded', () => {
             aplicarConfigVisual();
             cargarPartners();
             cargarContador(); 
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const autoDni = urlParams.get('dni');
+            if (autoDni) {
+                document.getElementById('dni-input').value = autoDni;
+                setTimeout(() => { document.getElementById('btn-buscar').click(); }, 400);
+            }
         });
     </script>
 </body>
