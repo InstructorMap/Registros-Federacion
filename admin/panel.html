@@ -49,7 +49,7 @@
             <button onclick="showTab('pagos')" id="nav-pagos" class="sidebar-link w-full"><i data-lucide="credit-card" class="w-5 h-5"></i> Pagos & Trámite</button>
         </nav>
         <div class="p-4 border-t border-slate-900">
-            <a href="index.html" target="_blank" class="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors"><i data-lucide="external-link" class="w-4 h-4"></i> VER SITIO OFICIAL</a>
+            <a href="../index.html" target="_blank" class="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors"><i data-lucide="external-link" class="w-4 h-4"></i> VER SITIO OFICIAL</a>
         </div>
     </aside>
 
@@ -197,7 +197,7 @@
         const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
-        let globalPrecio = 0; // Para el cálculo de ingresos
+        let globalPrecio = 0;
 
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -216,13 +216,14 @@
             updateDashboardStats(); 
         });
 
-        // --- CARGAR CONFIGURACIÓN ---
+        // --- CARGAR CONFIGURACIÓN REMAEP (ID = 2) ---
         async function loadCloudConfig() {
             try {
-                const { data } = await db.from('configuracion_sitios_oficiales').select('*').eq('id', 1).single();
+                // MODIFICADO: Lee del ID 2
+                const { data } = await db.from('configuracion_sitios_oficiales').select('*').eq('id', 2).single();
                 if (data) {
                     setVal('conf-title', data.titulo);
-                    setVal('conf-color', data.color);
+                    setVal('conf-color', data.color || '#0033cc'); // Color por defecto si está vacío
                     setVal('conf-hero-title', data.hero_title);
                     setVal('conf-cta', data.cta_text);
                     setVal('conf-price', data.precio);
@@ -236,13 +237,14 @@
             } catch (err) { console.error(err); }
         }
 
+        // --- GUARDAR CONFIGURACIÓN REMAEP (ID = 2) ---
         async function saveConfigCloud() {
             const btn = document.getElementById('btn-save-cloud');
             const originalText = btn.innerHTML;
             btn.innerHTML = "Guardando..."; btn.disabled = true;
 
             const configData = {
-                id: 1, 
+                id: 2, // MODIFICADO: Guarda en el ID 2
                 titulo: document.getElementById('conf-title').value,
                 hero_title: document.getElementById('conf-hero-title').value,
                 cta_text: document.getElementById('conf-cta').value,
@@ -258,20 +260,18 @@
             
             btn.innerHTML = originalText; btn.disabled = false;
             if(!error) {
-                alert("¡Configuración guardada!");
+                alert("¡Configuración guardada! Los cambios ya están en REMAEP.com");
                 globalPrecio = parseFloat(configData.precio) || 0;
-                updateDashboardStats(); // Recalcular ingresos
+                updateDashboardStats();
             }
             else alert("Error: " + error.message);
         }
 
-        // --- CRM Y SOLICITUDES (NUEVO: CONECTADO A SUPABASE) ---
         async function loadCRM() {
             const tbody = document.getElementById('crm-body');
             tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500"><div class="spinner mx-auto"></div></td></tr>';
 
             try {
-                // Consultamos la tabla real en la nube
                 const { data: reqs, error } = await db
                     .from('solicitudes_tramites')
                     .select('*')
@@ -281,7 +281,6 @@
 
                 document.getElementById('dash-total-solicitudes').innerText = reqs.length;
                 
-                // CALCULAR INGRESOS ESTIMADOS
                 const totalIngresos = reqs.length * globalPrecio;
                 document.getElementById('dash-total-ingresos').innerText = "$" + new Intl.NumberFormat('es-AR').format(totalIngresos);
 
@@ -316,13 +315,11 @@
             }
         }
 
-        // --- FUNCIÓN EXPORTAR EXCEL ---
         async function descargarExcelSolicitudes() {
             try {
                 const { data: reqs } = await db.from('solicitudes_tramites').select('*').order('created_at', { ascending: false });
                 if (!reqs || reqs.length === 0) return alert("No hay datos para exportar.");
 
-                // Preparar datos limpios para Excel
                 const datosExcel = reqs.map(r => ({
                     Fecha: new Date(r.created_at).toLocaleDateString(),
                     Nombre: r.nombre,
@@ -340,16 +337,12 @@
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, "Solicitudes");
                 
-                // Nombre archivo con fecha
                 const fecha = new Date().toISOString().slice(0,10);
                 XLSX.writeFile(workbook, `Solicitudes_REMAEP_${fecha}.xlsx`);
 
-            } catch (e) {
-                alert("Error al exportar: " + e.message);
-            }
+            } catch (e) { alert("Error al exportar: " + e.message); }
         }
 
-        // --- GESTIÓN MATRICULADOS Y PARTNERS ---
         async function cargarAlumnos() {
             const lista = document.getElementById('lista-alumnos');
             const { data } = await db.from('matriculas').select('*, instituciones(nombre)').order('created_at', { ascending: false }).limit(50);
@@ -390,9 +383,9 @@
             if(file.size > 5*1024*1024) { alert("Max 5MB"); return; }
             const fileName = `img_${Date.now()}.${file.name.split('.').pop()}`;
             try {
-                const { error } = await db.storage.from('logos-partners').upload(fileName, file);
+                const { error } = await db.storage.from('logos-instituciones').upload(fileName, file);
                 if(error) throw error;
-                const url = `${PROJECT_URL}/storage/v1/object/public/logos-partners/${fileName}`;
+                const url = `${PROJECT_URL}/storage/v1/object/public/logos-instituciones/${fileName}`;
                 document.getElementById(inputId).value = url;
                 alert("Imagen subida. Dale a 'GUARDAR EN NUBE' para aplicar.");
             } catch (err) { alert("Error subida: " + err.message); }
