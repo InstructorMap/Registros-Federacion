@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="google" content="notranslate">
     <meta name="description" content="Sistema de Registro Institucional. Valide profesionales, obtenga su matrícula oficial con respaldo blockchain.">
-    <title>[Nombre Institución] · Sistema de Registro Institucional</title>
+    <title>Panel de Administración · <span id="wl-title-institucion">Cargando...</span></title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -135,7 +135,7 @@
 
     <!-- TOP BAR -->
     <div class="bg-wlPrimary text-white text-[9px] md:text-[11px] py-3 px-4 text-center font-black tracking-[0.18em] md:tracking-[0.25em] uppercase z-50 shadow-lg relative overflow-hidden">
-        <span class="relative z-10">Sistema de Registro Institucional</span>
+        <span class="relative z-10" id="wl-institucion-nombre-top">Sistema de Registro Institucional</span>
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-wlSecondary/10 to-transparent animate-pulse"></div>
     </div>
 
@@ -147,7 +147,7 @@
                     <img id="nav-logo" src="https://ui-avatars.com/api/?name=S+R&background=fff&color=0f172a" alt="Logo Institución">
                 </div>
                 <div class="leading-tight pt-2">
-                    <span class="font-title font-black text-2xl md:text-3xl tracking-tight block text-wlPrimary">[Nombre Institución]</span>
+                    <span class="font-title font-black text-2xl md:text-3xl tracking-tight block text-wlPrimary" id="wl-institucion-nombre-nav">Cargando...</span>
                     <span class="text-[9px] md:text-[11px] text-wlSecondary font-bold uppercase tracking-[0.2em]">Plataforma Oficial</span>
                 </div>
             </div>
@@ -201,7 +201,6 @@
                 <div class="hero-overlay"></div>
                 
                 <div class="relative max-w-7xl mx-auto z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-                    <!-- Izquierda: Texto Principal -->
                     <div class="lg:col-span-7" data-aos="fade-right">
                         <div class="flex flex-wrap items-center gap-3 mb-6">
                             <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/15 text-wlSecondary text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] border border-wlSecondary/30 backdrop-blur-sm shadow-lg">
@@ -224,7 +223,6 @@
                         </div>
                     </div>
 
-                    <!-- Derecha: Noticia Destacada Única -->
                     <div class="lg:col-span-5 flex flex-col w-full max-w-md mx-auto lg:mx-0 mt-8 lg:mt-0" data-aos="fade-left">
                         <div class="flex justify-between items-end mb-4 border-b border-white/10 pb-2">
                             <h3 class="text-wlSecondary text-xs font-bold uppercase tracking-widest">Novedad Oficial</h3>
@@ -376,7 +374,7 @@
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <h3 class="w-full col-span-full text-sm font-bold text-slate-400 uppercase tracking-widest mt-2 mb-2">Área Criminalística y Forense</h3>
+                    <h3 class="w-full col-span-full text-sm font-bold text-slate-400 uppercase tracking-widest mt-2 mb-2">Área Profesional y Técnica</h3>
                     
                     <div class="cat-card cat-a1 bg-gradient-to-b from-yellow-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
                         <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría A1</h3>
@@ -602,7 +600,7 @@
     <!-- FOOTER -->
     <footer class="bg-wlPrimary text-white py-12 border-t-4 border-wlSecondary mt-auto relative z-20">
         <div class="max-w-7xl mx-auto px-4 text-center">
-            <h3 class="font-title text-2xl font-black text-wlSecondary mb-2">[Nombre Institución]</h3>
+            <h3 class="font-title text-2xl font-black text-wlSecondary mb-2" id="wl-institucion-nombre-footer">Cargando...</h3>
             <p class="text-xs text-slate-400 uppercase tracking-widest mb-6">Sistema de Registro Institucional</p>
             <div class="flex justify-center gap-4 mb-6">
                 <a href="#" id="footer-fb" target="_blank" rel="noopener" class="hover:text-white transition">
@@ -643,44 +641,90 @@
     <!-- SCRIPTS CORE -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ==========================================
-        // BOOTSTRAPPER MULTI-TENANT
-        // ==========================================
-        function getMockTenantConfig() {
-            return {
-                tenant_id: 'tenant_default',
-                nombre_institucion: 'Sistema de Registro Institucional',
-                logo_url: 'https://ui-avatars.com/api/?name=S+R&background=fff&color=0f172a',
-                hero_image_url: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80',
-                colores: {
-                    primary: '#0f172a',
-                    secondary: '#d4af37',
-                    tertiary: '#1e3a8a',
-                    background: '#f8fafc'
-                }
-            };
-        }
+        // ============================================================
+        // BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
+        // ============================================================
+        let currentTenantId = null;
 
         async function initTenant() {
-            // En una implementación real, aquí se haría un fetch a un endpoint del SaaS.
-            const tenantConfig = getMockTenantConfig();
-            
-            // 1. Inyectar colores como variables CSS.
-            document.documentElement.style.setProperty('--wl-primary', tenantConfig.colores.primary);
-            document.documentElement.style.setProperty('--wl-secondary', tenantConfig.colores.secondary);
-            document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.colores.tertiary);
-            document.documentElement.style.setProperty('--wl-background', tenantConfig.colores.background);
+            try {
+                const hostname = window.location.hostname;
+                let tenantSlug = 'default';
+                
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
+                } else {
+                    const parts = hostname.split('.');
+                    if (parts.length > 2) {
+                        tenantSlug = parts[0]; 
+                    } else {
+                        tenantSlug = 'renmcycf'; 
+                    }
+                }
 
-            // 2. Inyectar URLs de imágenes.
-            document.getElementById('nav-logo').src = tenantConfig.logo_url;
-            document.getElementById('dyn-hero-bg').src = tenantConfig.hero_image_url;
+                console.log("Cargando entorno SaaS para:", tenantSlug);
 
-            // 3. Actualizar el nombre de la institución en el header si se desea.
-            // Puedes reemplazar el contenido del span con el nombre del tenant.
-            // document.querySelector('.font-title').innerText = tenantConfig.nombre_institucion;
+                const { data: tenantConfig, error } = await db
+                    .from('saas_tenants')
+                    .select('*')
+                    .eq('slug', tenantSlug)
+                    .eq('activo', true)
+                    .single();
 
-            // 4. Preparar la interfaz para evitar parpadeo visual (Flickering).
-            document.body.classList.add('ready');
+                if (error || !tenantConfig) {
+                    throw new Error("Institución no encontrada o inactiva.");
+                }
+
+                currentTenantId = tenantConfig.id;
+                localStorage.setItem('saas_current_tenant', currentTenantId);
+
+                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
+                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
+                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
+                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#f8fafc');
+
+                const institucionNombres = document.querySelectorAll('#wl-institucion-nombre-top, #wl-institucion-nombre-nav, #wl-institucion-nombre-footer, #wl-title-institucion');
+                institucionNombres.forEach(el => {
+                    if (el) el.innerText = tenantConfig.nombre_institucion;
+                });
+
+                if (document.title.includes('·')) {
+                    const prefijo = document.title.split('·')[0];
+                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
+                } else {
+                    document.title = tenantConfig.nombre_institucion;
+                }
+
+                const inyectarSrcSeguro = (id, url) => {
+                    const el = document.getElementById(id);
+                    if (el && url) {
+                        el.src = url;
+                        el.style.display = 'block';
+                    }
+                };
+
+                if (tenantConfig.logo_url) {
+                    inyectarSrcSeguro('nav-logo', tenantConfig.logo_url);
+                }
+
+                if (tenantConfig.hero_image_url) {
+                    inyectarSrcSeguro('dyn-hero-bg', tenantConfig.hero_image_url);
+                }
+
+                document.body.classList.add('ready');
+
+            } catch (err) {
+                console.error("Error Bootstrapper SaaS:", err);
+                document.body.innerHTML = `
+                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
+                        <div>
+                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
+                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
+                        </div>
+                    </div>`;
+                document.body.classList.add('ready');
+            }
         }
 
         AOS.init({ once: true });
@@ -711,11 +755,14 @@
         });
 
         // ==========================================
-        // TEXTOS DINÁMICOS DESDE SUPABASE
+        // TEXTOS DINÁMICOS DESDE SUPABASE (con tenant_id)
         // ==========================================
         async function cargarTextosPublicos() {
             try {
-                const { data, error } = await db.from('renmcycf_contenido').select('clave, valor');
+                const { data, error } = await db.from('renmcycf_contenido')
+                    .select('clave, valor')
+                    .eq('tenant_id', currentTenantId);
+                    
                 if (error) throw error;
                 if (!data) return;
 
@@ -745,11 +792,15 @@
         }
 
         // ==========================================
-        // CONFIGURACIÓN DINÁMICA
+        // CONFIGURACIÓN DINÁMICA (con tenant_id)
         // ==========================================
         async function cargarConfiguracionPublica() {
             try {
-                const { data: conf, error } = await db.from('renmcycf_config').select('*').eq('id', 1).single();
+                const { data: conf, error } = await db.from('renmcycf_config')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+                    
                 if (error) throw error;
                 if (conf) {
                     configGlobal = conf;
@@ -769,7 +820,11 @@
 
         async function cargarAliadosPublicos() {
             try {
-                const { data, error } = await db.from('renmcycf_aliados').select('*').eq('activo', true);
+                const { data, error } = await db.from('renmcycf_aliados')
+                    .select('*')
+                    .eq('activo', true)
+                    .eq('tenant_id', currentTenantId);
+                    
                 const seccion = document.getElementById('carrusel-institucional');
                 const marquesina = document.getElementById('aliados-marquee');
                 if (data && data.length > 0) {
@@ -784,7 +839,7 @@
         }
 
         // ==========================================
-        // NOTICIA DESTACADA DEL HERO
+        // NOTICIA DESTACADA DEL HERO (con tenant_id)
         // ==========================================
         async function cargarNoticiaHero() {
             const container = document.getElementById('hero-noticia-container');
@@ -793,6 +848,7 @@
             try {
                 const { data, error } = await db.from('renmcycf_noticias')
                                               .select('*')
+                                              .eq('tenant_id', currentTenantId)
                                               .order('created_at', { ascending: false })
                                               .limit(1)
                                               .maybeSingle();
@@ -858,7 +914,7 @@
         }
 
         // ==========================================
-        // COMITÉ EVALUADOR PÚBLICO
+        // COMITÉ EVALUADOR PÚBLICO (con tenant_id)
         // ==========================================
         async function cargarComitePublico() {
             const container = document.getElementById('contenedor-comite');
@@ -866,7 +922,11 @@
             if (!container || !seccion) return;
             
             try {
-                const { data, error } = await db.from('renmcycf_comite').select('*').eq('activo', true).order('created_at', { ascending: true });
+                const { data, error } = await db.from('renmcycf_comite')
+                    .select('*')
+                    .eq('activo', true)
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: true });
                 
                 if (error) throw error;
                 
@@ -926,7 +986,7 @@
         }
 
         // ==========================================
-        // VERIFICACIÓN PÚBLICA (CON SUMADOR DE VISTAS)
+        // VERIFICACIÓN PÚBLICA (con tenant_id)
         // ==========================================
         async function sumarVisitaProfesional(padronId) {
             try {
@@ -934,6 +994,7 @@
                     .from('renmcycf_padron')
                     .select('contador_vistas')
                     .eq('id', padronId)
+                    .eq('tenant_id', currentTenantId)
                     .single();
                 
                 if (errorLectura) return;
@@ -941,7 +1002,8 @@
                 const contadorActual = padronActual?.contador_vistas || 0;
                 await db.from('renmcycf_padron')
                     .update({ contador_vistas: contadorActual + 1 })
-                    .eq('id', padronId);
+                    .eq('id', padronId)
+                    .eq('tenant_id', currentTenantId);
             } catch (err) { console.warn("Error al sumar visita:", err); }
         }
 
@@ -956,7 +1018,11 @@
             resDiv.classList.add('hidden'); errDiv.classList.add('hidden');
 
             try {
-                let q = db.from('renmcycf_padron').select('*').eq('estado_legal', 'ACTIVO');
+                let q = db.from('renmcycf_padron')
+                    .select('*')
+                    .eq('estado_legal', 'ACTIVO')
+                    .eq('tenant_id', currentTenantId);
+                    
                 if (!isNaN(query)) { q = q.or(`dni.eq.${query},matricula_oficial.ilike.%${query}%`); } 
                 else { q = q.eq('matricula_oficial', query); }
                 
@@ -992,7 +1058,7 @@
         }
 
         // ==========================================
-        // SEGUIMIENTO DE TRÁMITE
+        // SEGUIMIENTO DE TRÁMITE (con tenant_id)
         // ==========================================
         async function buscarTracking() {
             const dni = document.getElementById('track-dni').value.trim();
@@ -1001,7 +1067,14 @@
             if (!dni) return;
             
             try {
-                const { data: solicitud, error: errSol } = await db.from('renmcycf_solicitudes').select('*').eq('dni', dni).order('created_at', { ascending: false }).limit(1).maybeSingle();
+                const { data: solicitud, error: errSol } = await db.from('renmcycf_solicitudes')
+                    .select('*')
+                    .eq('dni', dni)
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                    
                 if (!errSol && solicitud) {
                     let html = '';
                     if (solicitud.estado === 'PENDIENTE' || solicitud.estado === 'EN AUDITORIA') {
@@ -1029,7 +1102,13 @@
                     if(html) { resultDiv.innerHTML = html; resultDiv.classList.remove('hidden'); lucide.createIcons(); return; }
                 }
                 
-                const { data: padron, error: errPad } = await db.from('renmcycf_padron').select('*').eq('dni', dni).limit(1).maybeSingle();
+                const { data: padron, error: errPad } = await db.from('renmcycf_padron')
+                    .select('*')
+                    .eq('dni', dni)
+                    .eq('tenant_id', currentTenantId)
+                    .limit(1)
+                    .maybeSingle();
+                    
                 if (!errPad && padron) {
                     resultDiv.innerHTML = `
                     <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-6 shadow-sm relative overflow-hidden">
@@ -1054,7 +1133,10 @@
                 const { error: upErr } = await db.storage.from('renmcycf-documentos').upload(fileName, file);
                 if (upErr) throw upErr;
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-documentos/${fileName}`;
-                const { error: updErr } = await db.from('renmcycf_solicitudes').update({ estado: 'PENDIENTE', correccion_url: url }).eq('id', solicitudId);
+                const { error: updErr } = await db.from('renmcycf_solicitudes')
+                    .update({ estado: 'PENDIENTE', correccion_url: url })
+                    .eq('id', solicitudId)
+                    .eq('tenant_id', currentTenantId);
                 if (updErr) throw updErr;
                 alert("✅ Corrección subida exitosamente. Su expediente ha vuelto a la Mesa de Entrada para ser reevaluado.");
                 buscarTracking();
@@ -1154,7 +1236,7 @@
         }
 
         // ==========================================
-        // ENVÍO DE INSCRIPCIÓN (Multi-Diplomas)
+        // ENVÍO DE INSCRIPCIÓN (con tenant_id)
         // ==========================================
         async function enviarInscripcion(e) {
             e.preventDefault();
@@ -1195,6 +1277,7 @@
                 const especialidades = espStr ? espStr.split(',').map(s => s.trim().toUpperCase()).filter(s => s) : [];
 
                 const payload = {
+                    tenant_id: currentTenantId,
                     nombres: document.getElementById('ins-nombres').value.toUpperCase(),
                     apellidos: document.getElementById('ins-apellidos').value.toUpperCase(),
                     dni: dni,
@@ -1231,7 +1314,7 @@
         }
 
         // ==========================================
-        // MAPA (DIRECTORIO PÚBLICO INTELIGENTE)
+        // MAPA (con tenant_id)
         // ==========================================
         async function initMap() {
             if (mapInstance) return;
@@ -1244,7 +1327,8 @@
                 const { data } = await db.from('renmcycf_padron')
                                       .select('nombres, apellidos, categoria, profesion, provincia_laboral, especialidades, telefono, email, foto_perfil_url, facebook_url, instagram_url, linkedin_url')
                                       .eq('estado_legal', 'ACTIVO')
-                                      .eq('figurar_directorio', true);
+                                      .eq('figurar_directorio', true)
+                                      .eq('tenant_id', currentTenantId);
                 if (data) { peritosMapaDB = data; renderizarPines(peritosMapaDB); }
             } catch (err) { console.error("Error cargando mapa:", err); }
             finally { document.getElementById('map-loading').style.display = 'none'; }
@@ -1336,7 +1420,7 @@
         }
 
         // ==========================================
-        // PORTAL CIENTÍFICO Y DIVULGACIÓN
+        // PORTAL CIENTÍFICO Y DIVULGACIÓN (con tenant_id)
         // ==========================================
         async function cargarNoticiasPublicas() {
             const container = document.getElementById('contenedor-noticias-publicas');
@@ -1345,6 +1429,7 @@
             try {
                 const { data, error } = await db.from('renmcycf_noticias')
                                               .select('*')
+                                              .eq('tenant_id', currentTenantId)
                                               .order('created_at', { ascending: false })
                                               .limit(6);
                 
@@ -1409,7 +1494,11 @@
             const container = document.getElementById('contenedor-biblioteca-ordenada');
             if (!container) return;
             try {
-                const { data } = await db.from('renmcycf_biblioteca').select('*').eq('activo', true);
+                const { data } = await db.from('renmcycf_biblioteca')
+                    .select('*')
+                    .eq('activo', true)
+                    .eq('tenant_id', currentTenantId);
+                    
                 if (!data || data.length === 0) { container.innerHTML = '<p class="text-sm">Repositorio en actualización.</p>'; return; }
                 let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">';
                 data.forEach(doc => {
@@ -1434,7 +1523,7 @@
         }
 
         // ==========================================
-        // TESIS APROBADAS
+        // TESIS APROBADAS (con tenant_id)
         // ==========================================
         async function cargarTesisPublicas() {
             const container = document.getElementById('contenedor-tesis-publicas');
@@ -1444,6 +1533,7 @@
                 const { data, error } = await db.from('renmcycf_publicaciones')
                                               .select('*')
                                               .eq('estado', 'APROBADO')
+                                              .eq('tenant_id', currentTenantId)
                                               .order('created_at', { ascending: false });
                 
                 if (error) throw error;
@@ -1482,7 +1572,7 @@
         }
 
         // ==========================================
-        // INTERACCIONES: ME GUSTA Y COMPARTIR
+        // INTERACCIONES: ME GUSTA Y COMPARTIR (con tenant_id)
         // ==========================================
         async function darMeGusta(noticiaId, btnEl, currentLikes) {
             if (btnEl.disabled) return;
@@ -1503,6 +1593,7 @@
                     .from('renmcycf_noticias')
                     .select('likes')
                     .eq('id', noticiaId)
+                    .eq('tenant_id', currentTenantId)
                     .single();
                 
                 if (errLectura) throw errLectura;
@@ -1513,7 +1604,8 @@
                 const { error: errUpdate } = await db
                     .from('renmcycf_noticias')
                     .update({ likes: nuevosLikes })
-                    .eq('id', noticiaId);
+                    .eq('id', noticiaId)
+                    .eq('tenant_id', currentTenantId);
                 
                 if (errUpdate) throw errUpdate;
                 
@@ -1532,7 +1624,7 @@
 
         async function compartirNoticia(titulo) {
             const url = window.location.href;
-            const texto = `Mirá esta novedad en el Portal de [Nombre Institución]: ${titulo}`;
+            const texto = `Mirá esta novedad en el Portal de ${document.getElementById('wl-institucion-nombre-nav')?.innerText || 'la Institución'}: ${titulo}`;
 
             if (navigator.share) {
                 try {
@@ -1576,7 +1668,7 @@
         }
 
         // ==========================================
-        // CONTADOR EN VIVO DE MATRICULADOS
+        // CONTADOR EN VIVO DE MATRICULADOS (con tenant_id)
         // ==========================================
         async function cargarContadorMatriculados() {
             const counterEl = document.getElementById('hero-counter-matriculados');
@@ -1585,7 +1677,8 @@
             try {
                 const { count, error } = await db.from('renmcycf_padron')
                     .select('*', { count: 'exact', head: true })
-                    .eq('estado_legal', 'ACTIVO');
+                    .eq('estado_legal', 'ACTIVO')
+                    .eq('tenant_id', currentTenantId);
                 
                 if (error) throw error;
 
