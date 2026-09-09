@@ -336,8 +336,8 @@
         // ============================================================
         // CONFIGURACIÓN DE SUPABASE
         // ============================================================
-        const PROJECT_URL = 'https://hiirhuohxpzsphlduypo.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpaXJodW9oeHB6c3BobGR1eXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyOTgyMTAsImV4cCI6MjA5OTg3NDIxMH0.qvEaRyo0vbnaW9hiX4bXhtRdMkW7n9mDMrApKBRmbhE';
+        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
         const db = window.supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
         // ============================================================
@@ -347,30 +347,23 @@
 
         async function initTenant() {
             try {
-                // 1. Obtener el subdominio de la URL actual
                 const hostname = window.location.hostname;
-                
-                // Extraer el subdominio (ej: 'colbert' de 'colbert.asari.com')
-                // Si estamos en localhost, asume un tenant de prueba o busca en la URL (?tenant=x)
                 let tenantSlug = 'default';
                 
                 if (hostname === 'localhost' || hostname === '127.0.0.1') {
                     const urlParams = new URLSearchParams(window.location.search);
-                    tenantSlug = urlParams.get('tenant') || 'renmcycf'; // Fallback para pruebas locales
+                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
                 } else {
-                    // Asume estructura subdominio.dominio.com
                     const parts = hostname.split('.');
                     if (parts.length > 2) {
                         tenantSlug = parts[0]; 
                     } else {
-                        // Si acceden al dominio raíz, forzar un tenant principal o redirigir
                         tenantSlug = 'renmcycf'; 
                     }
                 }
 
                 console.log("Cargando entorno SaaS para:", tenantSlug);
 
-                // 2. Consultar la configuración del Tenant en Supabase
                 const { data: tenantConfig, error } = await db
                     .from('saas_tenants')
                     .select('*')
@@ -382,23 +375,19 @@
                     throw new Error("Institución no encontrada o inactiva.");
                 }
 
-                // 3. Guardar el TenantID actual en la variable global y localStorage
                 currentTenantId = tenantConfig.id;
                 localStorage.setItem('saas_current_tenant', currentTenantId);
 
-                // 4. Inyectar variables de color en CSS
                 document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
                 document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
                 document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
                 document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#f8fafc');
 
-                // 5. Inyectar Textos Dinámicos
                 const institucionNombres = document.querySelectorAll('#wl-institucion-nombre, #wl-title-institucion, #wl-sidebar-institucion, #modal-institucion-nombre');
                 institucionNombres.forEach(el => {
                     if (el) el.innerText = tenantConfig.nombre_institucion;
                 });
 
-                // Actualizar el Título de la pestaña
                 if (document.title.includes('·')) {
                     const prefijo = document.title.split('·')[0];
                     document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
@@ -406,12 +395,11 @@
                     document.title = tenantConfig.nombre_institucion;
                 }
 
-                // 6. Inyectar Imágenes Dinámicas (Si existen en el HTML actual)
                 const inyectarSrcSeguro = (id, url) => {
                     const el = document.getElementById(id);
                     if (el && url) {
                         el.src = url;
-                        el.style.display = 'block'; // Asegura que las imágenes ocultas aparezcan
+                        el.style.display = 'block';
                     }
                 };
 
@@ -423,7 +411,6 @@
                     inyectarSrcSeguro('modal-dyn-logo', tenantConfig.logo_url);
                     inyectarSrcSeguro('watermark-logo-img', tenantConfig.logo_url);
                     
-                    // Ocultar logos por defecto de Tailwind si inyectamos uno real
                     const defaultLogos = document.querySelectorAll('#header-default-logo, #default-logo, #modal-default-logo');
                     defaultLogos.forEach(el => el.classList.add('hidden'));
                 }
@@ -434,12 +421,10 @@
                     inyectarSrcSeguro('modal-dyn-bg', tenantConfig.hero_image_url);
                 }
 
-                // 7. Liberar la interfaz (Quitar opacidad 0)
                 document.body.classList.add('ready');
 
             } catch (err) {
                 console.error("Error Bootstrapper SaaS:", err);
-                // Destruir la interfaz si el tenant no es válido
                 document.body.innerHTML = `
                     <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
                         <div>
@@ -512,7 +497,6 @@
             btn.disabled = true;
             
             try {
-                // 1. Autenticación con Supabase Auth
                 const { data: authData, error: authError } = await db.auth.signInWithPassword({
                     email: email,
                     password: password
@@ -532,9 +516,8 @@
                     throw new Error('No se pudo obtener la información del usuario.');
                 }
                 
-                // 2. Verificación de Roles para el Tenant Específico
                 const { data: rolData, error: rolError } = await db
-                    .from('renmcycf_roles') // Asegurate de usar el nombre correcto de tu tabla de roles
+                    .from('renmcycf_roles')
                     .select('*')
                     .eq('user_id', authData.user.id)
                     .eq('tenant_id', currentTenantId)
@@ -546,13 +529,11 @@
                     throw new Error('No tienes permisos en esta institución.');
                 }
                 
-                // 3. Actualizar último acceso
                 await db.from('renmcycf_roles')
                     .update({ ultimo_acceso: new Date().toISOString() })
                     .eq('id', rolData.id)
                     .eq('tenant_id', currentTenantId);
                 
-                // 4. Mostrar éxito
                 successDiv.classList.remove('hidden');
                 successDiv.innerHTML = `
                     <div class="success-box">
@@ -562,7 +543,6 @@
                 `;
                 lucide.createIcons();
                 
-                // 5. Guardar sesión en localStorage
                 localStorage.setItem('saas_session', JSON.stringify({
                     user_id: authData.user.id,
                     email: authData.user.email,
@@ -572,7 +552,6 @@
                     session_expires: Date.now() + (8 * 60 * 60 * 1000)
                 }));
                 
-                // 6. Redirigir al panel
                 setTimeout(() => {
                     window.location.href = 'panel.html';
                 }, 1000);
