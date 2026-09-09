@@ -730,8 +730,11 @@
         AOS.init({ once: true });
         lucide.createIcons();
 
-        const PROJECT_URL = 'https://hiirhuohxpzsphlduypo.supabase.co'; 
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpaXJodW9oeHB6c3BobGR1eXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyOTgyMTAsImV4cCI6MjA5OTg3NDIxMH0.qvEaRyo0vbnaW9hiX4bXhtRdMkW7n9mDMrApKBRmbhE'; 
+        // ============================================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ============================================================
+        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
         let configGlobal = {};
