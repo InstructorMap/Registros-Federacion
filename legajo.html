@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
-    <title>Mi Legajo Digital · <span id="wl-title-institucion">[Nombre Institución]</span></title>
+    <title>Mi Legajo Digital · <span id="wl-title-institucion">Cargando...</span></title>
     
     <link rel="manifest" href="manifest.json">
     
@@ -87,7 +87,6 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.06);
         }
 
-        /* FRANJA PRINCIPAL SIEMPRE VISIBLE */
         .app-header {
             background: linear-gradient(135deg, var(--wl-primary) 0%, var(--wl-tertiary) 50%, var(--wl-primary) 100%);
             color: white;
@@ -123,7 +122,6 @@
             padding: 4px;
         }
 
-        /* MARCAS DE AGUA */
         .watermark-bg {
             position: fixed;
             inset: 0;
@@ -158,7 +156,6 @@
             border: 3px dashed rgba(15, 23, 42, 0.07);
         }
 
-        /* PANTALLAS */
         .screen {
             display: none;
             flex: 1;
@@ -213,7 +210,6 @@
             box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2), inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        /* GRID WALLET */
         .card-viewport {
             width: 100%;
             max-width: 420px;
@@ -271,7 +267,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        /* NAVEGACIÓN INFERIOR */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -351,29 +346,6 @@
             box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
         }
 
-        .btn-primary {
-            background: var(--wl-primary);
-            color: var(--wl-secondary);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        
-        .btn-primary:hover {
-            background: #1e293b;
-            transform: translateY(-1px);
-        }
-        
-        .btn-primary:active {
-            transform: scale(0.97);
-        }
-        
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* LAYOUT RESPONSIVE */
         @media (max-width: 767px) {
             .screen-wallet-content {
                 display: flex;
@@ -476,7 +448,7 @@
             </div>
             <div>
                 <h1 class="text-[11px] font-black tracking-widest uppercase leading-tight" style="color: var(--wl-secondary)">
-                    <span id="wl-institucion-nombre">[Nombre Institución]</span>
+                    <span id="wl-institucion-nombre">Cargando...</span>
                 </h1>
                 <p class="text-[8px] font-bold text-slate-300 uppercase opacity-80">Legajo Digital Oficial</p>
             </div>
@@ -601,10 +573,8 @@
     <div id="screen-wallet" class="screen">
         <div class="screen-wallet-content">
             
-            <!-- COLUMNA IZQUIERDA: CREDENCIAL -->
             <div class="card-section">
                 
-                <!-- BLOQUE DE BIENVENIDA -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex justify-between items-center relative overflow-hidden welcome-block">
                     <div id="status-line-mobile" class="absolute right-0 top-0 bottom-0 w-2 bg-slate-400"></div>
                     <div>
@@ -619,20 +589,15 @@
                     </div>
                 </div>
 
-                <!-- ALERTA DE RENOVACIÓN DE MATRÍCULA -->
                 <div id="alerta-renovacion" class="hidden w-full mb-6"></div>
-
-                <!-- ALERTA DE TRÁMITE -->
                 <div id="box-alerta-tramite" class="mb-6"></div>
 
-                <!-- BLOQUEO DE CREDENCIAL -->
                 <div id="bloqueo-credencial" class="bg-red-50 border border-red-200 p-6 rounded-2xl text-center shadow-sm hidden mb-6">
                     <i data-lucide="lock" class="w-10 h-10 text-red-400 mx-auto mb-3"></i>
                     <h4 class="font-black text-red-800 text-sm uppercase mb-2">Credencial Bloqueada</h4>
                     <p class="text-xs text-red-600">Su matrícula no se encuentra en estado ACTIVO. No puede descargar ni visualizar la credencial digital oficial.</p>
                 </div>
 
-                <!-- ÁREA DE CREDENCIAL -->
                 <div id="area-credencial" class="hidden">
                     <div class="card-viewport" id="card-viewport">
                         <div id="carnet-render">
@@ -648,7 +613,6 @@
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: PANEL DE ACCIONES -->
             <div class="actions-section">
                 <div class="actions-grid full-width">
                     <div class="bg-slate-800 rounded-xl p-4 text-center border border-slate-700 shadow-inner">
@@ -867,65 +831,95 @@
 
     <!-- SCRIPTS -->
     <script>
-        // ==========================================
-        // BOOTSTRAPPER MULTI-TENANT
-        // ==========================================
-        function getMockTenantConfig() {
-            return {
-                tenant_id: 'tenant_default',
-                nombre_institucion: 'Sistema de Registro Institucional',
-                logo_url: 'https://ui-avatars.com/api/?name=S+R&background=fff&color=0f172a',
-                hero_image_url: '',
-                colores: {
-                    primary: '#0f172a',
-                    secondary: '#d4af37',
-                    tertiary: '#1e3a8a',
-                    background: '#f1f5f9'
-                }
-            };
-        }
+        // ============================================================
+        // BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
+        // ============================================================
+        let currentTenantId = null;
 
         async function initTenant() {
-            const tenantConfig = getMockTenantConfig();
-
-            // 1. Inyectar colores
-            document.documentElement.style.setProperty('--wl-primary', tenantConfig.colores.primary);
-            document.documentElement.style.setProperty('--wl-secondary', tenantConfig.colores.secondary);
-            document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.colores.tertiary);
-            document.documentElement.style.setProperty('--wl-background', tenantConfig.colores.background);
-
-            // 2. Actualizar imágenes
-            if (tenantConfig.logo_url) {
-                if (el('dynamic-logo')) {
-                    el('dynamic-logo').src = tenantConfig.logo_url;
-                    safeClass('dynamic-logo', 'remove', 'hidden');
-                    safeClass('default-logo', 'add', 'hidden');
+            try {
+                const hostname = window.location.hostname;
+                let tenantSlug = 'default';
+                
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
+                } else {
+                    const parts = hostname.split('.');
+                    if (parts.length > 2) {
+                        tenantSlug = parts[0]; 
+                    } else {
+                        tenantSlug = 'renmcycf'; 
+                    }
                 }
-                if (el('nav-mini-logo')) {
-                    el('nav-mini-logo').src = tenantConfig.logo_url;
-                    safeClass('nav-mini-logo', 'remove', 'hidden');
-                    safeClass('header-default-logo', 'add', 'hidden');
-                }
-                if (el('watermark-logo-img')) {
-                    el('watermark-logo-img').src = tenantConfig.logo_url;
-                }
-            }
-            if (tenantConfig.hero_image_url && el('dynamic-bg')) {
-                el('dynamic-bg').src = tenantConfig.hero_image_url;
-                el('dynamic-bg').style.display = 'block';
-            }
 
-            // 3. Actualizar textos
-            if (el('wl-institucion-nombre')) {
-                el('wl-institucion-nombre').innerText = tenantConfig.nombre_institucion;
-            }
-            if (el('wl-title-institucion')) {
-                el('wl-title-institucion').innerText = tenantConfig.nombre_institucion;
-            }
-            document.title = `Mi Legajo Digital · ${tenantConfig.nombre_institucion}`;
+                console.log("Cargando entorno SaaS para:", tenantSlug);
 
-            // 4. Mostrar la interfaz sin parpadeo
-            document.body.classList.add('ready');
+                const { data: tenantConfig, error } = await db
+                    .from('saas_tenants')
+                    .select('*')
+                    .eq('slug', tenantSlug)
+                    .eq('activo', true)
+                    .single();
+
+                if (error || !tenantConfig) {
+                    throw new Error("Institución no encontrada o inactiva.");
+                }
+
+                currentTenantId = tenantConfig.id;
+                localStorage.setItem('saas_current_tenant', currentTenantId);
+
+                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
+                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
+                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
+                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#f1f5f9');
+
+                const institucionNombres = document.querySelectorAll('#wl-institucion-nombre, #wl-title-institucion');
+                institucionNombres.forEach(el => {
+                    if (el) el.innerText = tenantConfig.nombre_institucion;
+                });
+
+                if (document.title.includes('·')) {
+                    const prefijo = document.title.split('·')[0];
+                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
+                } else {
+                    document.title = tenantConfig.nombre_institucion;
+                }
+
+                const inyectarSrcSeguro = (id, url) => {
+                    const el = document.getElementById(id);
+                    if (el && url) {
+                        el.src = url;
+                        el.style.display = 'block';
+                    }
+                };
+
+                if (tenantConfig.logo_url) {
+                    inyectarSrcSeguro('dynamic-logo', tenantConfig.logo_url);
+                    inyectarSrcSeguro('nav-mini-logo', tenantConfig.logo_url);
+                    inyectarSrcSeguro('watermark-logo-img', tenantConfig.logo_url);
+                    
+                    const defaultLogos = document.querySelectorAll('#header-default-logo, #default-logo');
+                    defaultLogos.forEach(el => el.classList.add('hidden'));
+                }
+
+                if (tenantConfig.hero_image_url) {
+                    inyectarSrcSeguro('dynamic-bg', tenantConfig.hero_image_url);
+                }
+
+                document.body.classList.add('ready');
+
+            } catch (err) {
+                console.error("Error Bootstrapper SaaS:", err);
+                document.body.innerHTML = `
+                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
+                        <div>
+                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
+                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
+                        </div>
+                    </div>`;
+                document.body.classList.add('ready');
+            }
         }
 
         // ==========================================
@@ -989,7 +983,11 @@
 
         async function cargarConfiguracionInicial() {
             try {
-                const { data: config } = await db.from('renmcycf_config').select('*').eq('id', 1).maybeSingle();
+                const { data: config } = await db.from('renmcycf_config')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+                    
                 if (config) {
                     configGlobal = config;
                     if (config.logo_url) {
@@ -1003,7 +1001,11 @@
                     }
                 }
                 
-                const { data: cont } = await db.from('renmcycf_contenido').select('clave, valor').in('clave', ['credencial_style', 'credencial_bg', 'credencial_bg_dorso', 'credencial_roseta']);
+                const { data: cont } = await db.from('renmcycf_contenido')
+                    .select('clave, valor')
+                    .eq('tenant_id', currentTenantId)
+                    .in('clave', ['credencial_style', 'credencial_bg', 'credencial_bg_dorso', 'credencial_roseta']);
+                    
                 if (cont) {
                     const styleObj = cont.find(c => c.clave === 'credencial_style');
                     if (styleObj && styleObj.valor) {
@@ -1019,7 +1021,7 @@
         }
 
         // ==========================================
-        // AUTENTICACIÓN
+        // AUTENTICACIÓN (con tenant_id)
         // ==========================================
         async function ingresar() {
             const btn = el('btn-ingresar');
@@ -1040,7 +1042,11 @@
             lucide.createIcons();
 
             try {
-                const { data: padron, error } = await db.from('renmcycf_padron').select('*').eq('dni', dni).maybeSingle();
+                const { data: padron, error } = await db.from('renmcycf_padron')
+                    .select('*')
+                    .eq('dni', dni)
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
                 
                 if (error) throw new Error('Error de red. Revise su conexión.');
                 if (!padron) throw new Error('DNI no encontrado en el Padrón Oficial.');
@@ -1087,7 +1093,7 @@
         }
 
         // ==========================================
-        // TÉRMINOS Y CONDICIONES
+        // TÉRMINOS Y CONDICIONES (con tenant_id)
         // ==========================================
         function toggleBotonAceptar() {
             const checkbox = el('check-tc');
@@ -1116,10 +1122,13 @@
             lucide.createIcons();
             
             try {
-                await db.from('renmcycf_padron').update({
-                    terminos_aceptados: true,
-                    fecha_aceptacion_terminos: new Date().toISOString()
-                }).eq('id', alumnoActual.id);
+                await db.from('renmcycf_padron')
+                    .update({
+                        terminos_aceptados: true,
+                        fecha_aceptacion_terminos: new Date().toISOString()
+                    })
+                    .eq('id', alumnoActual.id)
+                    .eq('tenant_id', currentTenantId);
                 
                 alumnoActual.terminos_aceptados = true;
                 
@@ -1301,6 +1310,7 @@
                 const urlComp = `${PROJECT_URL}/storage/v1/object/public/renmcycf-documentos/${fileName}`;
 
                 const payload = {
+                    tenant_id: currentTenantId,
                     dni: alumnoActual.dni,
                     nombres: alumnoActual.nombres,
                     apellidos: alumnoActual.apellidos,
@@ -1486,7 +1496,7 @@
         }
 
         // ==========================================
-        // FOTO CROPPER
+        // FOTO CROPPER (con tenant_id)
         // ==========================================
         function iniciarRecorte(inputElement) {
             const file = inputElement.files[0];
@@ -1561,7 +1571,10 @@
                     
                     const fotoUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                     
-                    await db.from('renmcycf_padron').update({ foto_perfil_url: fotoUrl }).eq('id', alumnoActual.id);
+                    await db.from('renmcycf_padron')
+                        .update({ foto_perfil_url: fotoUrl })
+                        .eq('id', alumnoActual.id)
+                        .eq('tenant_id', currentTenantId);
                     
                     alumnoActual.foto_perfil_url = fotoUrl;
                     alert("Foto de perfil actualizada con éxito.");
@@ -1580,7 +1593,7 @@
         }
 
         // ==========================================
-        // PERFIL
+        // PERFIL (con tenant_id)
         // ==========================================
         async function guardarPerfil() {
             const btn = el('btn-guardar-perfil');
@@ -1600,15 +1613,18 @@
             const directorio = el('perfil-directorio').checked;
             
             try {
-                const { error } = await db.from('renmcycf_padron').update({
-                    telefono: tel,
-                    email: email,
-                    provincia_laboral: provincia,
-                    facebook_url: facebook,
-                    instagram_url: instagram,
-                    linkedin_url: linkedin,
-                    figurar_directorio: directorio
-                }).eq('id', alumnoActual.id);
+                const { error } = await db.from('renmcycf_padron')
+                    .update({
+                        telefono: tel,
+                        email: email,
+                        provincia_laboral: provincia,
+                        facebook_url: facebook,
+                        instagram_url: instagram,
+                        linkedin_url: linkedin,
+                        figurar_directorio: directorio
+                    })
+                    .eq('id', alumnoActual.id)
+                    .eq('tenant_id', currentTenantId);
                 
                 if (error) throw error;
                 
@@ -1783,7 +1799,7 @@
                 pdf.setTextColor(255, 255, 255);
                 pdf.setFont("helvetica", "normal");
                 pdf.setFontSize(10);
-                pdf.text("Sistema de Registro Institucional", 105, 23, { align: "center" });
+                pdf.text(document.getElementById('wl-institucion-nombre')?.innerText || 'Sistema de Registro Institucional', 105, 23, { align: "center" });
                 
                 const logoBase64 = await urlToBase64(configGlobal.logo_url, true, true);
                 if (logoBase64) {
@@ -1836,7 +1852,7 @@
         }
 
         // ==========================================
-        // MODALES Y NOTIFICACIONES
+        // MODALES Y NOTIFICACIONES (con tenant_id)
         // ==========================================
         function cerrarModalSeguro(id) {
             safeClass(id, 'add', 'hidden');
@@ -1878,7 +1894,12 @@
             }
             
             try {
-                const { data: noticias } = await db.from('renmcycf_noticias').select('*').order('created_at', { ascending: false }).limit(1);
+                const { data: noticias } = await db.from('renmcycf_noticias')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                    
                 if (noticias && noticias.length > 0) {
                     const noticia = noticias[0];
                     const imagen = noticia.portada_url || 'https://via.placeholder.com/300x150/0f172a/d4af37?text=Noticia';
@@ -1896,7 +1917,13 @@
             } catch(e) {}
             
             try {
-                const { data: tesis } = await db.from('renmcycf_publicaciones').select('*').eq('autor_id', alumnoActual.id).order('created_at', { ascending: false }).limit(1);
+                const { data: tesis } = await db.from('renmcycf_publicaciones')
+                    .select('*')
+                    .eq('autor_id', alumnoActual.id)
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                    
                 if (tesis && tesis.length > 0) {
                     const t = tesis[0];
                     let color = 'border-slate-400';
@@ -1977,14 +2004,18 @@
         }
 
         // ==========================================
-        // PORTAL CIENTÍFICO
+        // PORTAL CIENTÍFICO (con tenant_id)
         // ==========================================
         async function cargarPortalCientifico() {
             const container = el('feed-portal-container');
             if(!container) return;
             
             try {
-                const { data: noticias, error } = await db.from('renmcycf_noticias').select('*').order('created_at', { ascending: false }).limit(20);
+                const { data: noticias, error } = await db.from('renmcycf_noticias')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
                 
                 if (error) throw error;
                 if (!noticias || noticias.length === 0) {
@@ -2019,7 +2050,7 @@
         }
 
         // ==========================================
-        // BIBLIOTECA
+        // BIBLIOTECA (con tenant_id)
         // ==========================================
         async function cargarBibliotecaWallet() {
             const container = el('wallet-biblioteca-container');
@@ -2028,7 +2059,11 @@
             container.innerHTML = '<div class="skeleton h-48 w-full rounded-xl"></div><div class="skeleton h-48 w-full rounded-xl"></div>';
             
             try {
-                const { data, error } = await db.from('renmcycf_biblioteca').select('*').eq('activo', true).order('created_at', { ascending: false });
+                const { data, error } = await db.from('renmcycf_biblioteca')
+                    .select('*')
+                    .eq('activo', true)
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
                 
                 if (error) throw error;
                 if (!data || data.length === 0) {
@@ -2063,14 +2098,18 @@
         }
 
         // ==========================================
-        // PUBLICACIONES / TESIS
+        // PUBLICACIONES / TESIS (con tenant_id)
         // ==========================================
         async function cargarMisPublicaciones() {
             const container = el('lista-mis-tesis');
             if(!container) return;
             
             try {
-                const { data, error } = await db.from('renmcycf_publicaciones').select('*').eq('autor_id', alumnoActual.id).order('created_at', { ascending: false });
+                const { data, error } = await db.from('renmcycf_publicaciones')
+                    .select('*')
+                    .eq('autor_id', alumnoActual.id)
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
                 
                 if (error) throw error;
                 if (!data || data.length === 0) {
@@ -2128,6 +2167,7 @@
                 const pdfUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-pdfs/${fileName}`;
                 
                 await db.from('renmcycf_publicaciones').insert({
+                    tenant_id: currentTenantId,
                     autor_id: alumnoActual.id,
                     autor_nombre: `${alumnoActual.nombres} ${alumnoActual.apellidos}`,
                     titulo: el('tesis-titulo').value.trim(),
