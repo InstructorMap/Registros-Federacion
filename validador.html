@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificador Oficial · <span id="wl-title-institucion">[Nombre Institución]</span></title>
+    <title>Verificador Oficial · <span id="wl-title-institucion">Cargando...</span></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -144,7 +144,7 @@
         </div>        
         <div class="bg-slate-100 py-3 px-4 text-center border-b border-slate-200">
             <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.15em] leading-relaxed">
-                <span id="wl-institucion-nombre">[Nombre Institución]</span>
+                <span id="wl-institucion-nombre">Cargando...</span>
             </p>
         </div>
 
@@ -224,51 +224,99 @@
 
     <script>
         lucide.createIcons();
-        const PROJECT_URL = 'https://hiirhuohxpzsphlduypo.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpaXJodW9oeHB6c3BobGR1eXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyOTgyMTAsImV4cCI6MjA5OTg3NDIxMH0.qvEaRyo0vbnaW9hiX4bXhtRdMkW7n9mDMrApKBRmbhE';
+
+        // ============================================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ============================================================
+        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
-        function getMockTenantConfig() {
-            return {
-                tenant_id: 'tenant_default',
-                nombre_institucion: 'Sistema de Registro Institucional',
-                logo_url: 'https://ui-avatars.com/api/?name=S+R&background=fff&color=0f172a',
-                hero_image_url: '',
-                colores: {
-                    primary: '#0f172a',
-                    secondary: '#d4af37',
-                    tertiary: '#1e3a8a',
-                    background: '#f8fafc'
-                }
-            };
-        }
+        // ============================================================
+        // BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
+        // ============================================================
+        let currentTenantId = null;
 
         async function initTenant() {
-            // En producción, esto vendría de una API o configuración inyectada.
-            const tenantConfig = getMockTenantConfig();
+            try {
+                const hostname = window.location.hostname;
+                let tenantSlug = 'default';
+                
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
+                } else {
+                    const parts = hostname.split('.');
+                    if (parts.length > 2) {
+                        tenantSlug = parts[0]; 
+                    } else {
+                        tenantSlug = 'renmcycf'; 
+                    }
+                }
 
-            // 1. Inyectar colores
-            document.documentElement.style.setProperty('--wl-primary', tenantConfig.colores.primary);
-            document.documentElement.style.setProperty('--wl-secondary', tenantConfig.colores.secondary);
-            document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.colores.tertiary);
-            document.documentElement.style.setProperty('--wl-background', tenantConfig.colores.background);
+                console.log("Cargando entorno SaaS para:", tenantSlug);
 
-            // 2. Actualizar imágenes
-            if (tenantConfig.logo_url) {
-                document.getElementById('val-logo').src = tenantConfig.logo_url;
-                document.getElementById('logo-container').classList.remove('hidden');
+                const { data: tenantConfig, error } = await db
+                    .from('saas_tenants')
+                    .select('*')
+                    .eq('slug', tenantSlug)
+                    .eq('activo', true)
+                    .single();
+
+                if (error || !tenantConfig) {
+                    throw new Error("Institución no encontrada o inactiva.");
+                }
+
+                currentTenantId = tenantConfig.id;
+                localStorage.setItem('saas_current_tenant', currentTenantId);
+
+                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
+                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
+                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
+                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#f8fafc');
+
+                const institucionNombres = document.querySelectorAll('#wl-institucion-nombre, #wl-title-institucion');
+                institucionNombres.forEach(el => {
+                    if (el) el.innerText = tenantConfig.nombre_institucion;
+                });
+
+                if (document.title.includes('·')) {
+                    const prefijo = document.title.split('·')[0];
+                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
+                } else {
+                    document.title = tenantConfig.nombre_institucion;
+                }
+
+                const inyectarSrcSeguro = (id, url) => {
+                    const el = document.getElementById(id);
+                    if (el && url) {
+                        el.src = url;
+                        el.style.display = 'block';
+                    }
+                };
+
+                if (tenantConfig.logo_url) {
+                    inyectarSrcSeguro('val-logo', tenantConfig.logo_url);
+                    document.getElementById('logo-container').classList.remove('hidden');
+                }
+
+                if (tenantConfig.hero_image_url) {
+                    inyectarSrcSeguro('dynamic-bg', tenantConfig.hero_image_url);
+                }
+
+                document.body.classList.add('ready');
+
+            } catch (err) {
+                console.error("Error Bootstrapper SaaS:", err);
+                document.body.innerHTML = `
+                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
+                        <div>
+                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
+                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
+                        </div>
+                    </div>`;
+                document.body.classList.add('ready');
             }
-            if (tenantConfig.hero_image_url) {
-                document.getElementById('dynamic-bg').src = tenantConfig.hero_image_url;
-                document.getElementById('dynamic-bg').style.display = 'block';
-            }
-
-            // 3. Actualizar textos
-            document.getElementById('wl-institucion-nombre').innerText = tenantConfig.nombre_institucion;
-            document.title = `Verificador Oficial · ${tenantConfig.nombre_institucion}`;
-
-            // 4. Mostrar la interfaz sin parpadeo
-            document.body.classList.add('ready');
         }
 
         async function sumarVisitaProfesional(padronId) {
@@ -277,6 +325,7 @@
                     .from('renmcycf_padron')
                     .select('contador_vistas')
                     .eq('id', padronId)
+                    .eq('tenant_id', currentTenantId)
                     .single();
                 
                 if (errorLectura) {
@@ -290,7 +339,8 @@
                 const { error: errorActualizacion } = await db
                     .from('renmcycf_padron')
                     .update({ contador_vistas: nuevoContador })
-                    .eq('id', padronId);
+                    .eq('id', padronId)
+                    .eq('tenant_id', currentTenantId);
                 
                 if (errorActualizacion) {
                     console.warn("No se pudo actualizar el contador de visitas:", errorActualizacion);
@@ -311,7 +361,9 @@
             }
 
             try {
-                let query = db.from('renmcycf_padron').select('*');
+                let query = db.from('renmcycf_padron')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId);
                 
                 if (matQuery) {
                     query = query.eq('matricula_oficial', matQuery);
@@ -400,8 +452,8 @@
             lucide.createIcons();
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            initTenant();
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initTenant();
             validarProfesional();
         });
     </script>
