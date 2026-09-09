@@ -1,0 +1,2532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración · <span id="wl-title-institucion">Cargando...</span></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@700;900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wlPrimary: 'var(--wl-primary)',
+                        wlSecondary: 'var(--wl-secondary)',
+                        wlTertiary: 'var(--wl-tertiary)',
+                        wlBackground: 'var(--wl-background)',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        title: ['Montserrat', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root { 
+            --wl-primary: #3b82f6; 
+            --wl-secondary: #fbbf24; 
+            --wl-tertiary: #1e3a8a; 
+            --wl-background: #030712;
+            --glass-bg: rgba(15, 23, 42, 0.6); 
+            --glass-border: rgba(255, 255, 255, 0.08); 
+        }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: var(--wl-background); 
+            color: #e2e8f0; 
+            background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.10) 0%, transparent 50%), radial-gradient(circle at 85% 30%, rgba(217, 119, 6, 0.05) 0%, transparent 50%); 
+            background-attachment: fixed; 
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        body.ready { opacity: 1; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-panel { background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; }
+        .glass-card { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 12px; transition: all 0.3s ease; }
+        .glass-card:hover { border-color: rgba(255,255,255,0.15); }
+        .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; transition: all 0.3s; color: #94a3b8; cursor: pointer; }
+        .sidebar-link:hover { color: white; background: rgba(255,255,255,0.05); }
+        .sidebar-link.active { color: var(--wl-secondary); background: rgba(217, 119, 6, 0.1); border-left: 3px solid var(--wl-secondary); }
+        input[type="text"], input[type="number"], input[type="email"], input[type="url"], input[type="password"], input[type="date"], input[type="color"], input[type="tel"], select, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px 12px; color: white; outline: none; transition: all 0.3s; font-size: 0.85rem; }
+        input:focus, select:focus, textarea:focus { border-color: var(--wl-primary); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
+        label { display: block; font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        th { background: rgba(0,0,0,0.4); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; }
+        tr { border-bottom: 1px solid var(--glass-border); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #020617; } ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        .upload-zone { border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .upload-zone:hover { border-color: var(--wl-primary); background: rgba(59,130,246,0.05); }
+        .preview-img { max-width: 200px; max-height: 150px; border-radius: 8px; margin-top: 10px; }
+        .editor-group { background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+        .editor-group-title { font-size: 0.75rem; font-weight: 800; color: var(--wl-secondary); text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
+        #login-screen { position: fixed; inset: 0; z-index: 100; background: var(--wl-background); display: flex; align-items: center; justify-content: center; }
+        .login-box { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 40px; border-radius: 20px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        @media print {
+            body * { visibility: hidden; }
+            #modal-expediente, #modal-expediente * { visibility: visible; }
+            #modal-expediente { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white !important; overflow: visible !important; }
+            .print\:hidden { display: none !important; }
+            .print-container { width: 100%; padding: 0 !important; box-shadow: none !important; margin: 0 !important; }
+        }
+        .badge-aceptado { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-rechazado { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .permission-checkbox { display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid var(--glass-border); }
+        .permission-checkbox label { margin-bottom: 0; color: #e2e8f0; }
+        input[readonly] { background: rgba(0,0,0,0.5); cursor: not-allowed; opacity: 0.6; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+    <!-- LOGIN CON SUPABASE AUTH -->
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="w-20 h-20 bg-blue-900/30 border border-blue-500/50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                <i data-lucide="shield-check" class="w-10 h-10 text-blue-400"></i>
+            </div>
+            <h1 class="text-2xl font-black text-white mb-2 tracking-widest uppercase">Panel SaaS</h1>
+            <p class="text-xs text-slate-400 mb-8 uppercase font-bold">Control de Acceso Restringido</p>
+            <form onsubmit="iniciarSesion(event)" class="space-y-4">
+                <div><input type="email" id="login-email" placeholder="Correo Electrónico" required class="text-center"></div>
+                <div><input type="password" id="login-password" placeholder="Clave de Seguridad" required class="text-center"></div>
+                <div id="login-error" class="text-red-400 text-xs font-bold hidden bg-red-900/20 p-2 rounded border border-red-500/30"></div>
+                <button type="submit" id="btn-login" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black uppercase tracking-widest py-3 rounded-lg shadow-lg shadow-blue-900/50 transition-all">INGRESAR</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EXPEDIENTE / DOSSIER DIGITAL -->
+    <div id="modal-expediente" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto print:block print:bg-white print:p-0">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col my-auto print-container" id="dossier-print-area">
+            <div class="bg-wlPrimary text-white p-6 border-b-8 border-wlSecondary text-center relative rounded-t-2xl print:rounded-none overflow-hidden">
+                <img id="modal-dyn-bg" src="" alt="Fondo dinámico institucional" class="absolute inset-0 w-full h-full object-cover opacity-20 filter grayscale hidden">
+                <div class="absolute inset-0 bg-wlPrimary/80 hidden" id="modal-dyn-overlay"></div>
+                
+                <button onclick="cerrarExpediente()" class="absolute top-4 right-4 text-slate-400 hover:text-white print:hidden z-20"><i data-lucide="x-circle" class="w-8 h-8"></i></button>
+                <div class="w-20 h-20 bg-white border-2 border-wlSecondary rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg relative z-20 overflow-hidden" id="modal-logo-container">
+                    <i data-lucide="fingerprint" class="w-10 h-10 text-wlPrimary" id="modal-default-logo"></i>
+                    <img id="modal-dyn-logo" src="" alt="Logo institucional dinámico" class="absolute inset-0 w-full h-full object-contain p-2 hidden">
+                </div>
+                <h2 class="text-3xl font-black font-title uppercase tracking-widest text-wlSecondary relative z-20">Expediente de Inscripción</h2>
+                <p class="font-bold text-sm uppercase tracking-widest mt-1 text-slate-200 relative z-20" id="modal-institucion-nombre">[Nombre Institución]</p>
+            </div>
+            
+            <div class="p-8 text-slate-800 space-y-6">
+                <div class="flex justify-between items-center border-b-2 border-slate-200 pb-4">
+                    <div><p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Matrícula</p><p class="text-3xl font-black font-mono text-wlPrimary" id="dos-matricula">---</p></div>
+                    <div class="text-right"><p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Fecha</p><p class="text-xl font-bold text-slate-700" id="dos-fecha">---</p></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-inner">
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Titular</p><p class="font-black text-lg text-wlPrimary" id="dos-nombre">---</p></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">DNI</p><p class="font-black text-lg font-mono text-wlPrimary" id="dos-dni">---</p></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Año Nacimiento</p><p class="font-black text-lg text-wlPrimary" id="dos-ano-nac">---</p></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Teléfono</p><p class="font-black text-lg text-wlPrimary" id="dos-tel">---</p></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Profesión</p><p class="font-black text-lg text-wlPrimary" id="dos-profesion">---</p></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Categoría</p><span class="bg-wlPrimary text-wlSecondary px-3 py-1 rounded font-black text-lg" id="dos-cat">---</span></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Provincia/Ciudad Laboral</p><p class="font-black text-lg text-wlPrimary" id="dos-provincia">---</p></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Directorio Público</p><span class="badge-aceptado px-2 py-1 rounded font-black text-sm" id="dos-directorio">OFF</span></div>
+                    <div class="col-span-2"><p class="text-xs text-slate-500 uppercase font-bold mb-1">Especialidades</p><div id="dos-especialidades" class="flex flex-wrap gap-2"></div></div>
+                </div>
+                
+                <div id="sello-ddjj" class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex items-center gap-3">
+                    <i data-lucide="check-circle" class="w-6 h-6 text-emerald-600 flex-shrink-0"></i>
+                    <div>
+                        <p class="text-emerald-800 font-bold text-sm">Declaración Jurada Aceptada</p>
+                        <p class="text-emerald-700 text-xs" id="txt-ddjj-fecha">El usuario aceptó los términos el ---</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-black uppercase tracking-wider text-wlPrimary mb-4 flex items-center gap-2 border-b-2 border-wlSecondary pb-2"><i data-lucide="file-check" class="text-wlSecondary"></i> Auditoría Documental</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="dos-imagenes"></div>
+                </div>
+
+                <div id="bloque-correccion" class="hidden">
+                    <h3 class="text-lg font-black uppercase tracking-wider text-red-800 mb-4 flex items-center gap-2 border-b-2 border-red-200 pb-2"><i data-lucide="alert-triangle" class="text-red-600"></i> Corrección Adjunta</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="dos-correccion-img"></div>
+                </div>
+
+            </div>
+            <div class="bg-slate-100 p-6 rounded-b-2xl flex justify-between items-center print:hidden border-t border-slate-300">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest"><i data-lucide="shield-check" class="inline w-3 h-3 mb-0.5"></i> Control Interno</p>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-visto-bueno" onclick="elevarAComite()" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black text-sm uppercase flex items-center gap-2 transition-transform active:scale-95"><i data-lucide="arrow-up-circle" class="w-5 h-5"></i> VISTO BUENO (ELEVAR A COMITÉ)</button>
+                    <button type="button" id="btn-observar" onclick="observarSolicitud()" class="hidden bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-xl font-black text-sm uppercase flex items-center gap-2 transition-transform active:scale-95"><i data-lucide="message-square-warning" class="w-5 h-5"></i> OBSERVAR</button>
+                    <button type="button" id="btn-rechazar-comite" onclick="rechazarSolicitud()" class="hidden bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-black text-sm uppercase flex items-center gap-2 transition-transform active:scale-95"><i data-lucide="x-circle" class="w-5 h-5"></i> RECHAZAR</button>
+                    <button type="button" id="btn-aprobar-matricula" onclick="aprobarMatricula()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-black text-sm uppercase flex items-center gap-2 transition-transform active:scale-95"><i data-lucide="check-circle" class="w-5 h-5"></i> APROBAR MATRÍCULA</button>
+                    <button type="button" onclick="window.print()" class="bg-wlPrimary hover:bg-slate-800 text-wlSecondary px-6 py-3 rounded-xl font-black text-sm uppercase flex items-center gap-2 transition-transform active:scale-95"><i data-lucide="printer" class="w-5 h-5"></i> Imprimir Expediente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTION PORTAL CIENTIFICO -->
+    <div id="modal-clases" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-wlPrimary border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="p-5 border-b border-white/10 flex justify-between items-center bg-black/40">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i data-lucide="layers" class="text-blue-400"></i> Materiales: <span id="modal-curso-titulo" class="text-wlSecondary font-normal"></span></h3>
+                <button onclick="cerrarModalClases()" class="text-slate-400 hover:text-red-400 transition-colors"><i data-lucide="x-circle" class="w-6 h-6"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-1 border-r border-white/5 pr-4">
+                    <form onsubmit="subirClase(event)" id="form-clase" class="space-y-4">
+                        <input type="hidden" id="clase-curso-id">
+                        <div><label>Título Material</label><input type="text" id="clase-titulo" required></div>
+                        <div><label>Tipo</label><select id="clase-tipo" onchange="toggleClaseInput()"><option value="VIDEO">Video (YouTube)</option><option value="ZOOM">Web / Link Externo</option><option value="PDF">Documento PDF</option></select></div>
+                        <div id="clase-input-url"><label>Link URL</label><input type="url" id="clase-url"></div>
+                        <div id="clase-input-file" class="hidden"><label>Subir PDF</label><input type="file" id="clase-file" accept=".pdf"></div>
+                        <button type="submit" id="btn-subir-clase" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl mt-4">GUARDAR MATERIAL</button>
+                    </form>
+                </div>
+                <div class="md:col-span-2">
+                    <div class="overflow-x-auto bg-black/20 rounded-xl border border-white/5"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Tipo</th><th class="p-3">Título</th><th class="p-3 text-right">Acción</th></tr></thead><tbody id="clases-body"></tbody></table></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDICIÓN RÁPIDA DE MATRICULADO -->
+    <div id="modal-editar-padron" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-wlPrimary border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-5 border-b border-white/10 flex justify-between items-center bg-black/40 sticky top-0 z-10">
+                <h3 class="text-lg font-bold text-white"><i data-lucide="user-pen" class="text-wlSecondary inline mr-2"></i> Editar Perfil Completo</h3>
+                <button onclick="cerrarModalEdicion()" class="text-slate-400 hover:text-red-400"><i data-lucide="x-circle" class="w-6 h-6"></i></button>
+            </div>
+            <form onsubmit="guardarEdicionMatriculado(event)" class="p-6 space-y-4">
+                <input type="hidden" id="edit-padron-id">
+                <div class="flex justify-center mb-4">
+                    <div class="w-24 h-24 rounded-full border-2 border-dashed border-white/20 overflow-hidden bg-black/30 flex items-center justify-center relative group cursor-pointer" onclick="document.getElementById('edit-foto-file').click()">
+                        <img id="edit-foto-preview" src="" class="w-full h-full object-cover">
+                        <input type="file" id="edit-foto-file" accept="image/*" class="hidden" onchange="previewFotoEdicion(this)">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label>Nombres</label><input type="text" id="edit-nombres" required></div>
+                    <div><label>Apellidos</label><input type="text" id="edit-apellidos" required></div>
+                    <div><label>DNI</label><input type="text" id="edit-dni" required></div>
+                    <div><label>Año Nacimiento</label><input type="number" id="edit-ano"></div>
+                    <div><label>Teléfono</label><input type="tel" id="edit-tel"></div>
+                    <div><label>Email</label><input type="email" id="edit-email"></div>
+                    <div><label>Provincia Laboral</label><input type="text" id="edit-provincia"></div>
+                    <div><label>Especialidades (Separar con comas)</label><input type="text" id="edit-especialidades"></div>
+                </div>
+                <div><label>Profesión / Título</label><input type="text" id="edit-profesion"></div>
+                
+                <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                    <h4 class="text-wlSecondary font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="share-2" class="w-4 h-4"></i> Redes Sociales del Profesional</h4>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div><label>Facebook URL</label><input type="url" id="edit-facebook" placeholder="https://facebook.com/usuario"></div>
+                        <div><label>Instagram URL</label><input type="url" id="edit-instagram" placeholder="https://instagram.com/usuario"></div>
+                        <div><label>LinkedIn URL</label><input type="url" id="edit-linkedin" placeholder="https://linkedin.com/in/usuario"></div>
+                    </div>
+                </div>
+
+                <div class="bg-black/30 p-4 rounded-xl border border-white/10 flex items-center gap-3">
+                    <input type="checkbox" id="edit-directorio" class="w-5 h-5">
+                    <label for="edit-directorio" class="text-sm font-bold text-white mb-0 cursor-pointer">Visible en el Directorio Público Nacional (Mapa)</label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Categoría Oficial</label>
+                        <select id="edit-categoria">
+                            <option value="A1">A.1</option>
+                            <option value="A2">A.2</option>
+                            <option value="A3">A.3</option>
+                            <option value="A4">A.4</option>
+                            <option value="B1">B.1 - Profesional con título de grado</option>
+                            <option value="B2">B.2 - Técnico Superior</option>
+                            <option value="B3">B.3 - Lic. / Téc. en Seguridad</option>
+                        </select>
+                    </div>
+                    <div><label>Estado Legal</label><select id="edit-estado"><option value="ACTIVO">ACTIVO</option><option value="SUSPENDIDO">SUSPENDIDO</option><option value="REVOCADO">REVOCADO</option><option value="PENDIENTE">PENDIENTE</option></select></div>
+                </div>
+                <div><label>Fecha Vencimiento Matrícula</label><input type="date" id="edit-vencimiento"></div>
+                <button type="submit" class="w-full bg-wlSecondary text-wlPrimary font-bold py-3 rounded-xl mt-4">GUARDAR CAMBIOS</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 glass-panel m-4 mr-0 flex flex-col z-20 hidden md:flex border-r border-white/5">
+        <div class="h-28 flex flex-col justify-center px-6 border-b border-white/5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-wlSecondary"></div>
+            <div class="flex items-center gap-2 text-white font-black tracking-widest text-2xl"><i data-lucide="shield-check" class="text-wlSecondary"></i> <span id="wl-sidebar-institucion">Cargando...</span></div>
+            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Centro de Comando</span>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <div class="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-2">Gestión</div>
+            <button onclick="showTab('dashboard')" id="nav-dashboard" class="sidebar-link active w-full"><i data-lucide="activity" class="w-4 h-4"></i> Dashboard</button>
+            <button onclick="showTab('solicitudes')" id="nav-solicitudes" class="sidebar-link w-full"><i data-lucide="inbox" class="w-4 h-4"></i> Trámites (CRM)</button>
+            <button onclick="showTab('auditoria')" id="nav-auditoria" class="sidebar-link w-full"><i data-lucide="clipboard-check" class="w-4 h-4"></i> Auditoría Comité</button>
+            <button onclick="showTab('padron')" id="nav-padron" class="sidebar-link w-full"><i data-lucide="database" class="w-4 h-4"></i> Padrón Oficial</button>
+            
+            <div id="menu-admin-section">
+                <div class="px-2 py-2 text-[9px] font-bold text-blue-400 uppercase tracking-widest mt-6">Divulgación & Ciencia</div>
+                <button onclick="showTab('campus')" id="nav-campus" class="sidebar-link w-full"><i data-lucide="book-open" class="w-4 h-4"></i> Portal Científico</button>
+                <button onclick="showTab('biblioteca')" id="nav-biblioteca" class="sidebar-link w-full"><i data-lucide="library" class="w-4 h-4"></i> Biblioteca</button>
+                <button onclick="showTab('tesis')" id="nav-tesis" class="sidebar-link w-full"><i data-lucide="microscope" class="w-4 h-4"></i> Auditoría Tesis</button>
+
+                <div class="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-6">Sistema</div>
+                <button onclick="showTab('aliados')" id="nav-aliados" class="sidebar-link w-full"><i data-lucide="award" class="w-4 h-4"></i> Gestión Aliados</button>
+                <button onclick="showTab('comite')" id="nav-comite" class="sidebar-link w-full"><i data-lucide="users-round" class="w-4 h-4"></i> Comité Evaluador</button>
+                <button onclick="showTab('masiva')" id="nav-masiva" class="sidebar-link w-full"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Carga Masiva</button>
+                <button onclick="showTab('diseno')" id="nav-diseno" class="sidebar-link w-full"><i data-lucide="layout-template" class="w-4 h-4"></i> Diseño Credencial</button>
+                <button onclick="showTab('configuracion')" id="nav-configuracion" class="sidebar-link w-full"><i data-lucide="settings" class="w-4 h-4"></i> Configuración Core</button>
+                <button onclick="showTab('contenido')" id="nav-contenido" class="sidebar-link w-full"><i data-lucide="palette" class="w-4 h-4"></i> Textos del Sitio</button>
+                <button onclick="showTab('usuarios')" id="nav-usuarios" class="sidebar-link w-full"><i data-lucide="users" class="w-4 h-4"></i> Usuarios y Roles</button>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 relative">
+        <header class="h-20 flex justify-between items-center px-8 z-10 border-b border-white/5 bg-black/20">
+            <h2 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400" id="page-title">Dashboard</h2>
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-bold text-wlSecondary bg-wlSecondary/10 px-3 py-1 rounded-lg uppercase tracking-wider" id="header-user-role">Conectando...</span>
+                <button onclick="cerrarSesion()" class="text-slate-400 hover:text-red-400 transition-colors flex items-center gap-2 border border-slate-700/50 hover:border-red-500/50 px-3 py-1.5 rounded-lg" title="Cerrar Sesión">
+                    <span class="text-xs font-bold hidden md:inline">SALIR</span>
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 z-10">
+
+            <!-- DASHBOARD -->
+            <div id="view-dashboard" class="tab-content active space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass-card p-6"><p class="text-slate-400 text-xs font-bold uppercase">Matriculados</p><h3 class="text-3xl font-black text-white mt-2 font-mono" id="stat-matriculados">0</h3></div>
+                    <div class="glass-card p-6"><p class="text-slate-400 text-xs font-bold uppercase">Pendientes</p><h3 class="text-3xl font-black text-blue-400 mt-2 font-mono" id="stat-pendientes">0</h3></div>
+                    <div class="glass-card p-6"><p class="text-slate-400 text-xs font-bold uppercase">Arancel A1</p><h3 class="text-3xl font-black text-emerald-400 mt-2 font-mono" id="stat-arancel">$0</h3></div>
+                    <div class="glass-card p-6 border-wlSecondary/30"><p class="text-wlSecondary/80 text-xs font-bold uppercase">Ingresos Proyectados</p><h3 class="text-3xl font-black text-wlSecondary mt-2 font-mono" id="stat-caja">$0</h3></div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-6">
+                        <h3 class="font-bold text-lg text-white mb-4">Evolución de Altas</h3>
+                        <canvas id="chart-evolucion"></canvas>
+                    </div>
+                    <div class="glass-card p-6">
+                        <h3 class="font-bold text-lg text-white mb-4">Distribución por Categorías</h3>
+                        <canvas id="chart-categorias"></canvas>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button onclick="descargarReporteExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2"><i data-lucide="download" class="w-5 h-5"></i> DESCARGAR REPORTE EXCEL</button>
+                </div>
+            </div>
+
+            <!-- CRM SOLICITUDES -->
+            <div id="view-solicitudes" class="tab-content space-y-6">
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg text-white">Bandeja de Adhesiones</h3><button onclick="cargarSolicitudes()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button></div>
+                    <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Solicitante</th><th class="p-3">Categoría</th><th class="p-3">Documentos</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="crm-body"></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- AUDITORÍA COMITÉ -->
+            <div id="view-auditoria" class="tab-content space-y-6">
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg text-white">Auditoría Comité</h3><button onclick="cargarAuditoria()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button></div>
+                    <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Solicitante</th><th class="p-3">Categoría</th><th class="p-3">Documentos</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="auditoria-body"></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- PADRÓN OFICIAL -->
+            <div id="view-padron" class="tab-content space-y-6">
+                <div class="flex justify-between items-center bg-black/20 p-4 rounded-xl border border-white/5">
+                    <div class="relative w-full max-w-md"><i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i><input type="text" id="search-padron" placeholder="Buscar por DNI o Nombre..." class="w-full pl-9 bg-black/50" onkeyup="if(event.key==='Enter')buscarPadron()"></div>
+                    <button onclick="descargarReporteExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg flex items-center gap-2 ml-4"><i data-lucide="download" class="w-4 h-4"></i> EXCEL</button>
+                </div>
+                <div class="glass-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm"><thead><tr><th class="p-4">Matrícula</th><th class="p-4">Profesional</th><th class="p-4">Categoría</th><th class="p-4">Documentos</th><th class="p-4 text-right">Acciones</th></tr></thead><tbody id="padron-body"></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALIADOS / INSTITUCIONES -->
+            <div id="view-aliados" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 xl:col-span-1">
+                        <h3 class="text-white font-bold mb-4 border-b border-white/10 pb-2">Nuevo Aliado</h3>
+                        <form id="form-aliado" onsubmit="crearAliado(event)" class="space-y-4">
+                            <div><label>Nombre de la Institución</label><input type="text" id="aliado-nombre" required></div>
+                            <div><label>Logo (PNG Transparente ideal)</label><input type="file" id="aliado-logo" accept="image/*" required class="text-slate-400"></div>
+                            <div class="bg-black/30 p-4 rounded-xl border border-white/10 flex items-center gap-3">
+                                <input type="checkbox" id="aliado-activo" checked class="w-5 h-5">
+                                <label for="aliado-activo" class="text-sm font-bold text-white mb-0 cursor-pointer">Visible en el Index Público</label>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl">GUARDAR ALIADO</button>
+                        </form>
+                    </div>
+                    <div class="glass-card p-6 xl:col-span-2">
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg text-white">Instituciones Aliadas</h3><button onclick="cargarAliadosPanel()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button></div>
+                        <p class="text-xs text-slate-400 mb-4">Si no hay aliados activos, el carrusel se ocultará automáticamente de la página pública.</p>
+                        <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Logo</th><th class="p-3">Institución</th><th class="p-3">Estado</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="aliados-body"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMITÉ EVALUADOR -->
+            <div id="view-comite" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 xl:col-span-1">
+                        <h3 class="text-white font-bold mb-4 border-b border-white/10 pb-2">Nuevo Miembro del Comité</h3>
+                        <form id="form-comite" onsubmit="guardarMiembroComite(event)" class="space-y-4">
+                            <input type="hidden" id="comite-id">
+                            <div><label>Nombre Completo</label><input type="text" id="comite-nombre" required></div>
+                            <div><label>Título / Profesión</label><input type="text" id="comite-titulo" required></div>
+                            <div><label>Breve Reseña</label><textarea id="comite-resena" rows="3"></textarea></div>
+                            <div><label>Foto de Perfil</label><input type="file" id="comite-foto" accept="image/*" class="text-slate-400"></div>
+                            <div class="bg-black/30 p-4 rounded-xl border border-white/10 flex items-center gap-3">
+                                <input type="checkbox" id="comite-activo" checked class="w-5 h-5">
+                                <label for="comite-activo" class="text-sm font-bold text-white mb-0 cursor-pointer">Miembro Activo</label>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl">GUARDAR MIEMBRO</button>
+                        </form>
+                    </div>
+                    <div class="glass-card p-6 xl:col-span-2">
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg text-white">Miembros Actuales del Comité</h3><button onclick="cargarComitePanel()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button></div>
+                        <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Miembro</th><th class="p-3">Título</th><th class="p-3">Estado</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="comite-body"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARGA MASIVA -->
+            <div id="view-masiva" class="tab-content space-y-6">
+                <div class="glass-card p-8 max-w-2xl mx-auto text-center border-blue-500/30">
+                    <h3 class="text-xl font-black text-white mb-2"><i data-lucide="upload-cloud" class="inline-block w-6 h-6 text-blue-400 mb-1"></i> Inyección Masiva</h3>
+                    <input type="file" id="input-excel" accept=".xlsx,.xls" class="block w-full text-sm mb-6 text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white" onchange="procesarExcel()">
+                    <div id="preview-area" class="hidden text-left bg-black/30 p-4 rounded-xl border border-white/5">
+                        <div class="flex justify-between items-center mb-2"><span class="text-sm font-bold text-white">Detectados: <span id="count-preview" class="text-blue-400">0</span></span><button onclick="confirmarCargaMasiva()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg font-bold text-xs"><i data-lucide="check" class="w-3 h-3"></i> EJECUTAR</button></div>
+                        <div class="max-h-40 overflow-y-auto"><table class="w-full text-xs font-mono"><tbody id="tabla-preview"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PORTAL CIENTIFICO -->
+            <div id="view-campus" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 xl:col-span-1">
+                        <h3 class="text-white font-bold mb-4 border-b border-white/10 pb-2">Nueva Publicación</h3>
+                        <form id="form-curso" onsubmit="crearNoticia(event)" class="space-y-4">
+                            <div><label>Título / Noticia</label><input type="text" id="camp-titulo" required></div>
+                            <div><label>Descripción / Bajada</label><textarea id="camp-desc" rows="3"></textarea></div>
+                            <div><label>Sección del Portal</label>
+                                <select id="camp-cat">
+                                    <option value="NOTICIAS">Divulgación de Noticias</option>
+                                    <option value="CIENCIA">Divulgación Científica (Papers)</option>
+                                    <option value="TECNOLOGIA">Material Tecnológico</option>
+                                </select>
+                            </div>
+                            <div><label>Imagen Portada</label><input type="file" id="camp-portada" accept="image/*" class="text-slate-400"></div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl">PUBLICAR</button>
+                        </form>
+                    </div>
+                    <div class="glass-card p-6 xl:col-span-2">
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg text-white">Material Publicado</h3><button onclick="cargarNoticiasPanel()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button></div>
+                        <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Publicación</th><th class="p-3">Sección</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="campus-body"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BIBLIOTECA -->
+            <div id="view-biblioteca" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 xl:col-span-1">
+                        <h3 class="text-white font-bold mb-4 border-b border-white/10 pb-2">Subir Material</h3>
+                        <form id="form-biblioteca" onsubmit="subirLibro(event)" class="space-y-4">
+                            <div><label>Título</label><input type="text" id="bib-titulo" required></div>
+                            <div><label>Autor</label><input type="text" id="bib-autor"></div>
+                            <div><label>Tipo Acceso</label><select id="bib-acceso"><option value="GRATUITO">Público</option><option value="PREMIUM">Premium (Solo Matriculados)</option></select></div>
+                            <div><label>Portada (Opcional)</label><input type="file" id="bib-portada" accept="image/*" class="text-slate-400"></div>
+                            <div><label>Archivo PDF</label><input type="file" id="bib-pdf" accept=".pdf" required class="text-slate-400"></div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl">PUBLICAR</button>
+                        </form>
+                    </div>
+                    <div class="glass-card p-6 xl:col-span-2">
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg text-white">Catálogo Actual</h3><button onclick="cargarBibliotecaPanel()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button></div>
+                        <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Título y Autor</th><th class="p-3">Acceso</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="biblioteca-body"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TESIS -->
+            <div id="view-tesis" class="tab-content space-y-6">
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-4"><div><h3 class="font-bold text-lg text-white">Comité Evaluador</h3><p class="text-xs text-slate-400">Trabajos enviados por los matriculados.</p></div><button onclick="cargarTesisPanel()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button></div>
+                    <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Autor y Matrícula</th><th class="p-3">Título de la Tesis</th><th class="p-3">Estado</th><th class="p-3 text-right">Auditar</th></tr></thead><tbody id="tesis-body"></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- DISEÑO CREDENCIAL -->
+            <div id="view-diseno" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                    <div class="glass-card p-6 xl:col-span-4 h-[750px] overflow-y-auto flex flex-col">
+                        <h3 class="text-white font-bold mb-4 border-b border-white/10 pb-2">Calibración Visual</h3>
+                        <div class="flex bg-black/30 rounded-lg p-1 mb-5">
+                            <button class="flex-1 py-2 text-xs font-bold uppercase rounded-md text-white bg-blue-600 shadow" id="btn-tab-frente" onclick="switchEditorTab('frente')">Frente</button>
+                            <button class="flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-400 hover:text-white" id="btn-tab-dorso" onclick="switchEditorTab('dorso')">Dorso</button>
+                        </div>
+                        <div class="mb-5 space-y-3 p-4 bg-black/20 rounded-xl border border-white/5">
+                            <div><label class="text-xs text-slate-400">Fondo Frente</label><input type="file" accept="image/*" class="w-full text-[10px] text-slate-400" onchange="subirFondoCredencial(this, 'frente')"></div>
+                            <div><label class="text-xs text-slate-400">Fondo Dorso</label><input type="file" accept="image/*" class="w-full text-[10px] text-slate-400" onchange="subirFondoCredencial(this, 'dorso')"></div>
+                            <div><label class="text-xs text-slate-400">Roseta (Transparente)</label><input type="file" accept="image/png" class="w-full text-[10px] text-slate-400" onchange="subirRoseta(this)"></div>
+                        </div>
+                        <div id="editor-controles" class="space-y-4 flex-1 overflow-y-auto pr-2"></div>
+                        <button onclick="guardarDiseno()" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl">GUARDAR DISEÑO</button>
+                    </div>
+
+                    <div class="glass-card p-6 xl:col-span-8 flex items-center justify-center bg-black/40 overflow-hidden relative" style="min-height: 500px;">
+                        <div class="absolute top-4 right-4 bg-black/50 px-3 py-1 rounded text-xs font-mono text-slate-400" id="preview-indicator">VISTA: FRENTE</div>
+                        <div id="preview-wrapper" style="transform: scale(0.65); transform-origin: center;">
+                            <div id="card-preview-frente" style="position: relative; width: 1000px; height: 630px; background-size: 1000px 630px; border-radius: 30px; overflow: hidden; background-color: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+                                <div id="pre-foto" style="position:absolute; overflow:hidden;"><img src="https://ui-avatars.com/api/?name=F+P&background=0f172a&color=fff" style="width:100%;height:100%;object-fit:cover;"></div>
+                                <div id="pre-roseta" style="position:absolute; display:none;"><img src="" style="width:100%;height:100%;object-fit:contain;pointer-events:none;"></div>
+                                <div id="pre-profesion" style="position:absolute; font-family:'Montserrat', sans-serif; font-weight:900; text-transform:uppercase; white-space: nowrap; overflow:hidden;">PROFESIONAL TITULADO</div>
+                                <div id="pre-categoria" style="position:absolute; font-family:'Montserrat', sans-serif; font-weight:900;">A.1</div>
+                                <div id="pre-nombre" style="position:absolute; font-family:'Inter', sans-serif; font-weight:900; text-transform:uppercase;">NOMBRE DE EJEMPLO</div>
+                                <div id="pre-dni" style="position:absolute; font-family:'Inter', sans-serif; font-weight:900;">16.906.070</div>
+                                <div id="pre-ano_nac" style="position:absolute; font-family:'Inter', sans-serif; font-weight:900;">1964</div>
+                                <div id="pre-matricula" style="position:absolute; font-family:'Inter', sans-serif; font-weight:900;">1000-26</div>
+                                <div id="pre-vence" style="position:absolute; font-family:'Inter', sans-serif; font-weight:900;">26/07/2027</div>
+                            </div>
+                            <div id="card-preview-dorso" style="position: relative; width: 1000px; height: 630px; background-size: 1000px 630px; border-radius: 30px; overflow: hidden; background-color: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: none;">
+                                <div id="pre-dorso_cat" style="position:absolute; font-family:'Inter', sans-serif; font-weight:600; color:#333;">A.1 Profesionales con título de Grado en carrera afines...</div>
+                                <div id="pre-qr" style="position:absolute; background: url('https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg') center/cover; border: 2px solid #ccc; border-radius: 10px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIGURACIÓN CORE -->
+            <div id="view-configuracion" class="tab-content space-y-6">
+                <div class="glass-card p-8 border-wlSecondary/30">
+                    <h3 class="text-white font-bold mb-6 border-b border-white/10 pb-2">Parámetros del Sistema</h3>
+                    <form id="form-config" class="space-y-6" onsubmit="guardarConfiguracion(event)">
+                        
+                        <!-- ARANCELES -->
+                        <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                            <h4 class="text-wlSecondary font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="dollar-sign" class="w-4 h-4"></i> Aranceles de Matriculación</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <div><label>Arancel A1 (ARS)</label><input type="number" id="conf-arancel-a1" required></div>
+                                <div><label>Arancel A2 (ARS)</label><input type="number" id="conf-arancel-a2" required></div>
+                                <div><label>Arancel A3 (ARS)</label><input type="number" id="conf-arancel-a3" required></div>
+                                <div><label>Arancel A4 (ARS)</label><input type="number" id="conf-arancel-a4" required></div>
+                            </div>
+                        </div>
+
+                        <!-- PAGO Y CONTACTO -->
+                        <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                            <h4 class="text-wlSecondary font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="contact" class="w-4 h-4"></i> Pago y Contacto</h4>
+                            
+                            <h4 class="text-wlSecondary font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2 mt-6 border-t border-white/10 pt-4"><i data-lucide="link" class="w-4 h-4"></i> Enlaces de Pago (Mercado Pago)</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label>Link Categoría A1 (y B1)</label><input type="url" id="conf-mp-a1" placeholder="https://mpago.la/..."></div>
+                                <div><label>Link Categoría A2</label><input type="url" id="conf-mp-a2" placeholder="https://mpago.la/..."></div>
+                                <div><label>Link Categoría A3 (B2 y B3)</label><input type="url" id="conf-mp-a3" placeholder="https://mpago.la/..."></div>
+                                <div><label>Link Categoría A4</label><input type="url" id="conf-mp-a4" placeholder="https://mpago.la/..."></div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div><label>WhatsApp del Registro</label><input type="text" id="conf-whatsapp" placeholder="549XXXXXXXXXX"></div>
+                                <div><label>Email de Contacto</label><input type="email" id="conf-email"></div>
+                            </div>
+                        </div>
+
+                        <!-- VISIBILIDAD DE BOTONES DE CONTACTO -->
+                        <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                            <h4 class="text-wlSecondary font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="eye" class="w-4 h-4"></i> Visibilidad de Botones de Contacto</h4>
+                            <p class="text-xs text-slate-400 mb-4">Controla qué botones de contacto aparecen en el sitio público (menú flotante y secciones).</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-black/30 p-3 rounded-lg border border-white/10 flex items-center gap-3">
+                                    <input type="checkbox" id="conf-mostrar-wpp" class="w-5 h-5 rounded text-emerald-500 focus:ring-emerald-500 border-slate-600">
+                                    <label for="conf-mostrar-wpp" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2">
+                                        <i data-lucide="message-circle" class="w-5 h-5 text-green-500"></i> Mostrar WhatsApp
+                                    </label>
+                                </div>
+                                <div class="bg-black/30 p-3 rounded-lg border border-white/10 flex items-center gap-3">
+                                    <input type="checkbox" id="conf-mostrar-email" class="w-5 h-5 rounded text-sky-500 focus:ring-sky-500 border-slate-600">
+                                    <label for="conf-mostrar-email" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2">
+                                        <i data-lucide="mail" class="w-5 h-5 text-sky-500"></i> Mostrar Email
+                                    </label>
+                                </div>
+                                <div class="bg-black/30 p-3 rounded-lg border border-white/10 flex items-center gap-3">
+                                    <input type="checkbox" id="conf-mostrar-facebook" class="w-5 h-5 rounded text-blue-500 focus:ring-blue-500 border-slate-600">
+                                    <label for="conf-mostrar-facebook" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2">
+                                        <i data-lucide="globe" class="w-5 h-5 text-blue-500"></i> Mostrar Facebook
+                                    </label>
+                                </div>
+                                <div class="bg-black/30 p-3 rounded-lg border border-white/10 flex items-center gap-3">
+                                    <input type="checkbox" id="conf-mostrar-instagram" class="w-5 h-5 rounded text-pink-500 focus:ring-pink-500 border-slate-600">
+                                    <label for="conf-mostrar-instagram" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2">
+                                        <i data-lucide="camera" class="w-5 h-5 text-pink-500"></i> Mostrar Instagram
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- IDENTIDAD VISUAL -->
+                        <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                            <h4 class="text-wlSecondary font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="image" class="w-4 h-4"></i> Identidad Visual</h4>
+                            <div>
+                                <label>Imagen de Fondo del Hero</label>
+                                <div class="upload-zone" onclick="document.getElementById('input-hero-image').click()">
+                                    <i data-lucide="image" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+                                    <span class="text-xs text-slate-400">Clic para subir imagen</span>
+                                    <input type="file" id="input-hero-image" accept="image/*" onchange="previewYGuardarImagen(this, 'preview-hero', 'hero_image')" style="display:none;">
+                                </div>
+                                <img id="preview-hero" class="preview-img" src="" alt="Preview" style="display:none;">
+                                <input type="hidden" id="conf-hero-image-url">
+                            </div>
+                            <div class="mt-4">
+                                <label>Logo del Registro</label>
+                                <div class="upload-zone" onclick="document.getElementById('input-logo').click()">
+                                    <i data-lucide="image" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+                                    <span class="text-xs text-slate-400">Clic para subir logo</span>
+                                    <input type="file" id="input-logo" accept="image/*" onchange="previewYGuardarImagen(this, 'preview-logo', 'logo')" style="display:none;">
+                                </div>
+                                <img id="preview-logo" class="preview-img" src="" alt="Preview" style="display:none;">
+                                <input type="hidden" id="conf-logo-url">
+                            </div>
+                        </div>
+
+                        <!-- REDES SOCIALES -->
+                        <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                            <h4 class="text-wlSecondary font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="share-2" class="w-4 h-4"></i> Redes Sociales</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label>Facebook URL</label><input type="url" id="conf-facebook"></div>
+                                <div><label>Instagram URL</label><input type="url" id="conf-instagram"></div>
+                                <div><label>Twitter URL</label><input type="url" id="conf-twitter"></div>
+                                <div><label>LinkedIn URL</label><input type="url" id="conf-linkedin"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-4">
+                            <button type="submit" class="bg-wlSecondary hover:bg-yellow-500 text-wlPrimary font-black px-6 py-3 rounded-xl">ACTUALIZAR CONFIGURACIÓN</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- CONTENIDO DEL SITIO -->
+            <div id="view-contenido" class="tab-content space-y-6">
+                <div class="glass-card p-8 border-blue-500/30">
+                    <h3 class="text-white font-bold mb-6 border-b border-white/10 pb-2">Editar Contenido</h3>
+                    <form id="form-contenido" class="space-y-6" onsubmit="guardarContenido(event)">
+                        <div><label>Badge del Hero</label><input type="text" id="cont-hero-badge-text"></div>
+                        <div><label>Título del Hero</label><input type="text" id="cont-hero-title"></div>
+                        <div><label>Subtítulo del Hero</label><textarea id="cont-hero-subtitle" rows="3"></textarea></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label>Texto Botón Principal</label><input type="text" id="cont-hero-cta-primary"></div>
+                            <div><label>Texto Botón Secundario</label><input type="text" id="cont-hero-cta-secondary"></div>
+                        </div>
+                        <div><label>Título Sección Urgencia</label><input type="text" id="cont-urgencia-titulo"></div>
+                        <div><label>Texto Sección Urgencia</label><textarea id="cont-urgencia-texto" rows="3"></textarea></div>
+                        <div><label>Descripción Categoría A1</label><textarea id="cont-cat-a1-desc" rows="3"></textarea></div>
+                        <div><label>Descripción Categoría A2</label><textarea id="cont-cat-a2-desc" rows="3"></textarea></div>
+                        <div><label>Descripción Categoría A3</label><textarea id="cont-cat-a3-desc" rows="3"></textarea></div>
+                        <div><label>Descripción Categoría A4</label><textarea id="cont-cat-a4-desc" rows="3"></textarea></div>
+                        <div><label>Texto Footer</label><textarea id="cont-footer-texto" rows="2"></textarea></div>
+                        <div class="flex justify-end pt-4">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl">ACTUALIZAR TEXTOS</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- USUARIOS Y ROLES -->
+            <div id="view-usuarios" class="tab-content space-y-6">
+                <div class="glass-card p-8 border-emerald-500/30">
+                    <h3 class="text-white font-bold mb-6"><i data-lucide="users" class="text-emerald-500 inline mr-2"></i> Gestión de Usuarios</h3>
+                    
+                    <form id="form-usuarios" class="space-y-6 mb-8" onsubmit="crearUsuario(event)">
+                        <input type="hidden" id="usr-db-id">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label>Email</label><input type="email" id="usr-email" required placeholder="usuario@ejemplo.com"></div>
+                            <div><label>Rol Principal</label>
+                                <select id="usr-rol" required>
+                                    <option value="superadmin">Superadmin</option>
+                                    <option value="director">Director</option>
+                                    <option value="asesor">Asesor</option>
+                                    <option value="titular">Titular</option>
+                                </select>
+                            </div>
+                            <div><label>Nombres</label><input type="text" id="usr-nombres" required></div>
+                            <div><label>Apellidos</label><input type="text" id="usr-apellidos" required></div>
+                        </div>
+                        
+                        <div class="md:col-span-2" id="box-uid">
+                            <label>UID de Supabase Auth (Requerido al crear nuevo)</label>
+                            <input type="text" id="usr-uid" placeholder="Ej: dd057f27-a081-4c3a-8810-10152c712f3a" class="font-mono text-sm text-blue-400">
+                            <p class="text-[9px] text-slate-400 mt-1">Copia el User UID desde Supabase > Authentication > Users.</p>
+                        </div>
+                        
+                        <div class="border-t border-white/10 pt-4">
+                            <label class="text-emerald-400 text-sm font-bold uppercase tracking-widest mb-3">Permisos de Acceso (Módulos)</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <div class="permission-checkbox">
+                                    <input type="checkbox" id="perm-dashboard" value="mod-dashboard" class="w-4 h-4">
+                                    <label for="perm-dashboard" class="text-sm mb-0">Dashboard</label>
+                                </div>
+                                <div class="permission-checkbox">
+                                    <input type="checkbox" id="perm-solicitudes" value="mod-solicitudes" class="w-4 h-4">
+                                    <label for="perm-solicitudes" class="text-sm mb-0">Solicitudes</label>
+                                </div>
+                                <div class="permission-checkbox">
+                                    <input type="checkbox" id="perm-auditoria" value="mod-auditoria" class="w-4 h-4">
+                                    <label for="perm-auditoria" class="text-sm mb-0">Auditoría</label>
+                                </div>
+                                <div class="permission-checkbox">
+                                    <input type="checkbox" id="perm-padron" value="mod-padron" class="w-4 h-4">
+                                    <label for="perm-padron" class="text-sm mb-0">Padrón</label>
+                                </div>
+                                <div class="permission-checkbox">
+                                    <input type="checkbox" id="perm-campus" value="mod-campus" class="w-4 h-4">
+                                    <label for="perm-campus" class="text-sm mb-0">Portal Científico</label>
+                                </div>
+                                <div class="permission-checkbox">
+                                    <input type="checkbox" id="perm-biblioteca" value="mod-biblioteca" class="w-4 h-4">
+                                    <label for="perm-biblioteca" class="text-sm mb-0">Biblioteca</label>
+                                </div>
+                                <div class="permission-checkbox">
+                                    <input type="checkbox" id="perm-tesis" value="mod-tesis" class="w-4 h-4">
+                                    <label for="perm-tesis" class="text-sm mb-0">Tesis</label>
+                                </div>
+                                <div class="permission-checkbox">
+                                    <input type="checkbox" id="perm-sistema" value="mod-sistema" class="w-4 h-4">
+                                    <label for="perm-sistema" class="text-sm mb-0">Sistema Completo</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl text-sm transition-transform active:scale-95">CREAR USUARIO</button>
+                        </div>
+                    </form>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead><tr><th class="p-3">Email</th><th class="p-3">Rol</th><th class="p-3">Permisos</th><th class="p-3">Estado</th><th class="p-3 text-right">Acciones</th></tr></thead>
+                            <tbody id="usuarios-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // ==========================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ==========================================
+        lucide.createIcons();
+        const PROJECT_URL = 'https://hiirhuohxpzsphlduypo.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpaXJodW9oeHB6c3BobGR1eXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyOTgyMTAsImV4cCI6MjA5OTg3NDIxMH0.qvEaRyo0vbnaW9hiX4bXhtRdMkW7n9mDMrApKBRmbhE';
+        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+
+        // ==========================================
+        // VARIABLES GLOBALES MULTI-TENANT
+        // ==========================================
+        const currentTenantId = localStorage.getItem('saas_current_tenant');
+        let adminUser = null;
+        let padronCompleto = [];
+        let datosExcel = [];
+        let itemDossierActual = null;
+        let bgFrenteUrl = ''; let bgDorsoUrl = ''; let rosetaUrl = ''; let currentEditorTab = 'frente';
+        let chartEvolucion = null;
+        let chartCategorias = null;
+        let whatsappRegistro = '';
+
+        // ==========================================
+        // BOOTSTRAPPER MULTI-TENANT
+        // ==========================================
+        function getMockTenantConfig(tenantId) {
+            // En producción, esto consultaría la tabla tenants en Supabase
+            return {
+                tenant_id: tenantId || 'tenant_default',
+                nombre_institucion: 'Sistema de Registro Institucional',
+                logo_url: 'https://ui-avatars.com/api/?name=S+R&background=fff&color=0f172a',
+                hero_image_url: '',
+                colores: {
+                    primary: '#3b82f6',
+                    secondary: '#fbbf24',
+                    tertiary: '#1e3a8a',
+                    background: '#030712'
+                }
+            };
+        }
+
+        async function initTenantPanel() {
+            if (!currentTenantId) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const tenantConfig = getMockTenantConfig(currentTenantId);
+
+            // Inyectar colores
+            document.documentElement.style.setProperty('--wl-primary', tenantConfig.colores.primary);
+            document.documentElement.style.setProperty('--wl-secondary', tenantConfig.colores.secondary);
+            document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.colores.tertiary);
+            document.documentElement.style.setProperty('--wl-background', tenantConfig.colores.background);
+
+            // Actualizar textos
+            document.getElementById('wl-title-institucion').innerText = tenantConfig.nombre_institucion;
+            document.getElementById('wl-sidebar-institucion').innerText = tenantConfig.nombre_institucion.split(' ')[0];
+            document.getElementById('modal-institucion-nombre').innerText = tenantConfig.nombre_institucion;
+            document.title = `Panel de Administración · ${tenantConfig.nombre_institucion}`;
+
+            // Mostrar interfaz
+            document.body.classList.add('ready');
+        }
+
+        // ==========================================
+        // 1. AUTENTICACIÓN Y ROLES
+        // ==========================================
+        async function iniciarSesion(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-password').value.trim();
+            const btn = document.getElementById('btn-login');
+            const errorDiv = document.getElementById('login-error');
+            
+            errorDiv.classList.add('hidden');
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i>'; btn.disabled = true;
+
+            try {
+                const { error } = await db.auth.signInWithPassword({ email, password: pass });
+                if (error) throw error;
+                await verificarSesion();
+            } catch (err) {
+                errorDiv.innerText = "Credenciales incorrectas.";
+                errorDiv.classList.remove('hidden');
+                btn.innerHTML = 'INGRESAR'; btn.disabled = false;
+            }
+            lucide.createIcons();
+        }
+
+        async function verificarSesion() {
+            const { data: { session }, error } = await db.auth.getSession();
+            if (error || !session) { document.getElementById('login-screen').style.display = 'flex'; return; }
+            
+            const { data: rolData } = await db.from('renmcycf_roles')
+                .select('rol, activo, nombres, modulos_permitidos')
+                .eq('user_id', session.user.id)
+                .eq('tenant_id', currentTenantId)
+                .single();
+            
+            if (!rolData || !rolData.activo) { 
+                await cerrarSesion(false); 
+                document.getElementById('login-screen').style.display = 'flex'; 
+                return; 
+            }
+            
+            adminUser = rolData;
+            document.getElementById('header-user-role').textContent = `${rolData.nombres || 'User'} (${rolData.rol})`;
+            document.getElementById('login-screen').style.display = 'none';
+
+            cargarIdentidadDossier();
+            cargarWhatsappRegistro();
+
+            const navButtons = {
+                'mod-dashboard': 'nav-dashboard',
+                'mod-solicitudes': 'nav-solicitudes',
+                'mod-auditoria': 'nav-auditoria',
+                'mod-padron': 'nav-padron',
+                'mod-campus': 'nav-campus',
+                'mod-biblioteca': 'nav-biblioteca',
+                'mod-tesis': 'nav-tesis'
+            };
+
+            if (rolData.rol === 'superadmin') {
+                document.getElementById('menu-admin-section').style.display = 'block';
+                Object.values(navButtons).forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.style.display = 'flex';
+                });
+                ['nav-aliados', 'nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-usuarios'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.style.display = 'flex';
+                });
+            } else {
+                const permisos = rolData.modulos_permitidos || [];
+                
+                Object.entries(navButtons).forEach(([modulo, navId]) => {
+                    const navElement = document.getElementById(navId);
+                    if (navElement) navElement.style.display = permisos.includes(modulo) ? 'flex' : 'none';
+                });
+                
+                const sistemaButtons = ['nav-aliados', 'nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-usuarios'];
+                const tienePermisoSistema = permisos.includes('mod-sistema');
+                sistemaButtons.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = tienePermisoSistema ? 'flex' : 'none';
+                });
+                
+                const tienePermisosAdmin = permisos.some(p => ['mod-campus', 'mod-biblioteca', 'mod-tesis', 'mod-sistema'].includes(p));
+                document.getElementById('menu-admin-section').style.display = tienePermisosAdmin ? 'block' : 'none';
+            }
+
+            const permisos = rolData.modulos_permitidos || [];
+            if (rolData.rol !== 'superadmin') {
+                if (permisos.includes('mod-solicitudes')) showTab('solicitudes');
+                else if (permisos.includes('mod-auditoria')) showTab('auditoria');
+                else if (permisos.includes('mod-dashboard')) showTab('dashboard');
+                else if (permisos[0] && navButtons[permisos[0]]) showTab(navButtons[permisos[0]].replace('nav-', ''));
+            } else {
+                actualizarDashboard();
+                showTab('dashboard');
+            }
+        }
+
+        async function cerrarSesion(redirect = true) { 
+            await db.auth.signOut(); 
+            adminUser = null;
+            if (redirect) {
+                document.getElementById('login-email').value = '';
+                document.getElementById('login-password').value = '';
+                document.getElementById('btn-login').innerHTML = 'INGRESAR';
+                document.getElementById('btn-login').disabled = false;
+                document.getElementById('login-screen').style.display = 'flex';
+            }
+        }
+
+        async function cargarIdentidadDossier() {
+            try {
+                const { data } = await db.from('renmcycf_config')
+                    .select('logo_url, hero_image_url')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+                    
+                if (data) {
+                    if (data.logo_url) {
+                        document.getElementById('modal-dyn-logo').src = data.logo_url;
+                        document.getElementById('modal-dyn-logo').classList.remove('hidden');
+                        document.getElementById('modal-default-logo').classList.add('hidden');
+                    }
+                    if (data.hero_image_url) {
+                        document.getElementById('modal-dyn-bg').src = data.hero_image_url;
+                        document.getElementById('modal-dyn-bg').classList.remove('hidden');
+                        document.getElementById('modal-dyn-overlay').classList.remove('hidden');
+                    }
+                }
+            } catch (err) { console.error("Error cargando identidad:", err); }
+        }
+
+        async function cargarWhatsappRegistro() {
+            try {
+                const { data } = await db.from('renmcycf_config')
+                    .select('whatsapp')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+                    
+                if (data && data.whatsapp) {
+                    whatsappRegistro = data.whatsapp;
+                }
+            } catch (err) { console.error("Error cargando WhatsApp:", err); }
+        }
+
+        // ==========================================
+        // 2. NAVEGACIÓN Y DASHBOARD
+        // ==========================================
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('view-' + id).classList.add('active');
+            document.getElementById('nav-' + id)?.classList.add('active');
+            
+            const titles = { 'dashboard':'Dashboard Estadístico', 'solicitudes':'Bandeja de CRM', 'auditoria':'Auditoría Comité', 'padron':'Padrón Nacional', 'aliados':'Gestión de Aliados', 'comite':'Comité Evaluador', 'campus':'Portal Científico', 'biblioteca':'Biblioteca', 'tesis':'Auditoría de Tesis', 'masiva':'Inyección Masiva', 'diseno':'Calibrador de Credenciales', 'configuracion':'Configuración', 'contenido':'Textos del Sitio', 'usuarios':'Usuarios y Roles' };
+            document.getElementById('page-title').textContent = titles[id] || id;
+            
+            if(id === 'dashboard') actualizarDashboard();
+            if(id === 'solicitudes') cargarSolicitudes();
+            if(id === 'auditoria') cargarAuditoria();
+            if(id === 'padron') cargarPadron();
+            if(id === 'aliados') cargarAliadosPanel();
+            if(id === 'comite') cargarComitePanel();
+            if(id === 'campus') cargarNoticiasPanel();
+            if(id === 'biblioteca') cargarBibliotecaPanel();
+            if(id === 'tesis') cargarTesisPanel();
+            if(id === 'diseno') cargarDisenoCredencial();
+            if(id === 'configuracion') cargarConfiguracionForm();
+            if(id === 'contenido') cargarContenidoForm();
+            if(id === 'usuarios') cargarUsuarios();
+        }
+
+        async function actualizarDashboard() {
+            try {
+                const { count: activos } = await db.from('renmcycf_padron')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('estado_legal', 'ACTIVO')
+                    .eq('tenant_id', currentTenantId);
+                    
+                const { count: pendientes } = await db.from('renmcycf_solicitudes')
+                    .select('*', { count: 'exact', head: true })
+                    .in('estado', ['PENDIENTE', 'RENOVACION_PENDIENTE'])
+                    .eq('tenant_id', currentTenantId);
+                    
+                const { data: conf } = await db.from('renmcycf_config')
+                    .select('arancel_a1, arancel_a2, arancel_a3, arancel_a4')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+                    
+                const { data: padronActivo } = await db.from('renmcycf_padron')
+                    .select('categoria')
+                    .eq('estado_legal', 'ACTIVO')
+                    .eq('tenant_id', currentTenantId);
+                
+                const aranceles = {
+                    'A1': conf?.arancel_a1 || 0,
+                    'A2': conf?.arancel_a2 || 0,
+                    'A3': conf?.arancel_a3 || 0,
+                    'A4': conf?.arancel_a4 || 0,
+                    'B1': conf?.arancel_a2 || 0,
+                    'B2': conf?.arancel_a3 || 0,
+                    'B3': conf?.arancel_a3 || 0
+                };
+
+                let ingresosTotales = 0;
+                if (padronActivo) {
+                    padronActivo.forEach(p => {
+                        const cat = p.categoria || 'A3';
+                        ingresosTotales += (aranceles[cat] || 0);
+                    });
+                }
+                
+                const arancelRef = conf ? conf.arancel_a1 : 0;
+
+                document.getElementById('stat-matriculados').innerText = activos || 0;
+                document.getElementById('stat-pendientes').innerText = pendientes || 0;
+                document.getElementById('stat-arancel').innerText = `$${new Intl.NumberFormat('es-AR').format(arancelRef)}`;
+                document.getElementById('stat-caja').innerText = `$${new Intl.NumberFormat('es-AR').format(ingresosTotales)}`;
+                
+                actualizarGraficos();
+            } catch (err) { console.error("Error Dashboard:", err); }
+        }
+
+        async function actualizarGraficos() {
+            try {
+                const { data: padron } = await db.from('renmcycf_padron')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('id', { ascending: false });
+                
+                if (padron && padron.length > 0) {
+                    const categorias = {};
+                    padron.forEach(p => {
+                        const cat = p.categoria || 'A3';
+                        categorias[cat] = (categorias[cat] || 0) + 1;
+                    });
+                    
+                    const anos = {};
+                    padron.forEach(p => {
+                        const ano = p.fecha_alta ? new Date(p.fecha_alta).getFullYear() : new Date().getFullYear();
+                        anos[ano] = (anos[ano] || 0) + 1;
+                    });
+                    
+                    const catLabels = Object.keys(categorias).sort();
+                    const catData = catLabels.map(label => categorias[label]);
+                    
+                    const anosLabels = Object.keys(anos).sort();
+                    const anosData = anosLabels.map(ano => anos[ano]);
+                    
+                    if (chartCategorias) chartCategorias.destroy();
+                    if (chartEvolucion) chartEvolucion.destroy();
+                    
+                    const ctxCat = document.getElementById('chart-categorias').getContext('2d');
+                    chartCategorias = new Chart(ctxCat, {
+                        type: 'doughnut',
+                        data: {
+                            labels: catLabels,
+                            datasets: [{
+                                data: catData,
+                                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6']
+                            }]
+                        },
+                        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                    });
+                    
+                    const ctxEvo = document.getElementById('chart-evolucion').getContext('2d');
+                    chartEvolucion = new Chart(ctxEvo, {
+                        type: 'line',
+                        data: {
+                            labels: anosLabels,
+                            datasets: [{
+                                label: 'Altas',
+                                data: anosData,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: { responsive: true, plugins: { legend: { display: false } } }
+                    });
+                }
+            } catch (err) { console.error("Error actualizando gráficos:", err); }
+        }
+
+        async function descargarReporteExcel() {
+            try {
+                const { data: padron } = await db.from('renmcycf_padron')
+                    .select('*')
+                    .eq('estado_legal', 'ACTIVO')
+                    .eq('tenant_id', currentTenantId);
+                    
+                const { data: config } = await db.from('renmcycf_config')
+                    .select('arancel_a1, arancel_a2, arancel_a3, arancel_a4')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+                
+                const aranceles = {
+                    'A1': config?.arancel_a1 || 0,
+                    'A2': config?.arancel_a2 || 0,
+                    'A3': config?.arancel_a3 || 0,
+                    'A4': config?.arancel_a4 || 0,
+                    'B1': config?.arancel_a2 || 0,
+                    'B2': config?.arancel_a3 || 0,
+                    'B3': config?.arancel_a3 || 0
+                };
+                
+                const data = padron.map(p => ({
+                    'Matrícula': p.matricula_oficial || 'S/D',
+                    'Nombres': p.nombres || '',
+                    'Apellidos': p.apellidos || '',
+                    'DNI': p.dni || '',
+                    'Año Nac.': p.ano_nacimiento || '',
+                    'Profesión': p.profesion || '',
+                    'Categoría': p.categoria || 'A3',
+                    'Arancel': aranceles[p.categoria] || 0,
+                    'Provincia': p.provincia_laboral || '',
+                    'Estado': p.estado_legal || 'ACTIVO',
+                    'Fecha Alta': p.fecha_alta ? new Date(p.fecha_alta).toLocaleDateString('es-AR') : 'S/D'
+                }));
+                
+                const total = data.reduce((sum, row) => sum + row['Arancel'], 0);
+                data.push({ 'Matrícula': 'TOTAL', 'Arancel': total });
+                
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Matriculados');
+                XLSX.writeFile(wb, 'reporte_matriculados.xlsx');
+            } catch (err) { console.error("Error exportando Excel:", err); }
+        }
+
+        // ==========================================
+        // 3. CRM TRÁMITES Y DOSSIER
+        // ==========================================
+        async function cargarSolicitudes() {
+            const tbody = document.getElementById('crm-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data, error } = await db.from('renmcycf_solicitudes')
+                    .select('*')
+                    .in('estado', ['PENDIENTE', 'OBSERVADO', 'RENOVACION_PENDIENTE'])
+                    .eq('tenant_id', currentTenantId)
+                    .order('id', { ascending: false });
+                    
+                if (error) throw error;
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">Bandeja vacía.</td></tr>'; return; }
+                
+                tbody.innerHTML = data.map(p => {
+                    if (p.tipo_tramite === 'RENOVACION' || p.estado === 'RENOVACION_PENDIENTE') {
+                        return `
+                        <tr class="bg-blue-900/10 border-b border-blue-500/30">
+                            <td class="p-3">
+                                <div class="font-bold text-white">${p.nombres} ${p.apellidos} <span class="text-[9px] bg-blue-500 text-white px-2 py-0.5 rounded ml-2 shadow">RENOVACIÓN ANUAL</span></div>
+                                <div class="text-[10px] text-slate-400">DNI: ${p.dni}</div>
+                            </td>
+                            <td class="p-3"><span class="px-2 py-1 bg-slate-800 rounded text-[10px] font-bold text-blue-400">PAGO VIGENCIA</span></td>
+                            <td class="p-3 text-xs text-blue-400">
+                                <a href="${p.comprobante_url}" target="_blank" class="hover:underline flex items-center gap-1"><i data-lucide="receipt" class="w-3 h-3"></i> Ver Comprobante</a>
+                            </td>
+                            <td class="p-3 text-right">
+                                <button onclick="aprobarRenovacion('${p.id}', '${p.dni}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-md flex items-center gap-1 ml-auto"><i data-lucide="check-circle" class="w-3 h-3"></i> Renovar 1 Año</button>
+                            </td>
+                        </tr>`;
+                    }
+
+                    const bg = p.estado === 'OBSERVADO' ? 'bg-red-900/20 border-red-500/30' : 'hover:bg-white/5 border-white/5';
+                    const tag = p.estado === 'OBSERVADO' ? '<span class="text-[9px] text-red-400 bg-red-400/10 px-1 rounded ml-2">Esperando Corrección</span>' : '';
+                    return `
+                    <tr class="transition-colors border-b ${bg}">
+                        <td class="p-3"><div class="font-bold text-white">${p.nombres} ${p.apellidos} ${tag}</div><div class="text-[10px] text-slate-400">DNI: ${p.dni}</div></td>
+                        <td class="p-3"><span class="px-2 py-1 bg-slate-800 rounded text-[10px] font-bold text-wlSecondary">${p.categoria}</span></td>
+                        <td class="p-3 text-xs text-blue-400"><a href="${p.diploma_url}" target="_blank" class="hover:underline flex items-center gap-1"><i data-lucide="award" class="w-3 h-3"></i> Título</a></td>
+                        <td class="p-3 text-right">
+                            <button onclick='abrirExpediente(${JSON.stringify(p).replace(/'/g, "&#39;")})' class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-md flex items-center gap-1 ml-auto"><i data-lucide="folder-search" class="w-3 h-3"></i> Evaluar</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-red-400">${err.message}</td></tr>`; }
+        }
+
+        async function aprobarRenovacion(idSol, dni) {
+            if(!confirm("¿Desea aprobar este pago y extender la matrícula 1 año?")) return;
+            try {
+                const { data: padron, error: errPad } = await db.from('renmcycf_padron')
+                    .select('fecha_vencimiento')
+                    .eq('dni', dni)
+                    .eq('tenant_id', currentTenantId)
+                    .single();
+                    
+                if(errPad) throw errPad;
+                
+                let baseDate = new Date(padron.fecha_vencimiento);
+                if (baseDate < new Date()) baseDate = new Date();
+                baseDate.setFullYear(baseDate.getFullYear() + 1);
+
+                await db.from('renmcycf_padron')
+                    .update({ fecha_vencimiento: baseDate.toISOString(), estado_legal: 'ACTIVO' })
+                    .eq('dni', dni)
+                    .eq('tenant_id', currentTenantId);
+                    
+                await db.from('renmcycf_solicitudes')
+                    .update({ estado: 'APROBADO' })
+                    .eq('id', idSol)
+                    .eq('tenant_id', currentTenantId);
+                
+                alert("✅ Renovación aprobada. El padrón ha sido actualizado.");
+                cargarSolicitudes();
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        async function cargarAuditoria() {
+            const tbody = document.getElementById('auditoria-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data, error } = await db.from('renmcycf_solicitudes')
+                    .select('*')
+                    .eq('estado', 'EN AUDITORIA')
+                    .eq('tenant_id', currentTenantId)
+                    .order('id', { ascending: false });
+                    
+                if (error) throw error;
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">Sin solicitudes en auditoría.</td></tr>'; return; }
+                
+                tbody.innerHTML = data.map(p => `
+                <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
+                    <td class="p-3"><div class="font-bold text-white">${p.nombres} ${p.apellidos}</div><div class="text-[10px] text-slate-400">DNI: ${p.dni}</div></td>
+                    <td class="p-3"><span class="px-2 py-1 bg-slate-800 rounded text-[10px] font-bold text-wlSecondary">${p.categoria}</span></td>
+                    <td class="p-3 text-xs text-blue-400"><a href="${p.diploma_url}" target="_blank" class="hover:underline flex items-center gap-1"><i data-lucide="award" class="w-3 h-3"></i> Título</a></td>
+                    <td class="p-3 text-right">
+                        <button onclick='abrirExpediente(${JSON.stringify(p).replace(/'/g, "&#39;")})' class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-md flex items-center gap-1 ml-auto"><i data-lucide="folder-search" class="w-3 h-3"></i> Auditar</button>
+                    </td>
+                </tr>`).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-red-400">${err.message}</td></tr>`; }
+        }
+
+        function abrirExpediente(item) {
+            itemDossierActual = item;
+            document.getElementById('dos-matricula').innerText = item.matricula_oficial || 'EN TRÁMITE';
+            document.getElementById('dos-fecha').innerText = (item.fecha_alta || item.created_at) ? new Date(item.fecha_alta || item.created_at).toLocaleDateString('es-AR') : 'S/D';
+            document.getElementById('dos-nombre').innerText = `${item.nombres} ${item.apellidos}`;
+            document.getElementById('dos-dni').innerText = item.dni;
+            document.getElementById('dos-ano-nac').innerText = item.ano_nacimiento || '---';
+            document.getElementById('dos-tel').innerText = item.telefono || '---';
+            document.getElementById('dos-profesion').innerText = item.profesion || 'No declarada';
+            document.getElementById('dos-cat').innerText = item.categoria;
+            document.getElementById('dos-provincia').innerText = item.provincia_laboral || 'No declarada';
+            
+            const directorioEl = document.getElementById('dos-directorio');
+            if (item.figurar_directorio) {
+                directorioEl.className = 'badge-aceptado px-2 py-1 rounded font-black text-sm';
+                directorioEl.innerText = 'ON';
+            } else {
+                directorioEl.className = 'badge-rechazado px-2 py-1 rounded font-black text-sm';
+                directorioEl.innerText = 'OFF';
+            }
+            
+            const especialidadesEl = document.getElementById('dos-especialidades');
+            especialidadesEl.innerHTML = '';
+            if (item.especialidades && item.especialidades !== "null") {
+                try {
+                    const especialidades = typeof item.especialidades === 'string' ? JSON.parse(item.especialidades) : item.especialidades;
+                    if(especialidades.length > 0){
+                        especialidades.forEach(esp => { especialidadesEl.innerHTML += `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold border border-blue-200">${esp}</span>`; });
+                    } else { especialidadesEl.innerHTML = '<span class="text-slate-400 text-xs">Sin especialidades</span>'; }
+                } catch(e) { especialidadesEl.innerHTML = '<span class="text-slate-400 text-xs">Error leyendo especialidades</span>'; }
+            } else {
+                especialidadesEl.innerHTML = '<span class="text-slate-400 text-xs">Sin especialidades declaradas</span>';
+            }
+            
+            const selloDDJJ = document.getElementById('sello-ddjj');
+            if (item.terminos_aceptados) {
+                selloDDJJ.classList.remove('hidden');
+                document.getElementById('txt-ddjj-fecha').innerText = `Términos legales aceptados el ${new Date(item.fecha_aceptacion_terminos).toLocaleString('es-AR')}`;
+            } else {
+                selloDDJJ.classList.add('hidden');
+            }
+
+            const containerFotos = document.getElementById('dos-imagenes');
+            containerFotos.innerHTML = '';
+            
+            const urls = [
+                { url: item.foto_perfil_url, campo: 'foto_perfil_url', titulo: 'Foto de Perfil' },
+                { url: item.dni_frente_url, campo: 'dni_frente_url', titulo: 'DNI Frente' },
+                { url: item.dni_dorso_url, campo: 'dni_dorso_url', titulo: 'DNI Dorso' },
+                { url: item.diploma_url, campo: 'diploma_url', titulo: 'Título / Diploma' },
+                { url: item.comprobante_url, campo: 'comprobante_url', titulo: 'Comprobante de Pago' }
+            ];
+            
+            urls.forEach((imgItem) => {
+                if (imgItem.url) {
+                    containerFotos.innerHTML += `
+                    <div class="border border-slate-200 rounded-lg p-3 bg-white shadow-sm text-center flex flex-col relative">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">${imgItem.titulo}</p>
+                        <a href="${imgItem.url}" target="_blank" class="block w-full relative group">
+                            <img src="${imgItem.url}" class="w-full h-40 object-contain rounded print:object-contain" id="img-${imgItem.campo}">
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
+                                <button onclick="event.preventDefault(); reemplazarDocumento('${imgItem.campo}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">Reemplazar</button>
+                            </div>
+                        </a>
+                    </div>`;
+                }
+            });
+
+            const bloqueCorreccion = document.getElementById('bloque-correccion');
+            const containerCorreccion = document.getElementById('dos-correccion-img');
+            containerCorreccion.innerHTML = '';
+            if (item.correccion_url) {
+                bloqueCorreccion.classList.remove('hidden');
+                containerCorreccion.innerHTML = `
+                    <div class="border border-red-200 rounded-lg p-3 bg-red-50 shadow-sm text-center flex flex-col relative md:col-span-2">
+                        <p class="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-2 border-b border-red-100 pb-1">Archivo de Subsanación Enviado por Postulante</p>
+                        <a href="${item.correccion_url}" target="_blank" class="block w-full">
+                            <img src="${item.correccion_url}" class="w-full h-40 object-contain rounded">
+                        </a>
+                    </div>`;
+            } else {
+                bloqueCorreccion.classList.add('hidden');
+            }
+
+            lucide.createIcons();
+
+            const btnVistoBueno = document.getElementById('btn-visto-bueno');
+            const btnObservar = document.getElementById('btn-observar');
+            const btnRechazar = document.getElementById('btn-rechazar-comite');
+            const btnAprobarMatricula = document.getElementById('btn-aprobar-matricula');
+            
+            btnVistoBueno.classList.add('hidden');
+            btnObservar.classList.add('hidden');
+            btnRechazar.classList.add('hidden');
+            btnAprobarMatricula.classList.add('hidden');
+            
+            const estadoActual = item.estado || item.estado_legal;
+            const permisos = adminUser.modulos_permitidos || [];
+            const esSuperadmin = adminUser.rol === 'superadmin';
+            
+            if ((estadoActual === 'PENDIENTE' || estadoActual === 'OBSERVADO') && 
+                (esSuperadmin || permisos.includes('mod-solicitudes'))) {
+                btnVistoBueno.classList.remove('hidden');
+                btnObservar.classList.remove('hidden');
+            } else if (estadoActual === 'EN AUDITORIA' && 
+                       (esSuperadmin || permisos.includes('mod-auditoria'))) {
+                btnRechazar.classList.remove('hidden');
+                btnAprobarMatricula.classList.remove('hidden');
+            }
+
+            document.getElementById('modal-expediente').classList.remove('hidden');
+        }
+
+        function cerrarExpediente() { document.getElementById('modal-expediente').classList.add('hidden'); itemDossierActual = null; }
+
+        async function elevarAComite() {
+            if (!itemDossierActual) return;
+            try {
+                await db.from('renmcycf_solicitudes')
+                    .update({ estado: 'EN AUDITORIA' })
+                    .eq('id', itemDossierActual.id)
+                    .eq('tenant_id', currentTenantId);
+                    
+                alert("✅ Solicitud elevada a Comité de Auditoría.");
+                cerrarExpediente(); cargarSolicitudes(); cargarAuditoria();
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        async function observarSolicitud() {
+            if (!itemDossierActual) return;
+            if(!confirm("Esto enviará el trámite a estado OBSERVADO. El usuario verá el mensaje en rojo en su panel de tracking. ¿Proceder?")) return;
+            
+            try {
+                await db.from('renmcycf_solicitudes')
+                    .update({ estado: 'OBSERVADO' })
+                    .eq('id', itemDossierActual.id)
+                    .eq('tenant_id', currentTenantId);
+                    
+                const numero = itemDossierActual.telefono || whatsappRegistro || '5490000000000';
+                const mensaje = encodeURIComponent(`Estimado/a ${itemDossierActual.nombres} ${itemDossierActual.apellidos}, le solicitamos que ingrese a la sección 'Seguimiento' de nuestra web para corregir la documentación presentada.`);
+                window.open(`https://wa.me/${numero}?text=${mensaje}`, '_blank');
+                cerrarExpediente(); cargarSolicitudes();
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        async function rechazarSolicitud() {
+            if (!itemDossierActual) return;
+            if (!confirm("¿Rechazar esta solicitud definitivamente?")) return;
+            try {
+                await db.from('renmcycf_solicitudes')
+                    .update({ estado: 'RECHAZADO' })
+                    .eq('id', itemDossierActual.id)
+                    .eq('tenant_id', currentTenantId);
+                    
+                alert("✅ Solicitud rechazada.");
+                cerrarExpediente(); cargarAuditoria();
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        async function aprobarMatricula() {
+            if (!itemDossierActual) return;
+            
+            const btn = document.getElementById('btn-aprobar-matricula');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin w-5 h-5 inline"></i> Calculando...'; 
+            btn.disabled = true;
+            lucide.createIcons();
+
+            try {
+                const { data: matriculas, error: errorConsulta } = await db
+                    .from('renmcycf_padron')
+                    .select('matricula_oficial')
+                    .eq('tenant_id', currentTenantId)
+                    .not('matricula_oficial', 'is', null);
+                
+                if (errorConsulta) throw errorConsulta;
+                
+                let maxNumero = 999;
+                if (matriculas && matriculas.length > 0) {
+                    matriculas.forEach(m => {
+                        const matricula = m.matricula_oficial || '';
+                        const partes = matricula.split('/');
+                        if (partes.length > 0) {
+                            const numeroStr = partes[0].trim();
+                            if (/^\d+$/.test(numeroStr)) {
+                                const numero = parseInt(numeroStr);
+                                if (numero > maxNumero) maxNumero = numero;
+                            }
+                        }
+                    });
+                }
+                
+                const siguienteNumero = maxNumero + 1;
+                const year = new Date().getFullYear();
+                const yearShort = year.toString().substr(-2);
+                const matriculaSugerida = `${siguienteNumero}/${yearShort}`;
+                
+                const mat = prompt(
+                    `Ingrese el número de MATRÍCULA para ${itemDossierActual.nombres}:\n(Ej: 1000/26)`, 
+                    matriculaSugerida
+                );
+                
+                if (!mat) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    lucide.createIcons();
+                    return;
+                }
+
+                btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin w-5 h-5 inline"></i> APROBANDO...'; 
+                btn.disabled = true;
+                lucide.createIcons();
+
+                const vencimiento = new Date(); vencimiento.setFullYear(vencimiento.getFullYear() + 1);
+                
+                const { error: insErr } = await db.from('renmcycf_padron').insert([{
+                    tenant_id: currentTenantId,
+                    solicitud_id: itemDossierActual.id,
+                    matricula_oficial: mat,
+                    fecha_alta: new Date().toISOString(),
+                    fecha_vencimiento: vencimiento.toISOString(),
+                    nombres: itemDossierActual.nombres,
+                    apellidos: itemDossierActual.apellidos,
+                    dni: itemDossierActual.dni,
+                    ano_nacimiento: itemDossierActual.ano_nacimiento,
+                    profesion: itemDossierActual.profesion,
+                    categoria: itemDossierActual.categoria,
+                    foto_perfil_url: itemDossierActual.foto_perfil_url,
+                    dni_frente_url: itemDossierActual.dni_frente_url,
+                    dni_dorso_url: itemDossierActual.dni_dorso_url,
+                    diploma_url: itemDossierActual.diploma_url,
+                    diplomas_urls: itemDossierActual.diplomas_urls,
+                    estado_legal: 'ACTIVO',
+                    email: itemDossierActual.email,
+                    telefono: itemDossierActual.telefono,
+                    provincia_laboral: itemDossierActual.provincia_laboral,
+                    especialidades: itemDossierActual.especialidades,
+                    figurar_directorio: itemDossierActual.figurar_directorio
+                }]);
+                if (insErr) throw insErr;
+                
+                await db.from('renmcycf_solicitudes')
+                    .update({ estado: 'APROBADO' })
+                    .eq('id', itemDossierActual.id)
+                    .eq('tenant_id', currentTenantId);
+                
+                alert("✅ Matrícula aprobada y registrada en el Directorio exitosamente.");
+                cerrarExpediente(); cargarAuditoria(); cargarPadron(); actualizarDashboard();
+            } catch (err) { 
+                alert("Error: " + err.message); 
+            } finally { 
+                btn.innerHTML = originalHTML; 
+                btn.disabled = false; 
+                lucide.createIcons(); 
+            }
+        }
+
+        async function reemplazarDocumento(campo) {
+            if (!itemDossierActual) return;
+            const input = document.createElement('input');
+            input.type = 'file'; input.accept = 'image/*,application/pdf';
+            input.onchange = async (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                try {
+                    const fileName = `${campo}_${Date.now()}.${file.name.split('.').pop()}`;
+                    await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl: '3600', upsert: true });
+                    const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
+                    
+                    if (itemDossierActual.estado === 'PENDIENTE' || itemDossierActual.estado === 'EN AUDITORIA' || itemDossierActual.estado === 'OBSERVADO') {
+                        await db.from('renmcycf_solicitudes')
+                            .update({ [campo]: url })
+                            .eq('id', itemDossierActual.id)
+                            .eq('tenant_id', currentTenantId);
+                    } else {
+                        await db.from('renmcycf_padron')
+                            .update({ [campo]: url })
+                            .eq('id', itemDossierActual.id)
+                            .eq('tenant_id', currentTenantId);
+                    }
+                    itemDossierActual[campo] = url;
+                    const img = document.getElementById(`img-${campo}`); if (img) img.src = url;
+                    alert("✅ Documento reemplazado exitosamente.");
+                } catch (err) { alert("Error: " + err.message); }
+            };
+            input.click();
+        }
+
+        // ==========================================
+        // 4. PADRÓN GLOBAL Y EDICIÓN COMPLETA
+        // ==========================================
+        async function cargarPadron(filtro = '') {
+            const tbody = document.getElementById('padron-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center">Cargando...</td></tr>';
+            try {
+                let query = db.from('renmcycf_padron')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('id', { ascending: false })
+                    .limit(100);
+                    
+                if (filtro) {
+                    if (!isNaN(filtro)) { 
+                        query = query.or(`dni.eq.${filtro},matricula_oficial.ilike.%${filtro}%`); 
+                    } else { 
+                        query = query.or(`nombres.ilike.%${filtro}%,apellidos.ilike.%${filtro}%,matricula_oficial.ilike.%${filtro}%`); 
+                    }
+                }
+                const { data, error } = await query;
+                if (error) throw error;
+                padronCompleto = data || [];
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Sin registros.</td></tr>'; return; }
+                
+                tbody.innerHTML = data.map(p => {
+                    const estadoColor = p.estado_legal === 'ACTIVO' ? 'text-emerald-400 bg-emerald-400/10 border border-emerald-400/20' : (p.estado_legal === 'SUSPENDIDO' ? 'text-yellow-400 bg-yellow-400/10 border border-yellow-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20');
+                    return `
+                    <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
+                        <td class="p-4 font-mono text-xs text-slate-300 font-bold">${p.matricula_oficial || 'S/D'}</td>
+                        <td class="p-4"><div class="font-bold text-white">${p.nombres} ${p.apellidos}</div><div class="text-[10px] text-slate-400">DNI: ${p.dni} | ${p.profesion}</div></td>
+                        <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${estadoColor}">${p.estado_legal} (${p.categoria})</span></td>
+                        <td class="p-4 text-[10px] space-y-1">
+                            ${p.foto_perfil_url ? `<a href="${p.foto_perfil_url}" target="_blank" class="flex items-center gap-1 text-slate-400 hover:text-blue-400 transition-colors"><i data-lucide="camera" class="w-3 h-3"></i> Foto</a>` : ''}
+                            ${p.diploma_url ? `<a href="${p.diploma_url}" target="_blank" class="flex items-center gap-1 text-slate-400 hover:text-emerald-400 transition-colors"><i data-lucide="award" class="w-3 h-3"></i> Título</a>` : ''}
+                        </td>
+                        <td class="p-4 text-right flex justify-end gap-2">
+                            <a href="https://wa.me/${p.telefono || whatsappRegistro || '5490000000000'}" target="_blank" class="bg-emerald-600/20 text-emerald-400 p-2 rounded hover:bg-emerald-600/40 transition-colors" title="Contactar por WhatsApp"><i data-lucide="message-circle" class="w-4 h-4"></i></a>
+                            <button onclick='abrirExpediente(${JSON.stringify(p).replace(/'/g, "&#39;")})' class="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded transition-colors shadow" title="Ver Expediente"><i data-lucide="folder-search" class="w-4 h-4"></i></button>
+                            ${(adminUser.rol === 'superadmin' || adminUser.rol === 'director' || (adminUser.modulos_permitidos && adminUser.modulos_permitidos.includes('mod-padron'))) ? `<button class="bg-blue-600/20 text-blue-400 p-2 rounded hover:bg-blue-600/40 transition-colors" onclick="abrirModalEdicion('${p.id}')"><i data-lucide="edit" class="w-4 h-4"></i></button>` : ''}
+                        </td>
+                    </tr>`;
+                }).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-400">Error: ${err.message}</td></tr>`; }
+        }
+
+        function buscarPadron() { cargarPadron(document.getElementById('search-padron').value.trim()); }
+
+        async function abrirModalEdicion(id) {
+            try {
+                const { data: p } = await db.from('renmcycf_padron')
+                    .select('*')
+                    .eq('id', id)
+                    .eq('tenant_id', currentTenantId)
+                    .single();
+                    
+                if (!p) return;
+                document.getElementById('edit-padron-id').value = p.id;
+                document.getElementById('edit-nombres').value = p.nombres || '';
+                document.getElementById('edit-apellidos').value = p.apellidos || '';
+                document.getElementById('edit-dni').value = p.dni || '';
+                document.getElementById('edit-ano').value = p.ano_nacimiento || '';
+                document.getElementById('edit-tel').value = p.telefono || '';
+                document.getElementById('edit-email').value = p.email || '';
+                document.getElementById('edit-provincia').value = p.provincia_laboral || '';
+                
+                document.getElementById('edit-facebook').value = p.facebook_url || '';
+                document.getElementById('edit-instagram').value = p.instagram_url || '';
+                document.getElementById('edit-linkedin').value = p.linkedin_url || '';
+                
+                let espFormateadas = '';
+                if(p.especialidades && p.especialidades !== 'null') {
+                    const arr = typeof p.especialidades === 'string' ? JSON.parse(p.especialidades) : p.especialidades;
+                    espFormateadas = arr.join(', ');
+                }
+                document.getElementById('edit-especialidades').value = espFormateadas;
+                
+                document.getElementById('edit-directorio').checked = p.figurar_directorio || false;
+                document.getElementById('edit-profesion').value = p.profesion || '';
+                document.getElementById('edit-categoria').value = p.categoria || 'A1';
+                document.getElementById('edit-estado').value = p.estado_legal || 'ACTIVO';
+                document.getElementById('edit-vencimiento').value = p.fecha_vencimiento ? p.fecha_vencimiento.split('T')[0] : '';
+                document.getElementById('edit-foto-preview').src = p.foto_perfil_url || `https://ui-avatars.com/api/?name=${p.nombres}+${p.apellidos}&background=0f172a&color=fff`;
+                document.getElementById('modal-editar-padron').classList.remove('hidden');
+            } catch(e) { alert("Error: " + e.message); }
+        }
+
+        function cerrarModalEdicion() { document.getElementById('modal-editar-padron').classList.add('hidden'); }
+        function previewFotoEdicion(input) { if (input.files?.[0]) document.getElementById('edit-foto-preview').src = URL.createObjectURL(input.files[0]); }
+        
+        async function guardarEdicionMatriculado(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]'); const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline"></i> GUARDANDO...'; btn.disabled = true;
+            lucide.createIcons();
+            try {
+                const id = document.getElementById('edit-padron-id').value;
+                const file = document.getElementById('edit-foto-file').files[0];
+                let fotoUrl = null;
+                if (file) {
+                    const fileName = `foto_edit_${Date.now()}.${file.name.split('.').pop()}`;
+                    await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
+                    fotoUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
+                }
+                
+                const espStr = document.getElementById('edit-especialidades').value;
+                const especialidades = espStr ? espStr.split(',').map(s => s.trim().toUpperCase()).filter(s => s) : [];
+
+                const payload = {
+                    nombres: document.getElementById('edit-nombres').value,
+                    apellidos: document.getElementById('edit-apellidos').value,
+                    dni: document.getElementById('edit-dni').value,
+                    ano_nacimiento: document.getElementById('edit-ano').value,
+                    telefono: document.getElementById('edit-tel').value,
+                    email: document.getElementById('edit-email').value,
+                    provincia_laboral: document.getElementById('edit-provincia').value,
+                    especialidades: JSON.stringify(especialidades),
+                    figurar_directorio: document.getElementById('edit-directorio').checked,
+                    profesion: document.getElementById('edit-profesion').value,
+                    categoria: document.getElementById('edit-categoria').value,
+                    estado_legal: document.getElementById('edit-estado').value,
+                    fecha_vencimiento: document.getElementById('edit-vencimiento').value || null,
+                    facebook_url: document.getElementById('edit-facebook').value || null,
+                    instagram_url: document.getElementById('edit-instagram').value || null,
+                    linkedin_url: document.getElementById('edit-linkedin').value || null
+                };
+                if (fotoUrl) payload.foto_perfil_url = fotoUrl;
+                
+                await db.from('renmcycf_padron')
+                    .update(payload)
+                    .eq('id', id)
+                    .eq('tenant_id', currentTenantId);
+                    
+                alert("✅ Datos actualizados con éxito.");
+                cerrarModalEdicion(); cargarPadron();
+            } catch(err) { alert("Error al guardar: " + err.message); } 
+            finally { btn.innerHTML = originalHtml; btn.disabled = false; lucide.createIcons(); }
+        }
+
+        // ==========================================
+        // 5. ALIADOS (INSTITUCIONES)
+        // ==========================================
+        async function cargarAliadosPanel() {
+            const tbody = document.getElementById('aliados-body'); tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data, error } = await db.from('renmcycf_aliados')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
+                    
+                if (error) throw error;
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">No hay instituciones cargadas.</td></tr>'; return; }
+                
+                tbody.innerHTML = data.map(a => `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="p-3"><img src="${a.logo_url}" class="w-12 h-12 object-contain bg-white rounded p-1"></td>
+                    <td class="p-3"><span class="text-white font-bold block">${a.nombre}</span></td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${a.activo?'bg-emerald-900/30 text-emerald-400':'bg-red-900/30 text-red-400'}">${a.activo?'ACTIVO':'INACTIVO'}</span></td>
+                    <td class="p-3 text-right">
+                        <button class="border border-white/20 text-white px-2 py-1 rounded text-[10px] uppercase mr-2 hover:bg-white/10" onclick="toggleAliado('${a.id}', ${!a.activo})">${a.activo?'Ocultar':'Mostrar'}</button>
+                        <button class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40" onclick="eliminarAliado('${a.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>`).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-red-400">Error: ${err.message}</td></tr>`; }
+        }
+
+        async function crearAliado(e) {
+            e.preventDefault(); 
+            const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerHTML; btn.innerHTML = 'GUARDANDO...'; btn.disabled = true;
+            try {
+                const imgFile = document.getElementById('aliado-logo').files[0];
+                if (!imgFile) throw new Error("Logo obligatorio.");
+                const fileName = `aliado_${Date.now()}.${imgFile.name.split('.').pop()}`;
+                await db.storage.from('renmcycf-media').upload(fileName, imgFile);
+                const imgUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
+                
+                await db.from('renmcycf_aliados').insert([{ 
+                    tenant_id: currentTenantId,
+                    nombre: document.getElementById('aliado-nombre').value, 
+                    logo_url: imgUrl,
+                    activo: document.getElementById('aliado-activo').checked
+                }]);
+                document.getElementById('form-aliado').reset(); cargarAliadosPanel();
+            } catch(err) { alert('Error: ' + err.message); } finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+
+        async function toggleAliado(id, estado) { 
+            await db.from('renmcycf_aliados')
+                .update({ activo: estado })
+                .eq('id', id)
+                .eq('tenant_id', currentTenantId); 
+            cargarAliadosPanel(); 
+        }
+        
+        async function eliminarAliado(id) { 
+            if (!confirm("¿Eliminar aliado definitivamente?")) return; 
+            await db.from('renmcycf_aliados')
+                .delete()
+                .eq('id', id)
+                .eq('tenant_id', currentTenantId); 
+            cargarAliadosPanel(); 
+        }
+
+        // ==========================================
+        // 6. COMITÉ EVALUADOR
+        // ==========================================
+        async function cargarComitePanel() {
+            const tbody = document.getElementById('comite-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data, error } = await db.from('renmcycf_comite')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
+                    
+                if (error) throw error;
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">No hay miembros cargados.</td></tr>'; return; }
+                
+                tbody.innerHTML = data.map(m => `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="p-3">
+                        <div class="flex items-center gap-3">
+                            <img src="${m.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.nombre)}&background=0f172a&color=fff`}" class="w-12 h-12 rounded-lg object-cover object-top border border-white/20">
+                            <span class="text-white font-bold block">${m.nombre}</span>
+                        </div>
+                    </td>
+                    <td class="p-3"><span class="text-slate-300 text-xs">${m.titulo || 'Sin título'}</span></td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${m.activo?'bg-emerald-900/30 text-emerald-400':'bg-red-900/30 text-red-400'}">${m.activo?'ACTIVO':'INACTIVO'}</span></td>
+                    <td class="p-3 text-right">
+                        <button class="border border-blue-500/30 text-blue-400 px-2 py-1 rounded text-[10px] uppercase mr-2 hover:bg-blue-500/10" onclick='editarMiembroComite(${JSON.stringify(m).replace(/'/g, "&#39;")})'><i data-lucide="edit" class="w-3 h-3 inline"></i> EDITAR</button>
+                        <button class="border border-white/20 text-white px-2 py-1 rounded text-[10px] uppercase mr-2 hover:bg-white/10" onclick="toggleEstadoComite('${m.id}', ${!m.activo})">${m.activo?'Ocultar':'Mostrar'}</button>
+                        <button class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40" onclick="eliminarMiembroComite('${m.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>`).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-red-400">Error: ${err.message}</td></tr>`; }
+        }
+
+        function editarMiembroComite(m) {
+            document.getElementById('comite-id').value = m.id || '';
+            document.getElementById('comite-nombre').value = m.nombre || '';
+            document.getElementById('comite-titulo').value = m.titulo || '';
+            document.getElementById('comite-resena').value = m.resena || '';
+            document.getElementById('comite-activo').checked = m.activo || false;
+            
+            const btnSubmit = document.querySelector('#form-comite button[type="submit"]');
+            if (btnSubmit) {
+                btnSubmit.textContent = 'ACTUALIZAR MIEMBRO';
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('form-comite').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        async function guardarMiembroComite(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const orig = btn.innerHTML;
+            btn.innerHTML = 'GUARDANDO...'; btn.disabled = true;
+            
+            try {
+                const id = document.getElementById('comite-id').value;
+                const nombre = document.getElementById('comite-nombre').value.trim();
+                const titulo = document.getElementById('comite-titulo').value.trim();
+                const resena = document.getElementById('comite-resena').value.trim();
+                const activo = document.getElementById('comite-activo').checked;
+                const fotoFile = document.getElementById('comite-foto').files[0];
+                
+                const payload = {
+                    nombre: nombre,
+                    titulo: titulo,
+                    resena: resena,
+                    activo: activo
+                };
+                
+                if (fotoFile) {
+                    const fileName = `comite_${Date.now()}.${fotoFile.name.split('.').pop()}`;
+                    await db.storage.from('renmcycf-media').upload(fileName, fotoFile);
+                    payload.foto_url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
+                }
+                
+                if (id) {
+                    const { error } = await db.from('renmcycf_comite')
+                        .update(payload)
+                        .eq('id', id)
+                        .eq('tenant_id', currentTenantId);
+                    if (error) throw error;
+                } else {
+                    payload.tenant_id = currentTenantId;
+                    const { error } = await db.from('renmcycf_comite').insert([payload]);
+                    if (error) throw error;
+                }
+                
+                alert("✅ Miembro del comité guardado exitosamente.");
+                document.getElementById('form-comite').reset();
+                cargarComitePanel();
+            } catch (err) {
+                alert("Error: " + err.message);
+            } finally {
+                document.getElementById('comite-id').value = '';
+                btn.innerHTML = orig;
+                btn.disabled = false;
+                
+                const btnSubmit = document.querySelector('#form-comite button[type="submit"]');
+                if (btnSubmit) {
+                    btnSubmit.textContent = 'GUARDAR MIEMBRO';
+                }
+                
+                lucide.createIcons();
+            }
+        }
+
+        async function toggleEstadoComite(id, estado) {
+            try {
+                await db.from('renmcycf_comite')
+                    .update({ activo: estado })
+                    .eq('id', id)
+                    .eq('tenant_id', currentTenantId);
+                cargarComitePanel();
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        }
+
+        async function eliminarMiembroComite(id) {
+            if (!confirm("¿Eliminar miembro del comité definitivamente?")) return;
+            try {
+                await db.from('renmcycf_comite')
+                    .delete()
+                    .eq('id', id)
+                    .eq('tenant_id', currentTenantId);
+                cargarComitePanel();
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        }
+
+        // ==========================================
+        // 7. PORTAL CIENTÍFICO Y DIVULGACIÓN
+        // ==========================================
+        async function cargarNoticiasPanel() {
+            const tbody = document.getElementById('campus-body'); tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data, error } = await db.from('renmcycf_noticias')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
+                    
+                if (error) throw error;
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">No hay publicaciones.</td></tr>'; return; }
+                tbody.innerHTML = data.map(c => `<tr class="border-b border-white/5 hover:bg-white/5"><td class="p-3"><div class="flex items-center gap-3"><img src="${c.portada_url || 'https://via.placeholder.com/150x80/0f172a/3b82f6?text=POST'}" class="w-16 h-10 rounded object-cover border border-white/10"><div><span class="text-white font-bold block text-xs">${c.titulo}</span><span class="text-[9px] text-slate-400 truncate block max-w-[200px]">${c.descripcion || ''}</span></div></div></td><td class="p-3"><span class="bg-blue-900/30 text-blue-400 px-2 py-1 rounded text-[9px] font-bold uppercase">${c.categoria_requerida}</span></td><td class="p-3 text-right"><div class="flex justify-end gap-1 items-center"><button class="bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded hover:bg-emerald-500/40 text-[10px] font-bold uppercase tracking-wider transition-colors" onclick="abrirModalClases('${c.id}', '${c.titulo.replace(/'/g, "\\'")}')"><i data-lucide="folder-open" class="w-3 h-3 inline mr-1"></i> Adjuntos</button><button class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40 transition-colors" onclick="eliminarNoticia('${c.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></td></tr>`).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-red-400">Error: ${err.message}</td></tr>`; }
+        }
+
+        async function crearNoticia(e) {
+            e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerHTML; btn.innerHTML = 'PUBLICANDO...'; btn.disabled = true;
+            try {
+                const imgFile = document.getElementById('camp-portada').files[0]; let imgUrl = null;
+                if (imgFile) {
+                    const fileName = `portada_pub_${Date.now()}.${imgFile.name.split('.').pop()}`;
+                    await db.storage.from('renmcycf-campus').upload(fileName, imgFile);
+                    imgUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-campus/${fileName}`;
+                }
+                await db.from('renmcycf_noticias').insert([{ 
+                    tenant_id: currentTenantId,
+                    titulo: document.getElementById('camp-titulo').value, 
+                    descripcion: document.getElementById('camp-desc').value, 
+                    categoria_requerida: document.getElementById('camp-cat').value, 
+                    portada_url: imgUrl 
+                }]);
+                document.getElementById('form-curso').reset(); cargarNoticiasPanel();
+            } catch(err) { alert('Error: ' + err.message); } finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+
+        async function eliminarNoticia(id) { 
+            if (!confirm("¿Eliminar publicación?")) return; 
+            await db.from('renmcycf_noticias')
+                .delete()
+                .eq('id', id)
+                .eq('tenant_id', currentTenantId); 
+            cargarNoticiasPanel(); 
+        }
+
+        function toggleClaseInput() {
+            const tipo = document.getElementById('clase-tipo').value;
+            if (tipo === 'PDF') { document.getElementById('clase-input-url').classList.add('hidden'); document.getElementById('clase-url').removeAttribute('required'); document.getElementById('clase-input-file').classList.remove('hidden'); document.getElementById('clase-file').setAttribute('required', 'true'); } 
+            else { document.getElementById('clase-input-file').classList.add('hidden'); document.getElementById('clase-file').removeAttribute('required'); document.getElementById('clase-input-url').classList.remove('hidden'); document.getElementById('clase-url').setAttribute('required', 'true'); }
+        }
+
+        function abrirModalClases(cursoId, cursoTitulo) { document.getElementById('clase-curso-id').value = cursoId; document.getElementById('modal-curso-titulo').innerText = cursoTitulo; document.getElementById('modal-clases').classList.remove('hidden'); cargarClasesList(cursoId); }
+        function cerrarModalClases() { document.getElementById('modal-clases').classList.add('hidden'); document.getElementById('form-clase').reset(); toggleClaseInput(); }
+
+        async function cargarClasesList(cursoId) {
+            const tbody = document.getElementById('clases-body'); tbody.innerHTML = '<tr><td colspan="3">Cargando...</td></tr>';
+            try {
+                const { data, error } = await db.from('renmcycf_clases')
+                    .select('*')
+                    .eq('curso_id', cursoId)
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: true });
+                    
+                if (error) throw error;
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-500 text-xs">No hay adjuntos.</td></tr>'; return; }
+                tbody.innerHTML = data.map(c => {
+                    let icon = 'file-text'; let color = 'text-red-400';
+                    if (c.tipo_recurso === 'VIDEO') { icon = 'play-circle'; color = 'text-blue-400'; }
+                    if (c.tipo_recurso === 'ZOOM') { icon = 'link'; color = 'text-emerald-400'; }
+                    return `<tr class="border-b border-white/5"><td class="p-2"><i data-lucide="${icon}" class="w-4 h-4 ${color}"></i></td><td class="p-2"><span class="text-white text-xs font-bold block">${c.titulo}</span></td><td class="p-2 text-right"><button class="bg-red-500/20 text-red-400 p-1 rounded hover:bg-red-500/40" onclick="eliminarClase('${c.id}', '${cursoId}')"><i data-lucide="trash" class="w-3 h-3"></i></button></td></tr>`;
+                }).join(''); lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="3">Error: ${err.message}</td></tr>`; }
+        }
+
+        async function subirClase(e) {
+            e.preventDefault(); const btn = document.getElementById('btn-subir-clase'); const orig = btn.innerHTML; btn.innerHTML = 'GUARDANDO...'; btn.disabled = true;
+            try {
+                const cursoId = document.getElementById('clase-curso-id').value; const tipo = document.getElementById('clase-tipo').value; let finalUrl = '';
+                if (tipo === 'PDF') {
+                    const file = document.getElementById('clase-file').files[0]; if (!file) throw new Error("Debe seleccionar un PDF.");
+                    const fileName = `material_pdf_${Date.now()}.${file.name.split('.').pop()}`;
+                    await db.storage.from('renmcycf-campus').upload(fileName, file);
+                    finalUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-campus/${fileName}`;
+                } else { finalUrl = document.getElementById('clase-url').value; }
+                await db.from('renmcycf_clases').insert([{ 
+                    tenant_id: currentTenantId,
+                    curso_id: cursoId, 
+                    titulo: document.getElementById('clase-titulo').value, 
+                    tipo_recurso: tipo, 
+                    url_recurso: finalUrl 
+                }]);
+                document.getElementById('form-clase').reset(); toggleClaseInput(); cargarClasesList(cursoId);
+            } catch(err) { alert('Error: ' + err.message); } finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+        
+        async function eliminarClase(id, cursoId) { 
+            if (!confirm("¿Eliminar adjunto?")) return; 
+            await db.from('renmcycf_clases')
+                .delete()
+                .eq('id', id)
+                .eq('tenant_id', currentTenantId); 
+            cargarClasesList(cursoId); 
+        }
+
+        // ==========================================
+        // 8. GESTIÓN BIBLIOTECA
+        // ==========================================
+        async function cargarBibliotecaPanel() {
+            const tbody = document.getElementById('biblioteca-body'); tbody.innerHTML = '<tr><td colspan="3" class="text-center">Cargando...</td></tr>';
+            try {
+                const { data } = await db.from('renmcycf_biblioteca')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
+                    
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-slate-500">Biblioteca vacía.</td></tr>'; return; }
+                tbody.innerHTML = data.map(b => `<tr class="border-b border-white/5 hover:bg-white/5"><td class="p-3"><div class="flex items-center gap-3"><img src="${b.portada_url || 'https://via.placeholder.com/50x70/0f172a/3b82f6?text=PDF'}" class="w-10 h-14 object-cover rounded border border-white/10"><div><span class="font-bold text-white block text-xs">${b.titulo}</span><span class="text-[10px] text-slate-400">${b.autor || 'Sin autor'}</span></div></div></td><td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${b.tipo_acceso==='PREMIUM'?'bg-wlSecondary/20 text-wlSecondary':'bg-blue-500/20 text-blue-400'}">${b.tipo_acceso}</span></td><td class="p-3 text-right"><button onclick="eliminarLibro('${b.id}')" class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
+                lucide.createIcons();
+            } catch (err) {}
+        }
+
+        async function subirLibro(e) {
+            e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerHTML; btn.innerHTML = 'SUBIENDO...'; btn.disabled = true;
+            try {
+                const pdfFile = document.getElementById('bib-pdf').files[0]; const pdfName = `libro_${Date.now()}.${pdfFile.name.split('.').pop()}`;
+                await db.storage.from('renmcycf-pdfs').upload(pdfName, pdfFile); const pdfUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-pdfs/${pdfName}`;
+                let portadaUrl = null;
+                const portadaFile = document.getElementById('bib-portada').files[0];
+                if (portadaFile) { const imgName = `cover_${Date.now()}.${portadaFile.name.split('.').pop()}`; await db.storage.from('renmcycf-media').upload(imgName, portadaFile); portadaUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${imgName}`; }
+                await db.from('renmcycf_biblioteca').insert([{ 
+                    tenant_id: currentTenantId,
+                    titulo: document.getElementById('bib-titulo').value, 
+                    autor: document.getElementById('bib-autor').value, 
+                    tipo_acceso: document.getElementById('bib-acceso').value, 
+                    pdf_url: pdfUrl, 
+                    portada_url: portadaUrl, 
+                    activo: true 
+                }]);
+                alert("✅ Material publicado."); document.getElementById('form-biblioteca').reset(); cargarBibliotecaPanel();
+            } catch (err) { alert("Error: " + err.message); } finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+        
+        async function eliminarLibro(id) { 
+            if(!confirm("¿Eliminar archivo?")) return; 
+            await db.from('renmcycf_biblioteca')
+                .delete()
+                .eq('id', id)
+                .eq('tenant_id', currentTenantId); 
+            cargarBibliotecaPanel(); 
+        }
+
+        // ==========================================
+        // 9. AUDITORÍA TESIS
+        // ==========================================
+        async function cargarTesisPanel() {
+            const tbody = document.getElementById('tesis-body'); tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando...</td></tr>';
+            try {
+                const { data } = await db.from('renmcycf_publicaciones')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
+                    
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-slate-400">No hay tesis.</td></tr>'; return; }
+                tbody.innerHTML = data.map(t => `<tr class="border-b border-white/5 hover:bg-white/5"><td class="p-3 text-xs font-bold text-white">${t.autor_nombre}</td><td class="p-3 text-xs"><a href="${t.pdf_url}" target="_blank" class="text-blue-400 hover:underline"><i data-lucide="file-text" class="w-3 h-3 inline mr-1"></i>${t.titulo}</a></td><td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${t.estado==='PENDIENTE'?'text-wlSecondary bg-wlSecondary/10':(t.estado==='APROBADO'?'text-emerald-400 bg-emerald-400/10':'text-red-400 bg-red-400/10')}">${t.estado}</span></td><td class="p-3 text-right"><button onclick="auditarTesis('${t.id}','APROBADO')" class="bg-emerald-500/20 text-emerald-400 p-1.5 rounded mx-1"><i data-lucide="check" class="w-4 h-4"></i></button><button onclick="auditarTesis('${t.id}','RECHAZADO')" class="bg-red-500/20 text-red-400 p-1.5 rounded"><i data-lucide="x" class="w-4 h-4"></i></button></td></tr>`).join('');
+                lucide.createIcons();
+            } catch (err) {}
+        }
+        
+        async function auditarTesis(id, estado) { 
+            if(!confirm(`¿Marcar como ${estado}?`)) return; 
+            await db.from('renmcycf_publicaciones')
+                .update({ estado })
+                .eq('id', id)
+                .eq('tenant_id', currentTenantId); 
+            cargarTesisPanel(); 
+        }
+
+        // ==========================================
+        // 10. CARGA MASIVA
+        // ==========================================
+        function procesarExcel() {
+            const file = document.getElementById('input-excel').files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+                datosExcel = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                document.getElementById('count-preview').innerText = datosExcel.length;
+                document.getElementById('preview-area').classList.remove('hidden');
+                document.getElementById('tabla-preview').innerHTML = datosExcel.slice(0,10).map((r,i) => `<tr class="border-b border-white/5"><td class="p-1">${i+1}</td><td class="p-1">${r.dni||r.DNI||'S/D'}</td><td class="p-1">${r.nombres||r.NOMBRES||''} ${r.apellidos||r.APELLIDOS||''}</td></tr>`).join('');
+            }; reader.readAsArrayBuffer(file);
+        }
+        
+        async function confirmarCargaMasiva() {
+            if (!datosExcel.length) return; if (!confirm(`¿Inyectar ${datosExcel.length} registros?`)) return;
+            try {
+                const payload = datosExcel.map(r => ({ 
+                    tenant_id: currentTenantId,
+                    dni: (r.dni||r.DNI||'').toString().replace(/\D/g,''), 
+                    nombres: r.nombres||r.NOMBRES||'', 
+                    apellidos: r.apellidos||r.APELLIDOS||'', 
+                    profesion: r.profesion||r.PROFESION||'', 
+                    categoria: r.categoria||r.CATEGORIA||'A3', 
+                    matricula_oficial: r.matricula||r.MATRICULA||'', 
+                    estado_legal: 'ACTIVO' 
+                })).filter(r => r.dni && r.nombres);
+                await db.from('renmcycf_padron').insert(payload);
+                alert(`✅ ${payload.length} profesionales inyectados.`); document.getElementById('input-excel').value = ''; document.getElementById('preview-area').classList.add('hidden'); datosExcel = [];
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        // ==========================================
+        // 11. CONFIGURACIÓN CORE Y TEXTOS
+        // ==========================================
+        async function cargarConfiguracionForm() {
+            try {
+                const { data } = await db.from('renmcycf_config')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+                    
+                if (data) { 
+                    document.getElementById('conf-arancel-a1').value = data.arancel_a1 || ''; 
+                    document.getElementById('conf-arancel-a2').value = data.arancel_a2 || ''; 
+                    document.getElementById('conf-arancel-a3').value = data.arancel_a3 || ''; 
+                    document.getElementById('conf-arancel-a4').value = data.arancel_a4 || ''; 
+                    document.getElementById('conf-mp-a1').value = data.mp_link_a1 || ''; 
+                    document.getElementById('conf-mp-a2').value = data.mp_link_a2 || ''; 
+                    document.getElementById('conf-mp-a3').value = data.mp_link_a3 || ''; 
+                    document.getElementById('conf-mp-a4').value = data.mp_link_a4 || ''; 
+                    document.getElementById('conf-whatsapp').value = data.whatsapp || ''; 
+                    document.getElementById('conf-email').value = data.email || ''; 
+                    
+                    document.getElementById('conf-mostrar-wpp').checked = data.mostrar_wpp !== false;
+                    document.getElementById('conf-mostrar-email').checked = data.mostrar_email !== false;
+                    document.getElementById('conf-mostrar-facebook').checked = data.mostrar_facebook !== false;
+                    document.getElementById('conf-mostrar-instagram').checked = data.mostrar_instagram !== false;
+                    
+                    document.getElementById('conf-facebook').value = data.facebook || ''; 
+                    document.getElementById('conf-instagram').value = data.instagram || ''; 
+                    document.getElementById('conf-twitter').value = data.twitter || ''; 
+                    document.getElementById('conf-linkedin').value = data.linkedin || ''; 
+                    
+                    if(data.hero_image_url) { document.getElementById('preview-hero').src = data.hero_image_url; document.getElementById('preview-hero').style.display = 'block'; }
+                    if(data.logo_url) { document.getElementById('preview-logo').src = data.logo_url; document.getElementById('preview-logo').style.display = 'block'; }
+                }
+            } catch (err) { console.error("Error cargando config:", err); }
+        }
+
+        async function guardarConfiguracion(e) { 
+            e.preventDefault(); 
+            const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerHTML; btn.innerHTML = 'GUARDANDO...'; btn.disabled = true;
+            try { 
+                await db.from('renmcycf_config').update({ 
+                    arancel_a1: document.getElementById('conf-arancel-a1').value, 
+                    arancel_a2: document.getElementById('conf-arancel-a2').value, 
+                    arancel_a3: document.getElementById('conf-arancel-a3').value, 
+                    arancel_a4: document.getElementById('conf-arancel-a4').value, 
+                    mp_link_a1: document.getElementById('conf-mp-a1').value,
+                    mp_link_a2: document.getElementById('conf-mp-a2').value,
+                    mp_link_a3: document.getElementById('conf-mp-a3').value,
+                    mp_link_a4: document.getElementById('conf-mp-a4').value,
+                    whatsapp: document.getElementById('conf-whatsapp').value,
+                    email: document.getElementById('conf-email').value,
+                    
+                    mostrar_wpp: document.getElementById('conf-mostrar-wpp').checked,
+                    mostrar_email: document.getElementById('conf-mostrar-email').checked,
+                    mostrar_facebook: document.getElementById('conf-mostrar-facebook').checked,
+                    mostrar_instagram: document.getElementById('conf-mostrar-instagram').checked,
+                    
+                    facebook: document.getElementById('conf-facebook').value,
+                    instagram: document.getElementById('conf-instagram').value,
+                    twitter: document.getElementById('conf-twitter').value,
+                    linkedin: document.getElementById('conf-linkedin').value
+                }).eq('tenant_id', currentTenantId); 
+                alert("✅ Configuración actualizada."); 
+                cargarWhatsappRegistro();
+            } catch (err) { alert("Error: " + err.message); }
+            finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+
+        async function previewYGuardarImagen(input, previewId, key) {
+            const file = input.files[0]; if (!file) return;
+            try {
+                const fileName = `${key}_${Date.now()}.${file.name.split('.').pop()}`;
+                await db.storage.from('renmcycf-media').upload(fileName, file, { upsert: true });
+                const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
+                document.getElementById(previewId).src = url; document.getElementById(previewId).style.display = 'block';
+                const payload = {}; payload[`${key}_url`] = url;
+                await db.from('renmcycf_config')
+                    .update(payload)
+                    .eq('tenant_id', currentTenantId);
+                alert(`✅ Imagen actualizada.`);
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        async function cargarContenidoForm() {
+            try {
+                const { data } = await db.from('renmcycf_contenido')
+                    .select('clave, valor')
+                    .eq('tenant_id', currentTenantId);
+                    
+                if (!data) return;
+                const map = { 
+                    'hero_badge_text':'cont-hero-badge-text','hero_title':'cont-hero-title','hero_subtitle':'cont-hero-subtitle',
+                    'hero_cta_primary':'cont-hero-cta-primary','hero_cta_secondary':'cont-hero-cta-secondary',
+                    'urgencia_titulo':'cont-urgencia-titulo','urgencia_texto':'cont-urgencia-texto',
+                    'cat_a1_desc':'cont-cat-a1-desc','cat_a2_desc':'cont-cat-a2-desc','cat_a3_desc':'cont-cat-a3-desc','cat_a4_desc':'cont-cat-a4-desc',
+                    'footer_texto':'cont-footer-texto' 
+                };
+                data.forEach(item => { const id = map[item.clave]; if (id && document.getElementById(id)) document.getElementById(id).value = item.valor || ''; });
+            } catch (err) { console.error("Error:", err); }
+        }
+
+        async function guardarContenido(e) { 
+            e.preventDefault(); 
+            const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerHTML; btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline"></i> GUARDANDO...'; btn.disabled = true;
+            lucide.createIcons();
+            
+            const map = { 
+                'hero_badge_text':'cont-hero-badge-text','hero_title':'cont-hero-title','hero_subtitle':'cont-hero-subtitle',
+                'hero_cta_primary':'cont-hero-cta-primary','hero_cta_secondary':'cont-hero-cta-secondary',
+                'urgencia_titulo':'cont-urgencia-titulo','urgencia_texto':'cont-urgencia-texto',
+                'cat_a1_desc':'cont-cat-a1-desc','cat_a2_desc':'cont-cat-a2-desc','cat_a3_desc':'cont-cat-a3-desc','cat_a4_desc':'cont-cat-a4-desc',
+                'footer_texto':'cont-footer-texto' 
+            };
+            const payload = Object.keys(map).map(k => ({ 
+                tenant_id: currentTenantId,
+                clave: k, 
+                valor: document.getElementById(map[k]).value, 
+                tipo: 'texto' 
+            }));
+            
+            try { 
+                await db.from('renmcycf_contenido').upsert(payload, { onConflict: 'clave,tenant_id' }); 
+                alert("✅ Contenido actualizado."); 
+            } catch (err) { alert("Error: " + err.message); } 
+            finally { btn.innerHTML = orig; btn.disabled = false; lucide.createIcons(); }
+        }
+
+        // ==========================================
+        // 12. GESTIÓN DE USUARIOS
+        // ==========================================
+        async function cargarUsuarios() {
+            const tbody = document.getElementById('usuarios-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data } = await db.from('renmcycf_roles')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId);
+                    
+                if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-500">Sin usuarios.</td></tr>'; return; }
+                tbody.innerHTML = data.map(u => {
+                    let permisosHTML = '';
+                    if (u.modulos_permitidos) {
+                        try {
+                            const permisos = typeof u.modulos_permitidos === 'string' ? JSON.parse(u.modulos_permitidos) : u.modulos_permitidos;
+                            permisosHTML = permisos.map(p => `<span class="px-1.5 py-0.5 bg-slate-700/50 text-slate-300 rounded text-[9px] mr-1">${p.replace('mod-', '')}</span>`).join('');
+                        } catch(e) {
+                            permisosHTML = '<span class="text-slate-500 text-[9px]">Sin permisos</span>';
+                        }
+                    } else {
+                        permisosHTML = '<span class="text-slate-500 text-[9px]">Sin permisos</span>';
+                    }
+                    
+                    return `
+                    <tr class="border-b border-white/5 hover:bg-white/5">
+                        <td class="p-3 text-xs text-slate-300">${u.email||'N/D'}<br><span class="text-[10px] text-slate-500">${u.nombres||''} ${u.apellidos||''}</span></td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase bg-blue-900/30 text-blue-400">${u.rol}</span></td>
+                        <td class="p-3">${permisosHTML}</td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${u.activo?'bg-emerald-900/30 text-emerald-400':'bg-red-900/30 text-red-400'}">${u.activo?'ACTIVO':'INACTIVO'}</span></td>
+                        <td class="p-3 text-right">
+                            <button onclick='editarUsuarioForm(${JSON.stringify(u).replace(/'/g, "&#39;")})' class="text-[10px] font-bold border border-blue-500/30 text-blue-400 px-2 py-1 rounded hover:bg-blue-500/10 transition-colors mr-2"><i data-lucide="edit" class="w-3 h-3 inline"></i> EDITAR</button>
+                            <button onclick="toggleEstadoUsuario('${u.id}',${!u.activo})" class="text-[10px] font-bold border border-white/10 px-2 py-1 rounded hover:bg-white/5 transition-colors">${u.activo?'SUSPENDER':'ACTIVAR'}</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="text-red-400 p-3">Error: ${err.message}</td></tr>`; }
+        }
+
+        async function toggleEstadoUsuario(id, estado) { 
+            await db.from('renmcycf_roles')
+                .update({ activo: estado })
+                .eq('id', id)
+                .eq('tenant_id', currentTenantId); 
+            cargarUsuarios(); 
+        }
+
+        function editarUsuarioForm(u) {
+            document.getElementById('usr-db-id').value = u.id || '';
+            document.getElementById('usr-email').value = u.email || '';
+            document.getElementById('usr-rol').value = u.rol || 'asesor';
+            document.getElementById('usr-nombres').value = u.nombres || '';
+            document.getElementById('usr-apellidos').value = u.apellidos || '';
+            document.getElementById('usr-email').readOnly = true;
+            document.getElementById('box-uid').style.display = 'none';
+            
+            const checkboxes = document.querySelectorAll('#form-usuarios input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            
+            let permisos = [];
+            if (u.modulos_permitidos) {
+                try {
+                    permisos = typeof u.modulos_permitidos === 'string' ? JSON.parse(u.modulos_permitidos) : u.modulos_permitidos;
+                } catch(e) {
+                    permisos = [];
+                }
+            }
+            
+            checkboxes.forEach(cb => {
+                if (permisos.includes(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+            
+            const btnSubmit = document.querySelector('#form-usuarios button[type="submit"]');
+            if (btnSubmit) {
+                btnSubmit.textContent = 'ACTUALIZAR USUARIO';
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('form-usuarios').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        async function crearUsuario(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline"></i> PROCESANDO...';
+            btn.disabled = true;
+            lucide.createIcons();
+            
+            try {
+                const email = document.getElementById('usr-email').value.trim();
+                const rol = document.getElementById('usr-rol').value;
+                const nombres = document.getElementById('usr-nombres').value.trim();
+                const apellidos = document.getElementById('usr-apellidos').value.trim();
+                
+                const permisosSeleccionados = [];
+                const checkboxes = document.querySelectorAll('#form-usuarios input[type="checkbox"]:checked');
+                checkboxes.forEach(cb => permisosSeleccionados.push(cb.value));
+                
+                const modulosFinales = rol === 'superadmin' ? 
+                    ['mod-dashboard', 'mod-solicitudes', 'mod-auditoria', 'mod-padron', 'mod-campus', 'mod-biblioteca', 'mod-tesis', 'mod-sistema'] : 
+                    permisosSeleccionados;
+                
+                const dbId = document.getElementById('usr-db-id').value;
+                const uid = document.getElementById('usr-uid').value.trim();
+
+                if (dbId) {
+                    const { error } = await db.from('renmcycf_roles').update({
+                        rol: rol,
+                        nombres: nombres,
+                        apellidos: apellidos,
+                        modulos_permitidos: modulosFinales
+                    }).eq('id', dbId).eq('tenant_id', currentTenantId);
+                    if (error) throw error;
+                } else {
+                    if (!uid) throw new Error("Debe pegar el UID de Supabase Auth para crear un usuario nuevo.");
+                    const { error } = await db.from('renmcycf_roles').insert([{
+                        tenant_id: currentTenantId,
+                        user_id: uid,
+                        email: email,
+                        rol: rol,
+                        nombres: nombres,
+                        apellidos: apellidos,
+                        activo: true,
+                        modulos_permitidos: modulosFinales
+                    }]);
+                    if (error) throw error;
+                }
+                
+                alert("✅ Usuario creado/actualizado exitosamente.");
+                document.getElementById('form-usuarios').reset();
+                cargarUsuarios();
+            } catch (err) {
+                alert("Error al crear usuario: " + err.message);
+            } finally {
+                document.getElementById('usr-db-id').value = '';
+                document.getElementById('box-uid').style.display = 'block';
+                document.getElementById('usr-email').readOnly = false;
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                
+                const btnSubmit = document.querySelector('#form-usuarios button[type="submit"]');
+                if (btnSubmit) {
+                    btnSubmit.textContent = 'CREAR USUARIO';
+                }
+                
+                lucide.createIcons();
+            }
+        }
+
+        // ==========================================
+        // 13. DISEÑO CREDENCIAL
+        // ==========================================
+        const defaultStyle = {
+            foto: { top: 325, left: 185, width: 230, height: 230, align: 'center', lado: 'frente' },
+            roseta: { top: 325, left: 185, width: 230, height: 230, align: 'center', lado: 'frente' },
+            profesion: { top: 130, left: 390, width: 570, height: 40, size: 30, color: '#d4af37', align: 'center', lado: 'frente' },
+            nombre: { top: 290, left: 390, width: 350, height: 30, size: 22, color: '#ffffff', align: 'left', lado: 'frente' },
+            dni: { top: 370, left: 390, width: 200, height: 30, size: 22, color: '#ffffff', align: 'left', lado: 'frente' },
+            ano_nac: { top: 450, left: 390, width: 200, height: 30, size: 22, color: '#ffffff', align: 'left', lado: 'frente' },
+            vence: { top: 530, left: 390, width: 200, height: 30, size: 22, color: '#ffffff', align: 'left', lado: 'frente' },
+            matricula: { top: 260, left: 960, width: 250, height: 30, size: 20, color: '#cbd5e1', align: 'right', lado: 'frente' },
+            categoria: { top: 290, left: 960, width: 250, height: 30, size: 20, color: '#cbd5e1', align: 'right', lado: 'frente' },
+            dorso_cat: { top: 90, left: 50, width: 900, height: 40, size: 22, color: '#333333', align: 'left', lado: 'dorso' },
+            qr: { top: 200, left: 60, width: 220, height: 220, align: 'center', lado: 'dorso' }
+        };
+        let currentCredStyle = JSON.parse(JSON.stringify(defaultStyle));
+
+        function switchEditorTab(tab) {
+            currentEditorTab = tab;
+            document.getElementById('btn-tab-frente').className = tab === 'frente' ? "flex-1 py-2 text-xs font-bold uppercase rounded-md text-white bg-blue-600 shadow" : "flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-400 hover:text-white";
+            document.getElementById('btn-tab-dorso').className = tab === 'dorso' ? "flex-1 py-2 text-xs font-bold uppercase rounded-md text-white bg-blue-600 shadow" : "flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-400 hover:text-white";
+            document.getElementById('card-preview-frente').style.display = tab === 'frente' ? 'block' : 'none';
+            document.getElementById('card-preview-dorso').style.display = tab === 'dorso' ? 'block' : 'none';
+            document.getElementById('preview-indicator').innerText = `VISTA: ${tab.toUpperCase()}`;
+            const frenteEl = document.getElementById('card-preview-frente'); const dorsoEl = document.getElementById('card-preview-dorso');
+            if (frenteEl && bgFrenteUrl) frenteEl.style.backgroundSize = '1000px 630px'; if (dorsoEl && bgDorsoUrl) dorsoEl.style.backgroundSize = '1000px 630px';
+            const rosetaEl = document.getElementById('pre-roseta'); if (rosetaEl && rosetaUrl) { rosetaEl.style.display = 'block'; rosetaEl.querySelector('img').src = rosetaUrl; }
+            initEditor(); actualizarPreviewCred();
+        }
+
+        function initEditor() {
+            const container = document.getElementById('editor-controles'); let html = '';
+            for (const [key, props] of Object.entries(currentCredStyle)) {
+                if (props.lado !== currentEditorTab) continue;
+                html += `<div class="editor-group"><div class="editor-group-title">${key.replace('_', ' ')}</div><div class="grid grid-cols-2 gap-2">`;
+                html += `<div><label>Y (Arriba)</label><input type="number" id="es-${key}-top" value="${props.top}" oninput="updCred('${key}','top')"></div><div><label>X (Izquierda/Der)</label><input type="number" id="es-${key}-left" value="${props.left}" oninput="updCred('${key}','left')"></div><div><label>Ancho</label><input type="number" id="es-${key}-width" value="${props.width}" oninput="updCred('${key}','width')"></div><div><label>Alto</label><input type="number" id="es-${key}-height" value="${props.height}" oninput="updCred('${key}','height')"></div>`;
+                if ('size' in props) html += `<div><label>Letra px</label><input type="number" id="es-${key}-size" value="${props.size}" oninput="updCred('${key}','size')"></div>`;
+                if ('color' in props) html += `<div><label>Color</label><input type="color" id="es-${key}-color" value="${props.color}" style="height:38px;padding:2px;" oninput="updCred('${key}','color')"></div>`;
+                if ('align' in props) html += `<div class="col-span-2"><label>Alineación</label><select id="es-${key}-align" onchange="updCred('${key}','align')"><option value="left" ${props.align==='left'?'selected':''}>Izquierda</option><option value="center" ${props.align==='center'?'selected':''}>Centro</option><option value="right" ${props.align==='right'?'selected':''}>Derecha</option></select></div>`;
+                html += `</div></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        async function subirFondoCredencial(input, lado) {
+            const file = input.files[0]; if (!file) return;
+            try {
+                const ext = file.name.split('.').pop(); const fileName = `bg_${lado}_${Date.now()}.${ext}`;
+                await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
+                const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
+                if (lado === 'frente') bgFrenteUrl = url; else bgDorsoUrl = url;
+                actualizarPreviewCred();
+            } catch (err) { alert('Error subiendo fondo: ' + err.message); }
+        }
+
+        async function subirRoseta(input) {
+            const file = input.files[0]; if (!file) return;
+            try {
+                const ext = file.name.split('.').pop(); const fileName = `roseta_${Date.now()}.${ext}`;
+                await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
+                rosetaUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
+                actualizarPreviewCred();
+            } catch (err) { alert('Error subiendo roseta: ' + err.message); }
+        }
+
+        async function cargarDisenoCredencial() {
+            const { data: bgF } = await db.from('renmcycf_contenido')
+                .select('valor')
+                .eq('clave', 'credencial_bg')
+                .eq('tenant_id', currentTenantId)
+                .maybeSingle();
+            const { data: bgD } = await db.from('renmcycf_contenido')
+                .select('valor')
+                .eq('clave', 'credencial_bg_dorso')
+                .eq('tenant_id', currentTenantId)
+                .maybeSingle();
+            if (bgF && bgF.valor) bgFrenteUrl = bgF.valor; if (bgD && bgD.valor) bgDorsoUrl = bgD.valor;
+
+            const { data: ros } = await db.from('renmcycf_contenido')
+                .select('valor')
+                .eq('clave', 'credencial_roseta')
+                .eq('tenant_id', currentTenantId)
+                .maybeSingle();
+            if (ros && ros.valor) rosetaUrl = ros.valor;
+
+            const { data: style } = await db.from('renmcycf_contenido')
+                .select('valor')
+                .eq('clave', 'credencial_style')
+                .eq('tenant_id', currentTenantId)
+                .maybeSingle();
+            if (style && style.valor) { try { currentCredStyle = { ...defaultStyle, ...JSON.parse(style.valor) }; } catch(e) {} }
+            switchEditorTab('frente');
+        }
+
+        function updCred(key, prop) {
+            const input = document.getElementById(`es-${key}-${prop}`); let val = input.value;
+            if (prop !== 'color' && prop !== 'align') val = parseInt(val) || 0;
+            if (!currentCredStyle[key]) currentCredStyle[key] = {}; currentCredStyle[key][prop] = val;
+            actualizarPreviewCred();
+        }
+
+        function actualizarPreviewCred() {
+            if (bgFrenteUrl) { document.getElementById('card-preview-frente').style.backgroundImage = `url('${bgFrenteUrl}')`; document.getElementById('card-preview-frente').style.backgroundSize = '1000px 630px'; }
+            if (bgDorsoUrl) { document.getElementById('card-preview-dorso').style.backgroundImage = `url('${bgDorsoUrl}')`; document.getElementById('card-preview-dorso').style.backgroundSize = '1000px 630px'; }
+
+            for (const [key, props] of Object.entries(currentCredStyle)) {
+                const el = document.getElementById(`pre-${key}`); if (!el) continue;
+                if (props.top !== undefined) el.style.top = props.top + 'px';
+                if (props.width !== undefined) el.style.width = props.width + 'px';
+                if (props.height !== undefined) el.style.height = props.height + 'px';
+                if (props.size !== undefined) el.style.fontSize = props.size + 'px';
+                if (props.color !== undefined) el.style.color = props.color;
+                
+                if (key === 'foto' || key === 'qr' || key === 'roseta') {
+                    el.style.left = props.left + 'px'; el.style.right = 'auto'; el.style.transform = 'translate(-50%, -50%)'; el.style.display = 'flex'; el.style.alignItems = 'center'; el.style.justifyContent = 'center';
+                } else {
+                    el.style.display = 'flex'; el.style.alignItems = 'center'; el.style.transform = 'none';
+                    if (props.align === 'right') { el.style.left = 'auto'; el.style.right = (1000 - props.left) + 'px'; el.style.justifyContent = 'flex-end'; el.style.textAlign = 'right'; } 
+                    else if (props.align === 'center') { el.style.left = props.left + 'px'; el.style.right = 'auto'; el.style.justifyContent = 'center'; el.style.textAlign = 'center'; } 
+                    else { el.style.left = props.left + 'px'; el.style.right = 'auto'; el.style.justifyContent = 'flex-start'; el.style.textAlign = 'left'; }
+                    el.style.whiteSpace = 'nowrap'; el.style.overflow = 'hidden';
+                }
+            }
+            const rosetaEl = document.getElementById('pre-roseta');
+            if (rosetaEl) { if (rosetaUrl) { rosetaEl.style.display = 'block'; rosetaEl.querySelector('img').src = rosetaUrl; } else { rosetaEl.style.display = 'none'; } }
+        }
+
+        async function guardarDiseno() {
+            try {
+                await db.from('renmcycf_contenido').upsert({ 
+                    tenant_id: currentTenantId,
+                    clave: 'credencial_style', 
+                    valor: JSON.stringify(currentCredStyle), 
+                    tipo: 'json' 
+                }, { onConflict: 'clave,tenant_id' });
+                
+                if (bgFrenteUrl) await db.from('renmcycf_contenido').upsert({ 
+                    tenant_id: currentTenantId,
+                    clave: 'credencial_bg', 
+                    valor: bgFrenteUrl, 
+                    tipo: 'texto' 
+                }, { onConflict: 'clave,tenant_id' });
+                
+                if (bgDorsoUrl) await db.from('renmcycf_contenido').upsert({ 
+                    tenant_id: currentTenantId,
+                    clave: 'credencial_bg_dorso', 
+                    valor: bgDorsoUrl, 
+                    tipo: 'texto' 
+                }, { onConflict: 'clave,tenant_id' });
+                
+                if (rosetaUrl) await db.from('renmcycf_contenido').upsert({ 
+                    tenant_id: currentTenantId,
+                    clave: 'credencial_roseta', 
+                    valor: rosetaUrl, 
+                    tipo: 'texto' 
+                }, { onConflict: 'clave,tenant_id' });
+                
+                alert("✅ Diseño guardado exitosamente.");
+            } catch(e) { alert("Error: " + e.message); }
+        }
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initTenantPanel();
+            await verificarSesion();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
