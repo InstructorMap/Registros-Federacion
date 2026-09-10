@@ -19,6 +19,7 @@
             --neon-blue: #3b82f6;
             --neon-cyan: #06b6d4;
             --neon-purple: #8b5cf6;
+            --neon-amber: #f59e0b;
             --bg-deep: #030712;
             --border-glass: rgba(255, 255, 255, 0.1);
         }
@@ -43,7 +44,6 @@
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         .font-display { font-family: 'Orbitron', sans-serif; letter-spacing: 0.05em; }
 
-        /* Grid overlay sutil */
         body::before {
             content: '';
             position: fixed;
@@ -95,6 +95,12 @@
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15), 0 0 20px rgba(16, 185, 129, 0.2);
         }
         input::placeholder { color: #475569; }
+        input[readonly] {
+            background: rgba(0,0,0,0.6);
+            cursor: not-allowed;
+            opacity: 0.7;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
 
         label {
             display: block;
@@ -132,7 +138,14 @@
         }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Terminal effect */
+        .btn-primary-edit {
+            background: linear-gradient(135deg, var(--neon-amber), #d97706);
+            color: #030712;
+        }
+        .btn-primary-edit:hover:not(:disabled) {
+            box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.6), 0 0 20px rgba(245, 158, 11, 0.4);
+        }
+
         .terminal-line {
             display: flex;
             align-items: center;
@@ -148,27 +161,23 @@
             font-weight: bold;
         }
 
-        /* Blinking cursor */
         @keyframes blink {
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0; }
         }
         .blink { animation: blink 1s infinite; }
 
-        /* Pulse glow */
         @keyframes pulseGlow {
             0%, 100% { box-shadow: 0 0 5px var(--neon-emerald), 0 0 10px rgba(16, 185, 129, 0.3); }
             50% { box-shadow: 0 0 15px var(--neon-emerald), 0 0 30px rgba(16, 185, 129, 0.6); }
         }
         .status-dot-active { animation: pulseGlow 2s infinite; }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0a0f1e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
 
-        /* Table */
         table { width: 100%; border-collapse: collapse; }
         th {
             background: rgba(0, 0, 0, 0.5);
@@ -189,7 +198,6 @@
         }
         tr:hover td { background: rgba(16, 185, 129, 0.03); }
 
-        /* Login screen */
         #login-screen {
             position: fixed;
             inset: 0;
@@ -230,7 +238,6 @@
             100% { transform: translateX(100%); }
         }
 
-        /* Status badges */
         .badge-active {
             background: rgba(16, 185, 129, 0.15);
             color: #10b981;
@@ -254,7 +261,6 @@
             letter-spacing: 1px;
         }
 
-        /* Tenant card in table */
         .tenant-logo {
             width: 40px;
             height: 40px;
@@ -265,7 +271,6 @@
             border: 1px solid var(--border-glass);
         }
 
-        /* Footer terminal */
         .footer-terminal {
             border-top: 1px solid var(--border-glass);
             padding: 10px 20px;
@@ -278,7 +283,6 @@
             align-items: center;
         }
 
-        /* Animations */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -291,7 +295,6 @@
         }
         .animate-slide-in { animation: slideInRight 0.4s ease-out forwards; }
 
-        /* Notifications */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -325,6 +328,94 @@
             color: #3b82f6;
             border-color: #3b82f6;
             backdrop-filter: blur(10px);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-box {
+            background: #0f172a;
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(16, 185, 129, 0.15);
+            position: relative;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-box {
+            transform: scale(1);
+        }
+        .modal-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-emerald), transparent);
+        }
+
+        .edit-mode-indicator {
+            display: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            margin-bottom: 16px;
+            align-items: center;
+            gap: 8px;
+        }
+        .edit-mode-indicator.active {
+            display: flex;
+        }
+
+        .slug-lock-msg {
+            display: none;
+            font-size: 0.65rem;
+            color: #f59e0b;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 4px;
+            align-items: center;
+            gap: 4px;
+        }
+        .slug-lock-msg.active {
+            display: flex;
+        }
+
+        .btn-action-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .btn-action-icon:hover {
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -401,17 +492,25 @@
         <!-- CONTENIDO PRINCIPAL -->
         <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4">
             
-            <!-- PANEL IZQUIERDO: FORMULARIO DE ALTA -->
+            <!-- PANEL IZQUIERDO: FORMULARIO DE ALTA / EDICIÓN -->
             <section class="lg:col-span-4">
                 <div class="glass-panel p-6 sticky top-4">
                     
                     <div class="flex items-center gap-2 mb-6 pb-4 border-b" style="border-color: var(--border-glass);">
-                        <i data-lucide="plus-circle" class="w-5 h-5" style="color: var(--neon-emerald);"></i>
-                        <h2 class="font-display font-black text-sm uppercase tracking-widest" style="color: var(--neon-emerald);">Desplegar Institución</h2>
+                        <i data-lucide="plus-circle" class="w-5 h-5" style="color: var(--neon-emerald);" id="form-icon"></i>
+                        <h2 class="font-display font-black text-sm uppercase tracking-widest" style="color: var(--neon-emerald);" id="form-title">Desplegar Institución</h2>
                     </div>
 
-                    <form id="form-tenant" onsubmit="crearTenant(event)" class="space-y-4">
+                    <!-- Indicador de modo edición -->
+                    <div id="edit-mode-indicator" class="edit-mode-indicator">
+                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        <span>MODO EDICIÓN · Modificando <strong id="edit-tenant-name"></strong></span>
+                    </div>
+
+                    <form id="form-tenant" onsubmit="guardarTenant(event)" class="space-y-4">
                         
+                        <input type="hidden" id="tenant-id">
+
                         <div>
                             <label>Nombre de la Institución</label>
                             <input type="text" id="tenant-nombre" placeholder="Ej: Colegio de Peritos" required>
@@ -424,12 +523,16 @@
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-slate-500">.asari.com</span>
                             </div>
                             <p class="text-[9px] text-slate-500 mt-1 font-mono">Solo minúsculas, sin espacios.</p>
+                            <div id="slug-lock-msg" class="slug-lock-msg">
+                                <i data-lucide="lock" class="w-3 h-3"></i>
+                                <span>El subdominio no se puede modificar por seguridad.</span>
+                            </div>
                         </div>
 
                         <div>
                             <label>Logo Institucional</label>
                             <div class="relative">
-                                <input type="file" id="tenant-logo" accept="image/*" required class="hidden" onchange="previewLogo(this)">
+                                <input type="file" id="tenant-logo" accept="image/*" class="hidden" onchange="previewLogo(this)">
                                 <button type="button" onclick="document.getElementById('tenant-logo').click()" class="w-full py-3 rounded-lg border-2 border-dashed flex items-center justify-center gap-2 text-xs font-bold uppercase transition-colors hover:bg-white/5" style="border-color: var(--border-glass); color: #64748b;">
                                     <i data-lucide="image-plus" class="w-4 h-4"></i>
                                     <span id="logo-preview-text">Seleccionar Logo</span>
@@ -438,7 +541,7 @@
                             <div id="logo-preview-container" class="hidden mt-3 flex items-center gap-3 p-3 rounded-lg" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass);">
                                 <img id="logo-preview-img" src="" class="w-12 h-12 rounded-lg object-contain bg-white p-1">
                                 <div class="flex-1">
-                                    <p class="text-xs font-bold text-emerald-500">Logo cargado</p>
+                                    <p class="text-xs font-bold text-emerald-500" id="logo-status-text">Logo cargado</p>
                                     <p class="font-mono text-[10px] text-slate-500" id="logo-filename">-</p>
                                 </div>
                                 <button type="button" onclick="limpiarLogo()" class="text-red-400 hover:text-red-300">
@@ -471,9 +574,14 @@
                             </div>
                         </div>
 
-                        <button type="submit" id="btn-crear-tenant" class="btn-primary w-full py-4 rounded-xl text-sm mt-2">
-                            <i data-lucide="rocket" class="w-4 h-4 inline mr-2"></i>
-                            DESPLEGAR INSTITUCIÓN
+                        <button type="submit" id="btn-guardar-tenant" class="btn-primary w-full py-4 rounded-xl text-sm mt-2">
+                            <i data-lucide="rocket" class="w-4 h-4 inline mr-2" id="btn-save-icon"></i>
+                            <span id="btn-save-text">DESPLEGAR INSTITUCIÓN</span>
+                        </button>
+
+                        <button type="button" id="btn-cancelar-edicion" onclick="cancelarEdicion()" class="hidden w-full py-3 rounded-xl text-xs font-bold uppercase transition-colors" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">
+                            <i data-lucide="x-circle" class="w-4 h-4 inline mr-2"></i>
+                            CANCELAR EDICIÓN
                         </button>
                     </form>
 
@@ -549,6 +657,73 @@
 
     </div>
 
+    <!-- MODAL: ASIGNAR DIRECTOR (OTORGAR LLAVES) -->
+    <div id="modal-director" class="modal-overlay" onclick="if(event.target===this)cerrarModalDirector()">
+        <div class="modal-box">
+            
+            <div class="p-6 border-b flex justify-between items-center" style="border-color: var(--border-glass);">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.4);">
+                        <i data-lucide="key" class="w-5 h-5" style="color: var(--neon-cyan);"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-black text-sm uppercase tracking-widest" style="color: var(--neon-cyan);">Otorgar Llaves de Acceso</h3>
+                        <p class="font-mono text-[10px] text-slate-500 mt-0.5">Institución: <span id="modal-director-tenant" class="text-cyan-400 font-bold">---</span></p>
+                    </div>
+                </div>
+                <button onclick="cerrarModalDirector()" class="text-slate-500 hover:text-red-400 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                
+                <!-- Bloque informativo -->
+                <div class="p-4 rounded-lg mb-5" style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25);">
+                    <p class="font-mono text-[10px] uppercase tracking-widest mb-2 flex items-center gap-1.5" style="color: var(--neon-cyan);">
+                        <i data-lucide="info" class="w-3 h-3"></i>
+                        Procedimiento
+                    </p>
+                    <ol class="text-xs text-slate-400 space-y-1.5 list-decimal list-inside font-mono leading-relaxed">
+                        <li>Crea el usuario en <strong class="text-white">Supabase Auth</strong> (email + contraseña).</li>
+                        <li>Copia su <strong class="text-white">User UID</strong> desde el panel de Authentication.</li>
+                        <li>Pégalo aquí para vincularlo a la institución.</li>
+                    </ol>
+                </div>
+
+                <form onsubmit="guardarDirector(event)" class="space-y-4">
+                    <input type="hidden" id="director-tenant-id">
+
+                    <div>
+                        <label>Nombres del Director</label>
+                        <input type="text" id="director-nombres" placeholder="Ej: Juan Pérez" required>
+                    </div>
+
+                    <div>
+                        <label>Email de Acceso</label>
+                        <input type="email" id="director-email" placeholder="director@institucion.com" required>
+                    </div>
+
+                    <div>
+                        <label>User UID (Supabase Auth)</label>
+                        <input type="text" id="director-uid" placeholder="Ej: dd057f27-a081-4c3a-8810-10152c712f3a" required class="text-[11px]">
+                        <p class="text-[9px] text-slate-500 mt-1 font-mono">Copia el UID desde Supabase → Authentication → Users.</p>
+                    </div>
+
+                    <div class="pt-3 border-t flex gap-3" style="border-color: var(--border-glass);">
+                        <button type="button" onclick="cerrarModalDirector()" class="flex-1 py-3 rounded-xl text-xs font-bold uppercase transition-colors" style="background: rgba(0,0,0,0.3); color: #94a3b8; border: 1px solid var(--border-glass);">
+                            CANCELAR
+                        </button>
+                        <button type="submit" id="btn-guardar-director" class="flex-1 py-3 rounded-xl text-xs font-bold uppercase transition-colors" style="background: linear-gradient(135deg, var(--neon-cyan), #0891b2); color: #030712;">
+                            <i data-lucide="key" class="w-4 h-4 inline mr-1"></i>
+                            VINCULAR DIRECTOR
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- ============================================================
          SCRIPTS
          ============================================================ -->
@@ -564,19 +739,17 @@
         // Email maestro hardcodeado (blindaje extra)
         const MASTER_EMAIL = 'registros@admin.com';
 
-        // Variable global
-        let logInterval = null;
+        // Variables globales
+        let tenantsCache = [];
+        let editandoTenantId = null;
+        let logoUrlOriginal = null;
 
         // ============================================================
         // INICIALIZACIÓN
         // ============================================================
         window.addEventListener('DOMContentLoaded', async () => {
             document.body.classList.add('ready');
-            
-            // Iniciar reloj del footer
             iniciarReloj();
-            
-            // Verificar sesión existente
             await verificarSesionMaestra();
         });
 
@@ -601,7 +774,6 @@
             
             errorDiv.classList.add('hidden');
             
-            // Validación extra de email maestro
             if (email !== MASTER_EMAIL) {
                 errorDiv.innerText = '⛔ ACCESO DENEGADO. Solo el administrador maestro puede ingresar.';
                 errorDiv.classList.remove('hidden');
@@ -620,10 +792,7 @@
             lucide.createIcons();
             
             try {
-                const { data: authData, error: authError } = await db.auth.signInWithPassword({
-                    email: email,
-                    password: pass
-                });
+                const { data: authData, error: authError } = await db.auth.signInWithPassword({ email, password: pass });
                 
                 if (authError) {
                     if (authError.message.includes('Invalid login credentials')) {
@@ -633,13 +802,11 @@
                     }
                 }
                 
-                // Doble verificación del email del usuario autenticado
                 if (authData.user.email !== MASTER_EMAIL) {
                     await db.auth.signOut();
                     throw new Error('⛔ ACCESO DENEGADO. Usuario no autorizado.');
                 }
                 
-                // Acceso concedido
                 mostrarDashboard(authData.user.email);
                 
             } catch (err) {
@@ -654,11 +821,9 @@
         async function verificarSesionMaestra() {
             try {
                 const { data: { session } } = await db.auth.getSession();
-                
                 if (session && session.user.email === MASTER_EMAIL) {
                     mostrarDashboard(session.user.email);
                 } else if (session) {
-                    // Sesión activa pero no es el maestro → cerrar
                     await db.auth.signOut();
                 }
             } catch (err) {
@@ -670,8 +835,6 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('dashboard-screen').classList.remove('hidden');
             document.getElementById('header-user').innerText = email.toUpperCase();
-            
-            // Cargar datos
             cargarTenants();
             agregarLog('sesión maestra iniciada');
             agregarLog('cargando clientes registrados...');
@@ -679,12 +842,7 @@
 
         async function cerrarSesion() {
             if (!confirm('¿Cerrar sesión maestra?')) return;
-            
-            try {
-                await db.auth.signOut();
-            } catch (err) {
-                console.warn('Error al cerrar sesión:', err);
-            }
+            try { await db.auth.signOut(); } catch (err) { console.warn(err); }
             
             document.getElementById('dashboard-screen').classList.add('hidden');
             document.getElementById('login-screen').style.display = 'flex';
@@ -696,7 +854,7 @@
         }
 
         // ============================================================
-        // 2. GESTIÓN DE TENANTS
+        // 2. GESTIÓN DE TENANTS (CARGAR)
         // ============================================================
         async function cargarTenants() {
             const tbody = document.getElementById('tenants-table-body');
@@ -713,24 +871,21 @@
             emptyState.classList.add('hidden');
             
             try {
-                const { data, error } = await db
-                    .from('saas_tenants')
-                    .select('*')
-                    .order('created_at', { ascending: true });
+                const { data, error } = await db.from('saas_tenants').select('*').order('created_at', { ascending: true });
                 
                 if (error) throw error;
                 
-                // Actualizar contador
-                document.getElementById('header-tenant-count').innerText = data.length;
+                tenantsCache = data || [];
+                document.getElementById('header-tenant-count').innerText = tenantsCache.length;
                 
-                if (!data || data.length === 0) {
+                if (!tenantsCache || tenantsCache.length === 0) {
                     tbody.innerHTML = '';
                     emptyState.classList.remove('hidden');
                     lucide.createIcons();
                     return;
                 }
                 
-                tbody.innerHTML = data.map(t => `
+                tbody.innerHTML = tenantsCache.map(t => `
                     <tr class="animate-fade-up">
                         <td>
                             <img src="${t.logo_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(t.nombre_institucion) + '&background=fff&color=0f172a'}" 
@@ -762,17 +917,30 @@
                             }
                         </td>
                         <td style="text-align: right;">
-                            <div class="flex items-center justify-end gap-2">
+                            <div class="flex items-center justify-end gap-1.5">
                                 <a href="https://${t.slug}.asari.com" target="_blank" rel="noopener" 
-                                   class="px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-colors" 
+                                   class="btn-action-icon" 
                                    style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);"
                                    title="Visitar sitio">
-                                    <i data-lucide="external-link" class="w-3 h-3 inline"></i>
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                                 </a>
+                                <button onclick="editarTenantForm('${t.id}')" 
+                                        class="btn-action-icon"
+                                        style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);"
+                                        title="Editar institución">
+                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="abrirModalDirector('${t.id}', '${t.nombre_institucion.replace(/'/g, "\\'")}')" 
+                                        class="btn-action-icon"
+                                        style="background: rgba(6, 182, 212, 0.1); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3);"
+                                        title="Asignar Director">
+                                    <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                                </button>
                                 <button onclick="toggleEstadoTenant('${t.id}', ${t.activo})" 
-                                        class="px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-colors"
-                                        style="background: ${t.activo ? 'rgba(234, 179, 8, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; color: ${t.activo ? '#eab308' : '#10b981'}; border: 1px solid ${t.activo ? 'rgba(234, 179, 8, 0.3)' : 'rgba(16, 185, 129, 0.3)'};">
-                                    ${t.activo ? '<i data-lucide="pause" class="w-3 h-3 inline mr-1"></i>PAUSAR' : '<i data-lucide="play" class="w-3 h-3 inline mr-1"></i>ACTIVAR'}
+                                        class="btn-action-icon"
+                                        style="background: ${t.activo ? 'rgba(234, 179, 8, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; color: ${t.activo ? '#eab308' : '#10b981'}; border: 1px solid ${t.activo ? 'rgba(234, 179, 8, 0.3)' : 'rgba(16, 185, 129, 0.3)'};"
+                                        title="${t.activo ? 'Pausar servicio' : 'Activar servicio'}">
+                                    <i data-lucide="${t.activo ? 'pause' : 'play'}" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         </td>
@@ -780,7 +948,7 @@
                 `).join('');
                 
                 lucide.createIcons();
-                agregarLog(`${data.length} cliente(s) cargado(s)`);
+                agregarLog(`${tenantsCache.length} cliente(s) cargado(s)`);
                 
             } catch (err) {
                 console.error('Error cargando tenants:', err);
@@ -797,13 +965,18 @@
         }
 
         // ============================================================
-        // 3. CREAR NUEVO TENANT
+        // 3. CREAR / ACTUALIZAR TENANT
         // ============================================================
-        async function crearTenant(e) {
+        async function guardarTenant(e) {
             e.preventDefault();
             
-            const btn = document.getElementById('btn-crear-tenant');
+            const btn = document.getElementById('btn-guardar-tenant');
+            const btnText = document.getElementById('btn-save-text');
+            const btnIcon = document.getElementById('btn-save-icon');
             const originalHTML = btn.innerHTML;
+            
+            const tenantId = document.getElementById('tenant-id').value;
+            const esEdicion = !!tenantId;
             
             const nombre = document.getElementById('tenant-nombre').value.trim();
             const slug = document.getElementById('tenant-slug').value.trim().toLowerCase();
@@ -816,91 +989,97 @@
             // Validaciones
             if (!nombre) { alert('El nombre de la institución es obligatorio.'); return; }
             if (!slug) { alert('El slug es obligatorio.'); return; }
-            if (!/^[a-z0-9\-]+$/.test(slug)) { alert('El slug solo puede contener minúsculas, números y guiones.'); return; }
-            if (!logoFile) { alert('El logo es obligatorio.'); return; }
-            if (logoFile.size > 5 * 1024 * 1024) { alert('El logo no debe superar los 5MB.'); return; }
+            if (!esEdicion && !/^[a-z0-9\-]+$/.test(slug)) { alert('El slug solo puede contener minúsculas, números y guiones.'); return; }
+            if (!esEdicion && !logoFile) { alert('El logo es obligatorio al crear una institución.'); return; }
+            if (logoFile && logoFile.size > 5 * 1024 * 1024) { alert('El logo no debe superar los 5MB.'); return; }
             
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-2 animate-spin"></i> DESPLEGANDO...';
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-2 animate-spin"></i> PROCESANDO...';
             btn.disabled = true;
             lucide.createIcons();
             
-            agregarLog(`desplegando ${slug}...`);
+            agregarLog(`${esEdicion ? 'actualizando' : 'desplegando'} ${slug}...`);
             
             try {
-                // Verificar si el slug ya existe
-                const { data: existing } = await db
-                    .from('saas_tenants')
-                    .select('id')
-                    .eq('slug', slug)
-                    .maybeSingle();
-                
-                if (existing) {
-                    throw new Error(`El slug "${slug}" ya está en uso. Pruebe con otro.`);
+                // 1. Verificar slug único (solo si es creación)
+                if (!esEdicion) {
+                    const { data: existing } = await db.from('saas_tenants').select('id').eq('slug', slug).maybeSingle();
+                    if (existing) {
+                        throw new Error(`El slug "${slug}" ya está en uso. Pruebe con otro.`);
+                    }
                 }
                 
-                // 1. Subir logo al bucket
-                const timestamp = Date.now();
-                const ext = logoFile.name.split('.').pop().toLowerCase();
-                const fileName = `logo_${slug}_${timestamp}.${ext}`;
+                // 2. Determinar URL del logo
+                let logoUrl = logoUrlOriginal;
                 
-                agregarLog(`subiendo logo → ${fileName}`);
-                
-                const { error: upErr } = await db.storage
-                    .from('renmcycf-media')
-                    .upload(fileName, logoFile, {
+                if (logoFile) {
+                    const timestamp = Date.now();
+                    const ext = logoFile.name.split('.').pop().toLowerCase();
+                    const fileName = `logo_${slug}_${timestamp}.${ext}`;
+                    
+                    agregarLog(`subiendo logo → ${fileName}`);
+                    
+                    const { error: upErr } = await db.storage.from('renmcycf-media').upload(fileName, logoFile, {
                         cacheControl: '3600',
                         upsert: false
                     });
+                    
+                    if (upErr) throw upErr;
+                    
+                    const { data: urlData } = db.storage.from('renmcycf-media').getPublicUrl(fileName);
+                    logoUrl = urlData.publicUrl;
+                    agregarLog(`logo url: ${logoUrl.substring(0, 50)}...`);
+                } else if (!logoUrl) {
+                    throw new Error('Debe subir un logo.');
+                }
                 
-                if (upErr) throw upErr;
-                
-                // 2. Obtener URL pública
-                const { data: urlData } = db.storage
-                    .from('renmcycf-media')
-                    .getPublicUrl(fileName);
-                
-                const logoUrl = urlData.publicUrl;
-                agregarLog(`logo url: ${logoUrl.substring(0, 50)}...`);
-                
-                // 3. Insertar en saas_tenants
+                // 3. Payload
                 const payload = {
                     slug: slug,
                     nombre_institucion: nombre,
                     logo_url: logoUrl,
-                    hero_image_url: null,
                     color_primario: colorPrimary,
                     color_secundario: colorSecondary,
                     color_terciario: colorTertiary,
-                    color_background: colorBackground,
-                    activo: true
+                    color_background: colorBackground
                 };
                 
-                agregarLog(`insertando en saas_tenants...`);
+                if (esEdicion) {
+                    // UPDATE
+                    agregarLog(`actualizando tenant ${tenantId.substring(0, 8)}...`);
+                    
+                    const { error: upErr } = await db.from('saas_tenants').update(payload).eq('id', tenantId);
+                    if (upErr) throw upErr;
+                    
+                    agregarLog(`✅ ${nombre} actualizado exitosamente`, 'success');
+                    mostrarToast(`✅ ${nombre} actualizado correctamente`, 'success');
+                    
+                    cancelarEdicion();
+                } else {
+                    // INSERT
+                    payload.hero_image_url = null;
+                    payload.activo = true;
+                    
+                    agregarLog(`insertando en saas_tenants...`);
+                    
+                    const { error: insErr } = await db.from('saas_tenants').insert([payload]);
+                    if (insErr) throw insErr;
+                    
+                    agregarLog(`✅ ${nombre} desplegado exitosamente`, 'success');
+                    mostrarToast(`✅ ${nombre} desplegado correctamente`, 'success');
+                    
+                    document.getElementById('form-tenant').reset();
+                    limpiarLogo();
+                    document.getElementById('tenant-color-primary').value = '#0f172a';
+                    document.getElementById('tenant-color-secondary').value = '#d4af37';
+                    document.getElementById('tenant-color-tertiary').value = '#1e3a8a';
+                    document.getElementById('tenant-color-background').value = '#f8fafc';
+                }
                 
-                const { error: insErr } = await db
-                    .from('saas_tenants')
-                    .insert([payload]);
-                
-                if (insErr) throw insErr;
-                
-                agregarLog(`✅ ${nombre} desplegado exitosamente`, 'success');
-                
-                // 4. Limpiar formulario
-                document.getElementById('form-tenant').reset();
-                limpiarLogo();
-                document.getElementById('tenant-color-primary').value = '#0f172a';
-                document.getElementById('tenant-color-secondary').value = '#d4af37';
-                document.getElementById('tenant-color-tertiary').value = '#1e3a8a';
-                document.getElementById('tenant-color-background').value = '#f8fafc';
-                
-                // 5. Recargar tabla
+                // 4. Recargar tabla
                 await cargarTenants();
                 
-                // 6. Notificación
-                mostrarToast(`✅ ${nombre} desplegado correctamente`, 'success');
-                
             } catch (err) {
-                console.error('Error creando tenant:', err);
+                console.error('Error guardando tenant:', err);
                 agregarLog(`❌ ERROR: ${err.message}`, 'error');
                 mostrarToast(`Error: ${err.message}`, 'error');
             } finally {
@@ -911,25 +1090,121 @@
         }
 
         // ============================================================
-        // 4. PAUSAR / ACTIVAR TENANT
+        // 4. EDITAR TENANT
+        // ============================================================
+        function editarTenantForm(tenantId) {
+            const tenant = tenantsCache.find(t => t.id === tenantId);
+            if (!tenant) {
+                mostrarToast('Institución no encontrada en caché', 'error');
+                return;
+            }
+            
+            // Guardar estado de edición
+            editandoTenantId = tenantId;
+            logoUrlOriginal = tenant.logo_url;
+            
+            // Rellenar el formulario
+            document.getElementById('tenant-id').value = tenant.id;
+            document.getElementById('tenant-nombre').value = tenant.nombre_institucion || '';
+            document.getElementById('tenant-slug').value = tenant.slug || '';
+            document.getElementById('tenant-color-primary').value = tenant.color_primario || '#0f172a';
+            document.getElementById('tenant-color-secondary').value = tenant.color_secundario || '#d4af37';
+            document.getElementById('tenant-color-tertiary').value = tenant.color_terciario || '#1e3a8a';
+            document.getElementById('tenant-color-background').value = tenant.color_background || '#f8fafc';
+            
+            // Mostrar preview del logo existente
+            if (tenant.logo_url) {
+                document.getElementById('logo-preview-img').src = tenant.logo_url;
+                document.getElementById('logo-preview-container').classList.remove('hidden');
+                document.getElementById('logo-status-text').innerText = 'Logo actual';
+                document.getElementById('logo-filename').innerText = '(conservar o reemplazar)';
+                document.getElementById('logo-preview-text').innerText = 'Cambiar Logo';
+            }
+            
+            // Bloquear slug
+            const slugInput = document.getElementById('tenant-slug');
+            slugInput.setAttribute('readonly', true);
+            document.getElementById('slug-lock-msg').classList.add('active');
+            
+            // Cambiar título e ícono
+            document.getElementById('form-title').innerText = 'Editar Institución';
+            document.getElementById('form-icon').setAttribute('data-lucide', 'edit-2');
+            document.getElementById('btn-save-text').innerText = 'ACTUALIZAR DATOS';
+            document.getElementById('btn-save-icon').setAttribute('data-lucide', 'save');
+            document.getElementById('btn-guardar-tenant').classList.add('btn-primary-edit');
+            
+            // Mostrar indicador de edición
+            document.getElementById('edit-tenant-name').innerText = tenant.nombre_institucion;
+            document.getElementById('edit-mode-indicator').classList.add('active');
+            
+            // Mostrar botón cancelar
+            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
+            
+            // Quitar required del logo (porque puede conservar el anterior)
+            document.getElementById('tenant-logo').removeAttribute('required');
+            
+            // Scroll al formulario
+            document.querySelector('.lg\\:col-span-4').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            lucide.createIcons();
+            agregarLog(`editando: ${tenant.nombre_institucion}`);
+            mostrarToast(`Editando: ${tenant.nombre_institucion}`, 'info');
+        }
+
+        function cancelarEdicion() {
+            editandoTenantId = null;
+            logoUrlOriginal = null;
+            
+            // Limpiar formulario
+            document.getElementById('form-tenant').reset();
+            document.getElementById('tenant-id').value = '';
+            limpiarLogo();
+            
+            // Restaurar colores por defecto
+            document.getElementById('tenant-color-primary').value = '#0f172a';
+            document.getElementById('tenant-color-secondary').value = '#d4af37';
+            document.getElementById('tenant-color-tertiary').value = '#1e3a8a';
+            document.getElementById('tenant-color-background').value = '#f8fafc';
+            
+            // Desbloquear slug
+            document.getElementById('tenant-slug').removeAttribute('readonly');
+            document.getElementById('slug-lock-msg').classList.remove('active');
+            
+            // Restaurar título e ícono
+            document.getElementById('form-title').innerText = 'Desplegar Institución';
+            document.getElementById('form-icon').setAttribute('data-lucide', 'plus-circle');
+            document.getElementById('btn-save-text').innerText = 'DESPLEGAR INSTITUCIÓN';
+            document.getElementById('btn-save-icon').setAttribute('data-lucide', 'rocket');
+            document.getElementById('btn-guardar-tenant').classList.remove('btn-primary-edit');
+            
+            // Ocultar indicador de edición
+            document.getElementById('edit-mode-indicator').classList.remove('active');
+            
+            // Ocultar botón cancelar
+            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
+            
+            // Restaurar required del logo
+            document.getElementById('tenant-logo').setAttribute('required', 'required');
+            
+            lucide.createIcons();
+            agregarLog('edición cancelada');
+        }
+
+        // ============================================================
+        // 5. PAUSAR / ACTIVAR TENANT
         // ============================================================
         async function toggleEstadoTenant(tenantId, estadoActual) {
             const accion = estadoActual ? 'pausar' : 'activar';
             if (!confirm(`¿Está seguro que desea ${accion} esta institución?`)) return;
             
             try {
-                const { error } = await db
-                    .from('saas_tenants')
-                    .update({ activo: !estadoActual })
-                    .eq('id', tenantId);
-                
+                const { error } = await db.from('saas_tenants').update({ activo: !estadoActual }).eq('id', tenantId);
                 if (error) throw error;
                 
                 agregarLog(`tenant ${tenantId.substring(0, 8)} → ${!estadoActual ? 'ACTIVADO' : 'PAUSADO'}`, 'success');
                 mostrarToast(`Institución ${!estadoActual ? 'activada' : 'pausada'} correctamente`, 'success');
                 
                 await cargarTenants();
-                
             } catch (err) {
                 console.error('Error toggling tenant:', err);
                 mostrarToast(`Error: ${err.message}`, 'error');
@@ -938,13 +1213,104 @@
         }
 
         // ============================================================
-        // 5. UTILIDADES DE UI
+        // 6. MODAL ASIGNAR DIRECTOR
+        // ============================================================
+        function abrirModalDirector(tenantId, tenantNombre) {
+            document.getElementById('director-tenant-id').value = tenantId;
+            document.getElementById('modal-director-tenant').innerText = tenantNombre;
+            document.getElementById('modal-director').classList.add('active');
+            
+            // Limpiar campos
+            document.getElementById('director-nombres').value = '';
+            document.getElementById('director-email').value = '';
+            document.getElementById('director-uid').value = '';
+            
+            lucide.createIcons();
+            agregarLog(`abriendo otorgamiento de llaves → ${tenantNombre}`);
+        }
+
+        function cerrarModalDirector() {
+            document.getElementById('modal-director').classList.remove('active');
+        }
+
+        async function guardarDirector(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btn-guardar-director');
+            const originalHTML = btn.innerHTML;
+            
+            const tenantId = document.getElementById('director-tenant-id').value;
+            const nombres = document.getElementById('director-nombres').value.trim();
+            const email = document.getElementById('director-email').value.trim().toLowerCase();
+            const uid = document.getElementById('director-uid').value.trim();
+            
+            // Validaciones
+            if (!tenantId) { alert('Error: No se encontró la institución.'); return; }
+            if (!nombres) { alert('Los nombres son obligatorios.'); return; }
+            if (!email) { alert('El email es obligatorio.'); return; }
+            if (!uid) { alert('El User UID es obligatorio.'); return; }
+            
+            // Validar formato UUID (básico)
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!uuidRegex.test(uid)) {
+                alert('El UID no tiene un formato válido. Debe ser un UUID (ej: dd057f27-a081-4c3a-8810-10152c712f3a).');
+                return;
+            }
+            
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-1 animate-spin"></i> PROCESANDO...';
+            btn.disabled = true;
+            lucide.createIcons();
+            
+            try {
+                const payload = {
+                    tenant_id: tenantId,
+                    user_id: uid,
+                    email: email,
+                    nombres: nombres,
+                    rol: 'superadmin',
+                    modulos_permitidos: [
+                        'mod-dashboard',
+                        'mod-solicitudes',
+                        'mod-auditoria',
+                        'mod-padron',
+                        'mod-campus',
+                        'mod-biblioteca',
+                        'mod-tesis',
+                        'mod-sistema'
+                    ],
+                    activo: true
+                };
+                
+                agregarLog(`vinculando director ${email} → tenant ${tenantId.substring(0, 8)}`);
+                
+                const { error } = await db
+                    .from('renmcycf_roles')
+                    .upsert([payload], { onConflict: 'tenant_id,user_id' });
+                
+                if (error) throw error;
+                
+                agregarLog(`✅ director vinculado exitosamente`, 'success');
+                mostrarToast(`✅ Director ${nombres} vinculado correctamente`, 'success');
+                
+                cerrarModalDirector();
+                
+            } catch (err) {
+                console.error('Error guardando director:', err);
+                agregarLog(`❌ ERROR: ${err.message}`, 'error');
+                mostrarToast(`Error: ${err.message}`, 'error');
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        // ============================================================
+        // 7. UTILIDADES DE UI
         // ============================================================
         function normalizarSlug(input) {
-            input.value = input.value
-                .toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^a-z0-9\-]/g, '');
+            if (editandoTenantId) return; // No normalizar si está bloqueado
+            input.value = input.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
         }
 
         function previewLogo(input) {
@@ -955,7 +1321,8 @@
             reader.onload = (e) => {
                 document.getElementById('logo-preview-img').src = e.target.result;
                 document.getElementById('logo-preview-container').classList.remove('hidden');
-                document.getElementById('logo-preview-text').innerText = 'Logo seleccionado';
+                document.getElementById('logo-preview-text').innerText = 'Cambiar Logo';
+                document.getElementById('logo-status-text').innerText = 'Nuevo logo seleccionado';
                 document.getElementById('logo-filename').innerText = file.name;
             };
             reader.readAsDataURL(file);
@@ -963,10 +1330,20 @@
 
         function limpiarLogo() {
             document.getElementById('tenant-logo').value = '';
-            document.getElementById('logo-preview-container').classList.add('hidden');
-            document.getElementById('logo-preview-text').innerText = 'Seleccionar Logo';
             document.getElementById('logo-preview-img').src = '';
+            document.getElementById('logo-preview-text').innerText = 'Seleccionar Logo';
             document.getElementById('logo-filename').innerText = '-';
+            
+            // Si estamos editando y hay logo original, restaurarlo
+            if (editandoTenantId && logoUrlOriginal) {
+                document.getElementById('logo-preview-img').src = logoUrlOriginal;
+                document.getElementById('logo-preview-container').classList.remove('hidden');
+                document.getElementById('logo-status-text').innerText = 'Logo actual';
+                document.getElementById('logo-filename').innerText = '(conservar o reemplazar)';
+                document.getElementById('logo-preview-text').innerText = 'Cambiar Logo';
+            } else {
+                document.getElementById('logo-preview-container').classList.add('hidden');
+            }
         }
 
         function agregarLog(mensaje, tipo = 'info') {
@@ -977,18 +1354,14 @@
             const line = document.createElement('div');
             line.className = 'terminal-line';
             
-            let colorClass = '';
+            let colorClass = 'text-cyan-400';
             if (tipo === 'error') colorClass = 'text-red-400';
             else if (tipo === 'success') colorClass = 'text-emerald-400';
-            else colorClass = 'text-cyan-400';
             
             line.innerHTML = `<span class="text-slate-600">[${now}]</span> <span class="${colorClass}">${mensaje}</span>`;
             container.appendChild(line);
-            
-            // Auto-scroll al final
             container.scrollTop = container.scrollHeight;
             
-            // Limitar a 20 líneas
             while (container.children.length > 20) {
                 container.removeChild(container.firstChild);
             }
@@ -1012,12 +1385,17 @@
             }, 3500);
         }
 
-        // Exponer funciones al scope global para los onclick
+        // Exponer funciones globales
         window.iniciarSesion = iniciarSesion;
         window.cerrarSesion = cerrarSesion;
         window.cargarTenants = cargarTenants;
-        window.crearTenant = crearTenant;
+        window.guardarTenant = guardarTenant;
         window.toggleEstadoTenant = toggleEstadoTenant;
+        window.editarTenantForm = editarTenantForm;
+        window.cancelarEdicion = cancelarEdicion;
+        window.abrirModalDirector = abrirModalDirector;
+        window.cerrarModalDirector = cerrarModalDirector;
+        window.guardarDirector = guardarDirector;
         window.normalizarSlug = normalizarSlug;
         window.previewLogo = previewLogo;
         window.limpiarLogo = limpiarLogo;
